@@ -8,7 +8,7 @@ main.py
 .venv/
 
 # Checkpoints
-checkpoints/
+checkpoints/*
 *.pth
 sam_vit_h_4b839.pth
 sam_vit_l_0b3195.pth

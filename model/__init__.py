@@ -1,1 +1,1 @@
-from model import Scribe
+from model.scribe import Scribe
