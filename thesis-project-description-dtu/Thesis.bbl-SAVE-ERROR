@@ -1,0 +1,332 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{adams1980hitchhiker}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=a1340ce3daa99823346adaeab80ed549}{%
+           family={Adams},
+           familyi={A\bibinitperiod},
+           given={Douglas},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Harmony Books}%
+      }
+      \strng{namehash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{fullhash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{fullhashraw}{a1340ce3daa99823346adaeab80ed549}
+      \strng{bibnamehash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{authorbibnamehash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{authornamehash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{authorfullhash}{a1340ce3daa99823346adaeab80ed549}
+      \strng{authorfullhashraw}{a1340ce3daa99823346adaeab80ed549}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{9780517542095}
+      \field{series}{Hitchhiker's Guide to the Galaxy Series}
+      \field{title}{The hitchhiker's guide to the galaxy}
+      \field{year}{1980}
+    \endentry
+    \entry{bardram2016personal}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=0a8a93e42e4d8868e07cca64a2975ac3}{%
+           family={Bardram},
+           familyi={B\bibinitperiod},
+           given={Jakob\bibnamedelima E},
+           giveni={J\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=fa3e8096c37731b48d11fa285ff8f6ad}{%
+           family={Frost},
+           familyi={F\bibinitperiod},
+           given={Mads},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{fullhash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{fullhashraw}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{bibnamehash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{authorbibnamehash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{authornamehash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{authorfullhash}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \strng{authorfullhashraw}{cb94f1185dfccbfffc26bc60dd84dd4f}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Pervasive Computing}
+      \field{number}{2}
+      \field{title}{{The Personal Health Technology Design Space}}
+      \field{volume}{15}
+      \field{year}{2016}
+      \field{pages}{70\bibrangedash 78}
+      \range{pages}{9}
+    \endentry
+    \entry{CNRLinearACorpus2025}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=0d0ff06ee62c814d387aa7587372a3b3}{%
+           family={{Consiglio Nazionale delle Ricerche}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{fullhash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{fullhashraw}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{bibnamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorbibnamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authornamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorfullhash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorfullhashraw}{0d0ff06ee62c814d387aa7587372a3b3}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{A Major Addition to the Linear A Corpus}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.cnr.it/en/news/13529/a-major-addition-to-the-linear-a-corpus
+      \endverb
+      \verb{url}
+      \verb https://www.cnr.it/en/news/13529/a-major-addition-to-the-linear-a-corpus
+      \endverb
+    \endentry
+    \entry{EtudesCretoises21}{bookseries}{}{}
+      \name{editor}{2}{}{%
+        {{un=0,uniquepart=base,hash=74d0ef47da1978477459921883462e87}{%
+           family={Godart},
+           familyi={G\bibinitperiod},
+           given={Louis},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6545015f1fb0102e7dde06d7be970cae}{%
+           family={Olivier},
+           familyi={O\bibinitperiod},
+           given={Jean-Pierre},
+           giveni={J\bibinithyphendelim P\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Athènes}%
+      }
+      \list{publisher}{1}{%
+        {École française d’Athènes}%
+      }
+      \strng{namehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{fullhash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{fullhashraw}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{bibnamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorbibnamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editornamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorfullhash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorfullhashraw}{b1e39c309d6002c0c114b5565de067b0}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{editor}
+      \field{labeltitlesource}{title}
+      \field{note}{Five-volume corpus of Linear A inscriptions (GORILA I--V)}
+      \field{subtitle}{Recueil des inscriptions en linéaire A (GORILA)}
+      \field{title}{Études crétoises}
+      \field{volume}{21}
+      \field{year}{1976--1985}
+      \verb{urlraw}
+      \verb https://cefael.efa.gr/result.php?site_id=1&serie_id=EtCret
+      \endverb
+      \verb{url}
+      \verb https://cefael.efa.gr/result.php?site_id=1&serie_id=EtCret
+      \endverb
+    \endentry
+    \entry{SalgarellaCastellanSigLA2020}{report}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=64b8adbbd2c623ba571d127f8f24becc}{%
+           family={Salgarella},
+           familyi={S\bibinitperiod},
+           given={Ester},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=089bb43a1278884db548621724a37492}{%
+           family={Castellan},
+           familyi={C\bibinitperiod},
+           given={Simon},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{institution}{1}{%
+        {SigLA}%
+      }
+      \strng{namehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{fullhash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{fullhashraw}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{bibnamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorbibnamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authornamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorfullhash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorfullhashraw}{29187f2869433ad7ff12a126fa3daa0c}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Accessed: 2026-02-04}
+      \field{title}{SigLA: The Signs of Linear A: a Palaeographical Database}
+      \field{type}{Research Paper / Technical Report}
+      \field{year}{2020}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/paper.pdf
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/paper.pdf
+      \endverb
+    \endentry
+    \entry{SigLAAboutPage}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=c1db38080e2fc8e4533b27aec8ab0264}{%
+           family={{SigLA}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{bibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorbibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authornamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \field{extraname}{1}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradate}{1}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About SigLA}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/about.html
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/about.html
+      \endverb
+    \endentry
+    \entry{SigLASearchDocuments}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=c1db38080e2fc8e4533b27aec8ab0264}{%
+           family={{SigLA}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{bibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorbibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authornamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \field{extraname}{2}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradate}{2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{SigLA Document Search Interface}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/search-document.html
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/search-document.html
+      \endverb
+    \endentry
+    \entry{SteeleAegeanWriting2023}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=fb0b968018dcbf46b5622cd73bf98e6b}{%
+           family={Steele},
+           familyi={S\bibinitperiod},
+           given={Philippa\bibnamedelima M.},
+           giveni={P\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Oxford}%
+      }
+      \list{publisher}{1}{%
+        {Oxbow Books}%
+      }
+      \strng{namehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{fullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{fullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{bibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorbibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authornamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorfullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorfullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{series}{Contexts of and Relations between Early Writing Systems}
+      \field{title}{Exploring Writing Systems and Practices in the Bronze Age Aegean}
+      \field{volume}{7}
+      \field{year}{2023}
+      \field{pages}{xiv}
+      \range{pages}{1}
+      \verb{urlraw}
+      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
+      \endverb
+      \verb{url}
+      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
+      \endverb
+    \endentry
+  \enddatalist
+  \missing{KirillovSAM2023}
+\endrefsection
+\endinput
+

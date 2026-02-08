@@ -3,10 +3,6 @@ import numpy as np
 from pathlib import Path
 from utils.image_io import save_rgb
 
-import numpy as np
-from pathlib import Path
-from utils.image_io import save_rgb
-
 class Image(np.ndarray):
 
     def __new__(cls, array):

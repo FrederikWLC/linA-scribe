@@ -1,0 +1,21 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{Preface}{ii}{Doc-Start}%
+\contentsline {section}{Abstract}{iii}{Doc-Start}%
+\contentsline {section}{Acknowledgements}{iv}{Doc-Start}%
+\contentsline {section}{List of tables and figures}{vi}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.0.1}%
+\contentsline {section}{\numberline {1.1}A problem of manual digitization}{1}{section.0.1.1}%
+\contentsline {section}{\numberline {1.2}A problem of copyright}{2}{section.0.1.2}%
+\contentsline {section}{\numberline {1.3}Research questions}{2}{section.0.1.3}%
+\contentsline {section}{\numberline {1.4}Outline of the thesis}{2}{section.0.1.4}%
+\contentsline {chapter}{\numberline {2}Methodology}{3}{chapter.0.2}%
+\contentsline {section}{\numberline {2.1}Segment Anything Model}{3}{section.0.2.1}%
+\contentsline {section}{\numberline {2.2}Evaluation Metrics}{3}{section.0.2.2}%
+\contentsline {chapter}{\numberline {3}Implementation}{5}{chapter.0.3}%
+\contentsline {chapter}{\numberline {4}Data}{7}{chapter.0.4}%
+\contentsline {chapter}{\numberline {5}Results}{9}{chapter.0.5}%
+\contentsline {chapter}{\numberline {6}Discussion}{11}{chapter.0.6}%
+\contentsline {chapter}{\numberline {7}Conclusion}{13}{chapter.0.7}%
+\contentsline {chapter}{\numberline {8}Future Work}{15}{chapter.0.8}%
+\contentsline {chapter}{Bibliography}{16}{chapter*.2}%
+\contentsline {chapter}{\numberline {A}Appendix}{17}{appendix.A}%

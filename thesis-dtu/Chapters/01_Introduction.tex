@@ -1,0 +1,40 @@
+\chapter{Introduction}
+\label{ch:Introduction}
+When the British archaeologist Arthur Evans in the beginning of the 20th century went to escavate Knossos on Crete, he found a huge amount of clay tablets written in a previously unknown linear script.
+Some documents were clearly of a newer script, which he called \textit{Linear B}, while others were of an older one, which he named \textit{Linear A}.
+Some fifty years later, the British amateur archaeologist Michael Ventris finally succeeded in deciphering the newer script Linear B, which he proved to be representing Mycenaean Greek, the earliest attested form of Greek.
+But the same hypothesis did not hold for the older script Linear A, whose encoded language remained unknown, still yet to be deciphered.
+
+A key obstacle to its decipherment has been the small size of its corpus, currently consisting of only around 1,500 documents - significantly smaller than that of its younger counterpart, which now spans more than 6,000 documents.\footcite{SteeleAegeanWriting2023} 
+But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents.\footcite{CNRLinearACorpus2025}
+Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
+While photographs with accompanying drawings of nearly the entire corpus are available online through Collections de l’École française d’Athènes en ligne (Cefael), these are only available in print form.
+
+This motivated the development of the palæographical database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions" \parencite{SalgarellaCastellanSigLA2020}.
+However, the last addition to SigLA was in 2021, and the project has so far managed to document just 772 of all currently known documents.\footcite{SigLAAboutPage}\footcite{SigLASearchDocuments}
+
+\section{A problem of manual digitization}
+Nowadays, when archaeologists digitize ancient inscriptions, they still tend to do so manually using no more than painting tools and their own good judgement. The process is slow, and 
+requires manual tracing of sign engravings from stone, clay, and other materials with damaged and irregular surfaces. This is perhaps the biggest reason to why SigLA does not yet contain the entire available corpus.
+The drawings currently stored on SigLA were made by Ester Salgarella. For each document, she created her own annotated drawings based on the originals from Cefael. According to her, this has been a highly time-consuming undertaking. 
+
+The aim of this project is therefore to investigate whether semi-automatic segmentation using 
+modern computer vision - specifically the Segment Anything Model (SAM) - can accelerate this 
+workflow while maintaining high-quality outputs that are still compatible with SigLA’s database. 
+
+The thesis will develop an annotation tool that can generate initial segmentations from images of 
+original documents and export cleaned masks in researcher-friendly formats (e.g., vector or layer
+based files), leaving only simple user corrections to the researchers.
+
+\section{A problem of copyright}
+Due to copyright issues, SigLA cannot use the accompanying drawings for each document 
+present provided by Cefael (collections de l’ecole fracaise d’Athenes en ligne). Therefore, they 
+have so far made their own drawings based on the images of the original documents. 
+Consequently, SigLA’s digitization workflow could benefit significantly from a tool that can 
+enhance this process by automatically producing initial segmentation proposals from photographs 
+of the original inscriptions. Researchers could then proceed to correct these proposals instead of 
+tracing every sign from scratch for every new document to be digitized.
+
+\section{Research questions}
+
+\section{Outline of the thesis}
