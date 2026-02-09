@@ -1,4 +1,6 @@
 %!TEX root = ../Thesis.tex
+
+
 \chapter{Project Description}
 
 \section{Background}
@@ -11,36 +13,44 @@ But the same hypothesis did not hold for the older script Linear A, whose encode
 A key obstacle to its decipherment has been the small size of its corpus, currently consisting of only around 1,500 documents - significantly smaller than that of its younger counterpart, which now spans more than 6,000 documents.\footcite{SteeleAegeanWriting2023} 
 But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents.\footcite{CNRLinearACorpus2025}
 Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
-While photographs with accompanying drawings of nearly the entire corpus are available online through Collections de l’École française d’Athènes en ligne (Cefael), these are only available in print form.
+While photographs with accompanying drawings of nearly the entire corpus are available online through \acf{Cefael} (see \textcite{EtudesCretoises21}), these are only available in print form.
 
-This motivated the development of the palæographical database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions [...] in order to carry out statistical and palæographic analyses within the epigraphic corpus" \parencite{SalgarellaCastellanSigLA2020}.
+This motivated the development of the palæographical\footnote{The term "palæographical" refers to the study of ancient writing systems.} database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions [...] in order to carry out statistical and palæographic analyses within the epigraphic corpus" \parencite{SalgarellaCastellanSigLA2020}.
 However, the last addition to SigLA was in 2021, and the project has so far managed to document just 772 of all currently known documents.\footcite{SigLAAboutPage}\footcite{SigLASearchDocuments}
 
 \subsection{A problem of manual digitization}
 
 The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita.
-For each document, she manually created her own annotated drawings based on the originals from Cefael.
+For each document, she manually created her own annotated drawings based on the originals from \acs{Cefael}.
 From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be imported to SigLA.\footcite{SalgarellaCastellanSigLA2020}
 According to her (personal communication), this has been a highly time-consuming undertaking. 
 And the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not contain the entire available corpus.
 
-The aim of this project is therefore to investigate whether parts of this process can be automated. More specifically, whether some kind of semi-automatic segmentation using 
-modern computer vision - specifically the Segment Anything Model (SAM) - can accelerate the 
-workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database. 
+The aim of this project is therefore to investigate whether parts of this process can be automated. More specifically, whether some kind of semi-automatic segmentation tool 
+can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA's database.
+
+\subsection{A problem of small data}
+The small size of the Linear A corpus and the irregularities in quality of its documents is a huge problem for the application of deep learning approaches, which typically require large amounts of data to perform well.
+Consequently, this project will instead seek to make use of generalized machine learning, in particular Meta's state-of-the-art interactive segmentation tool, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset of over 1 billion masks.
+\acs{SAM}'s generalization and interactivity (allowing user-placed points of additions and deletions that guide the model) might thus allow for semi-automatic annotation of Linear A inscriptions without the need for large amounts of training data, which is unfortunately not available in this context.\footnote{By the "interactivity" of \acs{SAM}, what is meant is NOT any built-in user interface in the form of a GUI, but rather the possibility of prompt-based placement of points of additions and deletions that guide the model's prediction.}
 
 \cleardoublepage
 
 \section{Prior work / Literature review}
 
-This thesis places itself in the intersection of computer vision, digital humanities, and palæography (the study of ancient writing).
-As it is a thesis of engineering, computer vision will remain the primary focus, both in terms of the research questions, and the methods used to answer them.
-Consequently, the other two fields will merely provide the context and motivation for that research.
-The prior work and initial literature review in focus will thus concentrate on: 1. the relevant theory and state-of-the-art within computer vision (SAM), 2. the palæographical and digital humanities work that this project will seek to complement (SigLA), and 3. the context thereof (Linear A).
+\noindent
+
+This thesis places itself in the intersection of computer vision, digital humanities, and epigraphy (the study of inscriptions).
+Since it is a thesis of engineering, computer vision will remain the primary focus, both in terms of the research questions, and the methods used to answer them.
+As a result, the other two fields will merely provide the context and motivation for the research.
+The prior work and initial literature review in focus will thus concentrate on: 1. the relevant theory and state-of-the-art within computer vision (\acs{SAM}, etc.),
+2. the palæographical and digital humanities work that this project will seek to support (SigLA),
+and 3. the overall context thereof (Linear A).
 
 \subsection{Research context}
 
 For the context of Linear A and its corpus, the background section above can be referred to, citing the sources for: its size \parencite{SteeleAegeanWriting2023}, its new addition \parencite{CNRLinearACorpus2025}, and where it's accessed \parencite{EtudesCretoises21}.
-And for the palæographical and digital humanities work, the background section can also be referred to, citing the sources for SigLA: its paper \parencite{SalgarellaCastellanSigLA2020}, its about page \parencite{SigLAAboutPage}, and its document repository \parencite{SigLASearchDocuments}.
+And for the epigraphical and digital humanities work, the background section can also be referred to, citing the sources for SigLA: its paper \parencite{SalgarellaCastellanSigLA2020}, its about page \parencite{SigLAAboutPage}, and its document repository \parencite{SigLASearchDocuments}.
 Here, additional context can also be provided by Ester Salgarella herself, as she is a co-supervisor of this project, and the main person behind SigLA.
 
 \subsection{Computer vision literature}
@@ -51,62 +61,37 @@ As for the relevant theory and state-of-the-art within computer vision, the lite
 and 3. related computer vision script segmentation work for comparison.
 
 For image processing, a general theory book \parencite{DigitalImageProcessing} can be cited, as well as more method-specific papers (when other methods are used) like Otsu thresholding \parencite{Otsu1979}, and of course the OpenCV Python documentation \parencite{opencv_imgproc_docs} for short implementation reference.
-Then, for SAM are: its paper \parencite{sam}, its lighter implementation Mobile Sam \parencite{mobile_sam} - and the newest version of that one \parencite{mobile_sam_v2}.
-Lastly, for related segmentation work there exists a paper using deep learning (in contrast to the methodology of this thesis) obtaining results better than state-of-the-art \parencite{DeepLearningSegmentation}, and a lighter EU-funded deep learning historical document segmentation tool \textit{dhSegment} \parencite{dhsegment}.
+Then, for \acs{SAM} are: its paper \parencite{sam}, its lighter implementation Mobile SAM \parencite{mobile_sam} - and the newest version of that one MobileSAMv2 \parencite{mobile_sam_v2}.
+Lastly, for related segmentation work there exists a paper using deep learning (in contrast to the methodology of this thesis) obtaining results better than state-of-the-art \parencite{DeepLearningSegmentation}, and a lighter EU-funded historical document segmentation tool \textit{dhSegment} \parencite{dhsegment} also using deep learning.
 
 
-\section{Research Question / Hypothesis  / Problem statement}
-
-This section provides a very concise statement of your research focus. This can be formulated either as a `research question', `hypothesis', or `problem statement'. But you have to pick one or the other. The hypothesis or thesis is the highest-level problem or goal you are going to address. The specific list of problems --- usually a handful, although sub-problems are sometimes given --- is things that need to be solved if you are going to satisfy your hypothesis.
-
-The context of the problem should already have been introduced in the prior sections. A general rule of thumb is that all keywords that are used in the problem statement or research question should have been introduced and explained in the text above. 
-
-Of course, the problem must be worthy of a thesis, and the importance of the problem should have been motivated in the text above. When the reader reaches this point, s/he should think that the stated problem indeed is one of the most important problems to solve in the context of the thesis.  The problem should be stated unambiguously, and there is only \textit{one} problem you solve (although there might be sub-problems to the overall problem).
-
-In general, there are a few typical types of research you can do:
-
-\begin{itemize}[noitemsep]
-    \item You can try to \textit{solve a real-world problem} for some real-world users or organizations.
-    \item You can try to \textit{solve a `theoretical' problem} reported in the literature.
-    \item You can try to \textit{replicate} a scientific solution or method reported in the literature.
-    \item You can develop a \textit{novel approach or method} for solving a well-known problem
-\end{itemize}
-
-
-\section{Research goals and methods}
-While the above section details the problems, your job is to translate those problems into research goals. Each goal should briefly indicate \textit{how} you are going to solve the problem, i.e., the method you will use to solve it. Note that some authors sometimes combine problem statements, goals, and methods into a single section, while others separate them. Goals should be operational, i.e., if you later claim to achieve your goal, you should be able to match your solution against the goal statement.
-
-\textit{I cannot overstate how important it is to have clear goals}. Most examiners highlight these goals, and after reading the thesis, they then go back to see if you have accomplished your goals. If you have not, then you have a big problem with your thesis. Even worse are those where problems and goals are not clearly stated, for it means people are trying to evaluate your solutions in a vacuum.
+\section{Problem statement}
+As previously stated, the aim of this project is to investigate whether parts of the process of creating annotated drawings for SigLA can be automated.
+More specifically, whether some kind of semi-automatic segmentation tool using generalized computer vision - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database.
+This is a problem that can be divided into the following three sub-tasks to be solved: 
+1. the pre-processing of original document images to make them suitable for \acs{SAM},
+2. the incorporation of \acs{SAM} into an interactive segmentation tool whose exports can be integrated into SigLA's workflow, and
+3. the quantitative evaluation of the tool's performance compared to baselines against metrics of  segmentation quality (before and after interaction).
 
 \section{Empirical considerations}
-Together, Ester Salgarella and I will compile a dataset of at least 25 images of original 
-documents, sourced from the Cefael corpus, which will then be selected and cropped. For 
-evaluation, their corresponding digitized layered drawings, stored as Krita (.kra) project files, will 
-be used as ground truth. The ground truth data will then have to be cleared of any marked 
-“deleted signs” or other annotation elements that our model is not intended to reproduce. 
+For the evaluation of the solution, a dataset will be compiled together with Ester Salgarella of at least 25 images of original 
+documents from the corpus, selected and cropped from \acs{Cefael}.
+These images are subject to \acf{IPR} issues, and can thus not be displayed publicly if not through \acs{Cefael}.
+However, they can still be used for the development and evaluation of the tool (and can be bought if necessary for show-casing within the thesis).
 
-%
-You should address questions like:
+As ground truth, their corresponding digitized layered drawings, stored as Krita (.kra) files on SigLA (provided by Ester Salgarella) will be used and optimally aligned for comparison with tool outputs.
+The ground truth data might then have to be cleared of any marked 
+“deleted signs” or other annotation elements that our model is not intended to reproduce.
 
-\begin{itemize}[noitemsep]
-    \item Where do you get your data? Where do you analyze it? Can you do this yourself?
-    \item How are you going to build some technology?
-    \item How do you get access to users? 
-    \item How do you get access to the needed resources, such as money, hardware, software, lab space, ...?
-    \item Who are you working with? A company, hospital, clinic, grassroots, ...
-    \item What is your role? Are you expected to deliver something to an external partner?
-    \item Are there any \ac{IPR} issues involved?
-\end{itemize}
-
-The primary deliverable of this project will be a semi-automated annotation tool capable of 
-generating initial segmentations from original Linear A document images and exporting 
-researcher-friendly mask outputs for further refinement. All supporting components, 
+The solution will then be built as a pipeline, consisting of
+pre-processing, initial segmentation, interactive segmentation, post-processing, and export (as Krita files).
+At last, the primary deliverable of this project will be delivered to the external partner and co-supervisor Ester Salgarella in the form of a semi-automatic annotation tool.
+All supporting components, 
 including evaluation results, and analysis will be documented and presented in the written 
 thesis. 
 
 \section{Impact -- innovation and application}
 
-The work of this thesis will present itself as a first proof-of-concept for the use of computer vision to accelerate the expansion of the SigLA database and the further digitization of the Linear A corpus. 
-Its main contribution will be a semi-automatic annotation tool, which might prove useful to palæographers for generating initial segmentations of original document images, which can then be completed and refined more quickly while retaining accuracy.
-Hopefully, it will inspire further research and development in the field of digital epigraphy, particularly in the application of computer vision techniques to Linear A, and perhaps even in the broader context of small corpus ancient writing systems.
-
+The work of this thesis will present itself as a first proof-of-concept for the use of computer vision to accelerate the expansion of the SigLA database, supporting the further digitization of the Linear A corpus. 
+Its main contribution will be a semi-automatic annotation tool, which might prove useful to epigraphers for generating segmentations of original document images, as they can then be completed and refined more easily.
+Hopefully, it will inspire further research and development within the field of digital epigraphy, particularly in the application of generalized and interactive computer vision approaches such as \acs{SAM} on Linear A, and perhaps even in the broader context of use on small corpus ancient writing systems where the lack of big data is ill fit for approaches using deep learning.

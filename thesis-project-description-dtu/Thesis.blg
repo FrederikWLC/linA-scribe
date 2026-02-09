@@ -1,17 +1,17 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
-[1] Config.pm:331> INFO - Logfile is 'Thesis.blg'
-[237] biber-MSWIN64:342> INFO - === 
-[325] Biber.pm:421> INFO - Reading 'Thesis.bcf'
-[511] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
-[534] Biber.pm:4487> INFO - Processing section 0
-[554] Biber.pm:4678> INFO - Looking for bibtex file 'bibliography/Bibliography.bib' for section 0
-[717] bibtex.pm:1713> INFO - LaTeX decoding ...
-[764] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography/Bibliography.bib'
-[1175] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[1175] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[1175] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'en-US'
-[1175] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
-[1214] bbl.pm:676> INFO - Writing 'Thesis.bbl' with encoding 'UTF-8'
-[1236] bbl.pm:779> INFO - Output to Thesis.bbl
-[1237] Biber.pm:132> WARN - legacy year field '1976--1985' in entry 'EtudesCretoises21' is not an integer - this will probably not sort properly.
-[1237] Biber.pm:134> INFO - WARNINGS: 1
+[0] Config.pm:331> INFO - Logfile is 'Thesis.blg'
+[312] biber-MSWIN64:342> INFO - === 
+[457] Biber.pm:421> INFO - Reading 'Thesis.bcf'
+[588] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
+[601] Biber.pm:4487> INFO - Processing section 0
+[626] Biber.pm:4678> INFO - Looking for bibtex file 'bibliography/Bibliography.bib' for section 0
+[745] bibtex.pm:1713> INFO - LaTeX decoding ...
+[794] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography/Bibliography.bib'
+[1056] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1056] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1057] Biber.pm:4307> INFO - Sorting list 'nyt/global//global/global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[1057] Biber.pm:4313> INFO - No sort tailoring available for locale 'en-US'
+[1161] bbl.pm:676> INFO - Writing 'Thesis.bbl' with encoding 'UTF-8'
+[1174] bbl.pm:779> INFO - Output to Thesis.bbl
+[1174] Biber.pm:132> WARN - legacy year field '1976--1985' in entry 'EtudesCretoises21' is not an integer - this will probably not sort properly.
+[1174] Biber.pm:134> INFO - WARNINGS: 1

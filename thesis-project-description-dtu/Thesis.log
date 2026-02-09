@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  8 FEB 2026 01:15
+This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  9 FEB 2026 22:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1745,6 +1745,11 @@ Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
 \ALG@tmplength=\skip287
 )
 Document Style - pseudocode environments for use with the `algorithmicx' style
+) (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/latex/colortbl\colortbl.sty
+Package: colortbl 2024/10/29 v1.0k Color table columns (DPC)
+\everycr=\toks52
+\minrowclearance=\skip288
+\rownum=\count604
 ) (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
 ) (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/latex/acronym\acronym.sty
@@ -1755,47 +1760,28 @@ Package: suffix 2006/07/15 1.5a Variant command support
 )
 (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/latex/xstring\xstring.sty
 (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/generic/xstring\xstring.tex
-\xs_counta=\count604
-\xs_countb=\count605
+\xs_counta=\count605
+\xs_countb=\count606
 )
 Package: xstring 2023/08/22 v1.86 String manipulations (CT)
 )
-\AC@clearlist=\toks52
+\AC@clearlist=\toks53
 ) (C:\Users\frede\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
 Package: enumitem 2025/02/06 v3.11 Customized lists
-\labelindent=\skip288
+\labelindent=\skip289
 \enit@outerparindent=\dimen349
-\enit@toks=\toks53
+\enit@toks=\toks54
 \enit@inbox=\box83
-\enit@count@id=\count606
-\enitdp@description=\count607
+\enit@count@id=\count607
+\enitdp@description=\count608
 ))
 Package csquotes Info: Checking for multilingual support...
 Package csquotes Info: ... found 'polyglossia' package.
 Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'american'.
  (Thesis.aux (prefrontmatter/titlepage.aux) (prefrontmatter/colophon.aux)
-(frontmatter/Summary.aux) (chapters/ProjectDescription.aux)
-(chapters/LearningObjectives.aux) (chapters/Plan.aux
-
-LaTeX Warning: Label `tab:survey' multiply defined.
-
-
-LaTeX Warning: Label `tab:survey@cref' multiply defined.
-
-
-LaTeX Warning: Label `tab:survey' multiply defined.
-
-
-LaTeX Warning: Label `tab:survey@cref' multiply defined.
-
-
-LaTeX Warning: Label `tab:survey' multiply defined.
-
-
-LaTeX Warning: Label `tab:survey@cref' multiply defined.
-
-) (appendices/Acronyms.aux) (appendices/AnAppendix.aux))
+(frontmatter/Summary.aux) (chapters/ProjectDescription.aux) (chapters/Plan.aux)
+(appendices/Acronyms.aux) (appendices/AnAppendix.aux))
 \openout1 = `Thesis.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
@@ -1847,7 +1833,7 @@ nRoman.cfg
 File: mt-LatinModernRoman.cfg 2021/02/21 v1.1 microtype config. file: Latin Mod
 ern Roman (RS)
 )
-\c@lstlisting=\count608
+\c@lstlisting=\count609
 Package hyperref Info: Link coloring OFF on input line 18.
  (Thesis.out) (Thesis.out)
 \@outlinefile=\write6
@@ -1966,11 +1952,6 @@ LaTeX Font Info:    Font shape `TU/texgyreadventor(0)/m/n' will be
 (Font)              scaled to size 33.60013pt on input line 2.
 Package acronym Info: Label `acro:PDR' newly defined as it shall be overridden
 although it is yet undefined on input line 3.
-
-Underfull \hbox (badness 10000) in paragraph at lines 3--4
-
- []
-
 ) [1
 
 
@@ -2026,11 +2007,14 @@ LaTeX Font Info:    External font `lmex10' loaded for size
  (chapters/ProjectDescription.tex
 Chapter 1.
 LaTeX Font Info:    Font shape `TU/texgyreadventor(0)/m/n' will be
-(Font)              scaled to size 13.82405pt on input line 4.
+(Font)              scaled to size 13.82405pt on input line 6.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 11.
+(Font)              <8> on input line 13.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 11.
+(Font)              <6> on input line 13.
+Package acronym Info: Label `acro:Cefael' newly defined as it shall be overridd
+en
+although it is yet undefined on input line 16.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
@@ -2039,170 +2023,116 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 ]
+Package acronym Info: Label `acro:SAM' newly defined as it shall be overridden
+although it is yet undefined on input line 34.
+
 [2]
-Underfull \vbox (badness 6396) has occurred while \output is active []
+Underfull \vbox (badness 5217) has occurred while \output is active []
 
  [3
 
 ]
-[4]
 Package acronym Info: Label `acro:IPR' newly defined as it shall be overridden
-although it is yet undefined on input line 98.
-) [5]
-\openout2 = `chapters/LearningObjectives.aux'.
+although it is yet undefined on input line 79.
+)
+[4] [5]
+\openout2 = `chapters/Plan.aux'.
 
- (chapters/LearningObjectives.tex [6
+ (chapters/Plan.tex [6
 
 
 
 
 ]
 Chapter 2.
-Package acronym Info: Label `acro:ILO' newly defined as it shall be overridden
-although it is yet undefined on input line 4.
-Package microtype Info: Loading generic protrusion settings for font family
-(microtype)             `lmtt' (encoding: TU).
-(microtype)             For optimal results, create family-specific settings.
-(microtype)             See the microtype manual for details.
-
-Underfull \hbox (badness 10000) in paragraph at lines 4--6
-
- []
-
-[7]) [8]
-\openout2 = `chapters/Plan.aux'.
-
- (chapters/Plan.tex
-Chapter 3.
 File: gantt/gantt.pdf Graphic file (type pdf)
 <use gantt/gantt.pdf>
-
-Underfull \hbox (badness 10000) in paragraph at lines 31--31
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 43--43
 []|\TU/lmr/m/n/7 Project Defini-
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 31--31
-[]|\TU/lmr/m/n/7 Project Defini-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 61--61
-[]|\TU/lmr/m/n/7 Project Defini-
- []
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[9
-
-
-
-
-] [10]
-Underfull \hbox (badness 10000) in paragraph at lines 94--94
-[]|\TU/lmr/m/n/7 Project Defini-
- []
-
-) [11]
+) [8]
 \openout2 = `appendices/Acronyms.aux'.
 
- (appendices/Acronyms.tex [12
+ (appendices/Acronyms.tex
+Appendix A.
+) [9
 
 
 
 
 ]
-Appendix A.
-
-LaTeX Warning: Hyper reference `acro:SAM' on page 13 undefined on input line 5.
-
-
-
-LaTeX Warning: Hyper reference `acro:SAM' on page 13 undefined on input line 5.
-
-
-
-LaTeX Warning: Hyper reference `acro:Cefael' on page 13 undefined on input line
- 6.
-
-
-LaTeX Warning: Hyper reference `acro:Cefael' on page 13 undefined on input line
- 6.
-
-) [13]
 \openout2 = `appendices/AnAppendix.aux'.
 
- (appendices/AnAppendix.tex [14
+ (appendices/AnAppendix.tex [10
 
 
 
 
 ]
 Appendix B.
-) [15] [16
+File: gantt/gantt.pdf Graphic file (type pdf)
+<use gantt/gantt.pdf>
+) [11] [12]
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `lmtt' (encoding: TU).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
 
-
-
-]
 
 Package biblatex Warning: No driver for 'bookseries'.
-(biblatex)                Using fallback driver on input line 53.
+(biblatex)                Using fallback driver on input line 52.
 
 
-Overfull \hbox (20.23769pt too wide) in paragraph at lines 54--54
+Overfull \hbox (20.23769pt too wide) in paragraph at lines 53--53
 [][]\TU/lmr/m/n/10 Kirillov, Alexander et al. (2023). “  Segment Anything.” In:
  \TU/lmr/m/it/10 arXiv preprint arXiv:2304.02643\TU/lmr/m/n/10 .
  []
 
 
-Overfull \hbox (29.18549pt too wide) in paragraph at lines 54--54
+Overfull \hbox (29.18549pt too wide) in paragraph at lines 53--53
 \TU/lmr/m/n/10 deep-learning approach for document segmentation.” In: \TU/lmr/m
 /it/10 arXiv preprint arXiv:1804.10371\TU/lmr/m/n/10 .
  []
 
 
-Overfull \hbox (0.73976pt too wide) in paragraph at lines 54--54
+Overfull \hbox (0.73976pt too wide) in paragraph at lines 53--53
 [][]\TU/lmr/m/n/10 Otsu, Nobuyuki (1979). “  A Threshold Selection Method from 
 Gray-Level Histograms.”
  []
 
-[17
+[13
+
+
+
 
 ]
 No complaints by nag.
-[18]
+[14]
 \tf@toc=\write7
 \openout7 = `Thesis.toc'.
 
  (Thesis.aux (prefrontmatter/titlepage.aux) (prefrontmatter/colophon.aux)
-(frontmatter/Summary.aux) (chapters/ProjectDescription.aux)
-(chapters/LearningObjectives.aux) (chapters/Plan.aux) (appendices/Acronyms.aux)
-(appendices/AnAppendix.aux))
+(frontmatter/Summary.aux) (chapters/ProjectDescription.aux) (chapters/Plan.aux)
+(appendices/Acronyms.aux) (appendices/AnAppendix.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2020/03/25>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 71D926FB0B9EEE1C8A3EF5440B302F67;1451.
+(rerunfilecheck)             Checksum: 24E69DEB15A6B0361A681093055F145D;1045.
 Package logreq Info: Writing requests to 'Thesis.run.xml'.
 \openout1 = `Thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 46407 strings out of 402982
- 914377 string characters out of 5448474
- 2021741 words of memory out of 5000000
- 74420 multiletter control sequences out of 15000+600000
+ 46474 strings out of 402982
+ 914700 string characters out of 5448474
+ 2019846 words of memory out of 5000000
+ 74491 multiletter control sequences out of 15000+600000
  655486 words of font info for 88 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 107i,12n,110p,1265b,6634s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 107i,12n,110p,1265b,6636s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Thesis.pdf (24 pages).
+Output written on Thesis.pdf (20 pages).
