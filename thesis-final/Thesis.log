@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  26 FEB 2026 23:35
+This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  27 FEB 2026 00:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1781,11 +1781,12 @@ Package csquotes Info: Adjusting default style.
 Package csquotes Info: Redefining alias 'default' -> 'american'.
  (Thesis.aux (prefrontmatter/colophon.aux) (frontmatter/Preface.aux)
 (frontmatter/Abstract.aux) (frontmatter/Acknowledgements.aux)
-(frontmatter/List_Tables_Figures.aux) (chapters/01_Introduction.aux)
-(chapters/02_Methodology.aux) (chapters/03_Implementation.aux)
-(chapters/04_Data.aux) (chapters/05_Results.aux) (chapters/06_Discussion.aux)
+(frontmatter/Acronyms.aux) (frontmatter/List_Figures_Tables.aux)
+(chapters/01_Introduction.aux) (chapters/02_Methodology.aux)
+(chapters/03_Implementation.aux) (chapters/04_Data.aux)
+(chapters/05_Results.aux) (chapters/06_Discussion.aux)
 (chapters/07_Conclusion.aux) (chapters/08_Future_Work.aux)
-(appendices/Acronyms.aux) (appendices/AnAppendix.aux))
+(appendices/AnAppendix.aux))
 \openout1 = `Thesis.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
@@ -2015,20 +2016,38 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <6> on input line 2.
  [7])
 [8]
-\openout2 = `frontmatter/List_Tables_Figures.aux'.
+\openout2 = `frontmatter/Acronyms.aux'.
 
- (frontmatter/List_Tables_Figures.tex) [9
+ (frontmatter/Acronyms.tex
+
+LaTeX Warning: Hyper reference `acro:PDR' on page ix undefined on input line 7.
 
 
-] [10
+
+LaTeX Warning: Hyper reference `acro:PDR' on page ix undefined on input line 7.
+
+
+) [9
+
+
+]
+\openout2 = `frontmatter/List_Figures_Tables.aux'.
+
+ (frontmatter/List_Figures_Tables.tex (Thesis.lof) [10
+
+
+
+]) (Thesis.lot)
+[11
+
+] [12
 
 
 
 ]
 \openout2 = `chapters/01_Introduction.aux'.
 
-
-(chapters/01_Introduction.tex
+ (chapters/01_Introduction.tex
 Chapter 1.
 LaTeX Font Info:    Font shape `TU/texgyreadventor(0)/m/n' will be
 (Font)              scaled to size 19.90407pt on input line 4.
@@ -2139,35 +2158,7 @@ Chapter 7.
 
 ]
 Chapter 8.
-) [19]
-\openout2 = `appendices/Acronyms.aux'.
-
- (appendices/Acronyms.tex [20
-
-
-
-
-]
-Appendix A.
-
-LaTeX Warning: Hyper reference `acro:PDR' on page 21 undefined on input line 7.
-
-
-
-LaTeX Warning: Hyper reference `acro:PDR' on page 21 undefined on input line 7.
-
-
-) [21]
-\openout2 = `appendices/AnAppendix.aux'.
-
- (appendices/AnAppendix.tex [22
-
-
-
-
-]
-Appendix B.
-) [23] [24
+) [19] [20
 
 
 
@@ -2177,43 +2168,60 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-Overfull \hbox (10.43555pt too wide) in paragraph at lines 57--57
+Overfull \hbox (10.43555pt too wide) in paragraph at lines 52--52
 [][]\TU/lmr/m/n/12 OpenCV Team (2024). \TU/lmr/m/it/12 OpenCV-Python Image Proc
 essing Tutorials\TU/lmr/m/n/12 . []$[][][][][] []
  []
 
-[25
-
-]
-Overfull \hbox (31.36484pt too wide) in paragraph at lines 57--57
+[21]
+Overfull \hbox (31.36484pt too wide) in paragraph at lines 52--52
 [][]\TU/lmr/m/n/12 Zhang, Chaoning et al. (2023). “  Faster Segment Anything: T
 owards Lightweight
  []
 
-[26]
+[22]
+\openout2 = `appendices/AnAppendix.aux'.
+
+ (appendices/AnAppendix.tex
+Appendix A.
+) [23
+
+
+
+] [24
+
+
+
+]
 File: graphics/DTU-frise-SH-15.pdf Graphic file (type pdf)
 <use graphics/DTU-frise-SH-15.pdf>
- [27
-
+ [25
 
 ]
 File: cover/Backpage.pdf Graphic file (type pdf)
 <use cover/Backpage.pdf, page 1>
 
 No complaints by nag.
-[28
+[26
 
 ]
 \tf@toc=\write7
 \openout7 = `Thesis.toc'.
 
+\tf@lof=\write8
+\openout8 = `Thesis.lof'.
+
+\tf@lot=\write9
+\openout9 = `Thesis.lot'.
+
  (Thesis.aux (prefrontmatter/colophon.aux) (frontmatter/Preface.aux)
 (frontmatter/Abstract.aux) (frontmatter/Acknowledgements.aux)
-(frontmatter/List_Tables_Figures.aux) (chapters/01_Introduction.aux)
-(chapters/02_Methodology.aux) (chapters/03_Implementation.aux)
-(chapters/04_Data.aux) (chapters/05_Results.aux) (chapters/06_Discussion.aux)
+(frontmatter/Acronyms.aux) (frontmatter/List_Figures_Tables.aux)
+(chapters/01_Introduction.aux) (chapters/02_Methodology.aux)
+(chapters/03_Implementation.aux) (chapters/04_Data.aux)
+(chapters/05_Results.aux) (chapters/06_Discussion.aux)
 (chapters/07_Conclusion.aux) (chapters/08_Future_Work.aux)
-(appendices/Acronyms.aux) (appendices/AnAppendix.aux))
+(appendices/AnAppendix.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2020/03/25>
@@ -2223,18 +2231,18 @@ L3 programming layer <2020/03/25>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: 3F4441E057C4BC1C2C977A68E1F34AA7;1537.
+(rerunfilecheck)             Checksum: CF19F91B22FFCBD470EBB4F66CBC72D3;1573.
 Package logreq Info: Writing requests to 'Thesis.run.xml'.
 \openout1 = `Thesis.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 46701 strings out of 402982
- 922762 string characters out of 5448474
- 2042798 words of memory out of 5000000
- 74666 multiletter control sequences out of 15000+600000
+ 46715 strings out of 402982
+ 922956 string characters out of 5448474
+ 2042850 words of memory out of 5000000
+ 74674 multiletter control sequences out of 15000+600000
  659063 words of font info for 87 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 107i,12n,110p,1247b,6684s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 107i,12n,110p,1247b,6678s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 Output written on Thesis.pdf (40 pages).
