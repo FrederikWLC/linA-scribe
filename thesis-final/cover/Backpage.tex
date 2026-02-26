@@ -1,0 +1,31 @@
+
+\documentclass[a4paper,twoside,11pt]{report} %openright
+\input{Setup/Statics.tex}
+\input{Setup/Preamble/General.tex}
+\input{Setup/Preamble/Fonts.tex}
+
+\input{Setup/Settings.tex}
+
+\begin{document}
+
+\newgeometry{left=14mm,right=28mm,top=42mm,bottom=14mm}
+\thispagestyle{empty}
+\pagecolor{frontbackcolor}
+\color{white}
+
+\blindtext % Remove this for a blank page or write your own text
+
+\vspace*{\fill}
+
+\begin{tabular}{@{}l}
+    Technical \\ 
+    University of \\ 
+    Denmark \\
+    \\
+    \addressI \\
+    \addressII \\
+    Tlf. 4525 1700 \\
+    \\
+    \url{\departmentwebsite}
+\end{tabular}
+\end{document}

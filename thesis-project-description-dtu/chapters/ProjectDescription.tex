@@ -5,7 +5,7 @@
 
 \section{Background}
 
-When the British archaeologist Arthur Evans in the beginning of the 20th century went to escavate Knossos on Crete, he found a huge amount of clay tablets written in a previously unknown linear script.
+When the British archaeologist Arthur Evans in the beginning of the 20th century went to excavate Knossos on Crete, he found a huge amount of clay tablets written in a previously unknown linear script.
 Some documents were clearly of a newer script, which he called \textit{Linear B}, while others were of an older one, which he named \textit{Linear A}.
 Some fifty years later, the British amateur archaeologist Michael Ventris finally succeeded in deciphering the newer script Linear B, which he proved to be representing Mycenaean Greek, the earliest attested form of Greek.
 But the same hypothesis did not hold for the older script Linear A, whose encoded language remained unknown, still yet to be deciphered.
@@ -31,8 +31,8 @@ can accelerate the workflow, while maintaining high-quality outputs that are sti
 
 \subsection{A problem of small data}
 The small size of the Linear A corpus and the irregularities in quality of its documents is a huge problem for the application of deep learning approaches, which typically require large amounts of data to perform well.
-Consequently, this project will instead seek to make use of generalized machine learning, in particular Meta's state-of-the-art interactive segmentation tool, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset of over 1 billion masks.
-\acs{SAM}'s generalization and interactivity (allowing user-placed points of additions and deletions that guide the model) might thus allow for semi-automatic annotation of Linear A inscriptions without the need for large amounts of training data, which is unfortunately not available in this context.\footnote{By the "interactivity" of \acs{SAM}, what is meant is NOT any built-in user interface in the form of a GUI, but rather the possibility of prompt-based placement of points of additions and deletions that guide the model's prediction.}
+Consequently, this project will instead seek to make use of generalized machine learning and computer vision, in particular Meta's state-of-the-art interactive segmentation tool, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset of over 1 billion masks.
+\acs{SAM}'s generalization and interactivity (allowing user-placed markers that guide the model) might thus allow for semi-automatic annotation of Linear A inscriptions without the need for large amounts of training data, which is unfortunately not available in this context.\footnote{By the "interactivity" of \acs{SAM}, what is meant is NOT any built-in user interface in the form of a GUI, but rather the possibility of prompt-based placement of rectangles of focus, and points of additions and deletions that guide the model's prediction.}
 
 \cleardoublepage
 
@@ -61,7 +61,7 @@ As for the relevant theory and state-of-the-art within computer vision, the lite
 and 3. related computer vision script segmentation work for comparison.
 
 For image processing, a general theory book \parencite{DigitalImageProcessing} can be cited, as well as more method-specific papers (when other methods are used) like Otsu thresholding \parencite{Otsu1979}, and of course the OpenCV Python documentation \parencite{opencv_imgproc_docs} for short implementation reference.
-Then, for \acs{SAM} are: its paper \parencite{sam}, its lighter implementation Mobile SAM \parencite{mobile_sam} - and the newest version of that one MobileSAMv2 \parencite{mobile_sam_v2}.
+Then, for \acs{SAM} are: its paper \parencite{sam}, its lighter implementation MobileSAM \parencite{mobile_sam} - and the newest version of that one MobileSAMv2 \parencite{mobile_sam_v2}.
 Lastly, for related segmentation work there exists a paper using deep learning (in contrast to the methodology of this thesis) obtaining results better than state-of-the-art \parencite{DeepLearningSegmentation}, and a lighter EU-funded historical document segmentation tool \textit{dhSegment} \parencite{dhsegment} also using deep learning.
 
 
@@ -70,8 +70,8 @@ As previously stated, the aim of this project is to investigate whether parts of
 More specifically, whether some kind of semi-automatic segmentation tool using generalized computer vision - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database.
 This is a problem that can be divided into the following three sub-tasks to be solved: 
 1. the pre-processing of original document images to make them suitable for \acs{SAM},
-2. the incorporation of \acs{SAM} into an interactive segmentation tool whose exports can be integrated into SigLA's workflow, and
-3. the quantitative evaluation of the tool's performance compared to baselines against metrics of  segmentation quality (before and after interaction).
+2. the incorporation of \acs{SAM} into a segmentation tool potentially with the possibility of optional user interaction whose exports can be integrated into SigLA's workflow, and
+3. the quantitative evaluation of the tool's performance compared to baselines against metrics of segmentation quality.
 
 \section{Empirical considerations}
 For the evaluation of the solution, a dataset will be compiled together with Ester Salgarella of at least 25 images of original 
@@ -79,19 +79,19 @@ documents from the corpus, selected and cropped from \acs{Cefael}.
 These images are subject to \acf{IPR} issues, and can thus not be displayed publicly if not through \acs{Cefael}.
 However, they can still be used for the development and evaluation of the tool (and can be bought if necessary for show-casing within the thesis).
 
-As ground truth, their corresponding digitized layered drawings, stored as Krita (.kra) files on SigLA (provided by Ester Salgarella) will be used and optimally aligned for comparison with tool outputs.
+As ground truth, their corresponding digitized layered drawings, stored as Krita (.kra) files on SigLA (provided by Ester Salgarella) will be used and aligned for comparison with tool outputs.
 The ground truth data might then have to be cleared of any marked 
 “deleted signs” or other annotation elements that our model is not intended to reproduce.
 
 The solution will then be built as a pipeline, consisting of
-pre-processing, initial segmentation, interactive segmentation, post-processing, and export (as Krita files).
-At last, the primary deliverable of this project will be delivered to the external partner and co-supervisor Ester Salgarella in the form of a semi-automatic annotation tool.
+pre-processing, segmentation, post-processing, and export (e.g. as Krita files).
+At last, the primary deliverable of this project will be delivered to the external partner and co-supervisor Ester Salgarella in the form of a proof-of-concept semi-automatic annotation tool.
 All supporting components, 
 including evaluation results, and analysis will be documented and presented in the written 
 thesis. 
 
 \section{Impact -- innovation and application}
 
-The work of this thesis will present itself as a first proof-of-concept for the use of computer vision to accelerate the expansion of the SigLA database, supporting the further digitization of the Linear A corpus. 
+The work of this thesis will present itself as a first proof-of-concept for the use of modern computer vision to accelerate the expansion of the SigLA database, supporting the further digitization of the Linear A corpus. 
 Its main contribution will be a semi-automatic annotation tool, which might prove useful to epigraphers for generating segmentations of original document images, as they can then be completed and refined more easily.
 Hopefully, it will inspire further research and development within the field of digital epigraphy, particularly in the application of generalized and interactive computer vision approaches such as \acs{SAM} on Linear A, and perhaps even in the broader context of use on small corpus ancient writing systems where the lack of big data is ill fit for approaches using deep learning.

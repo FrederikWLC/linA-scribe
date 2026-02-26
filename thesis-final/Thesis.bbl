@@ -1,0 +1,693 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global/global}
+    \entry{CNRLinearACorpus2025}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=0d0ff06ee62c814d387aa7587372a3b3}{%
+           family={{Consiglio Nazionale delle Ricerche}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{fullhash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{fullhashraw}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{bibnamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorbibnamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authornamehash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorfullhash}{0d0ff06ee62c814d387aa7587372a3b3}
+      \strng{authorfullhashraw}{0d0ff06ee62c814d387aa7587372a3b3}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{A Major Addition to the Linear A Corpus}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.cnr.it/en/news/13529/a-major-addition-to-the-linear-a-corpus
+      \endverb
+      \verb{url}
+      \verb https://www.cnr.it/en/news/13529/a-major-addition-to-the-linear-a-corpus
+      \endverb
+    \endentry
+    \entry{EtudesCretoises21}{book}{}{}
+      \name{editor}{2}{}{%
+        {{un=0,uniquepart=base,hash=74d0ef47da1978477459921883462e87}{%
+           family={Godart},
+           familyi={G\bibinitperiod},
+           given={Louis},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6545015f1fb0102e7dde06d7be970cae}{%
+           family={Olivier},
+           familyi={O\bibinitperiod},
+           given={Jean-Pierre},
+           giveni={J\bibinithyphendelim P\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Athènes}%
+      }
+      \list{publisher}{1}{%
+        {École française d’Athènes}%
+      }
+      \strng{namehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{fullhash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{fullhashraw}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{bibnamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorbibnamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editornamehash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorfullhash}{b1e39c309d6002c0c114b5565de067b0}
+      \strng{editorfullhashraw}{b1e39c309d6002c0c114b5565de067b0}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{editor}
+      \field{labeltitlesource}{title}
+      \field{note}{Five-volume corpus of Linear A inscriptions (GORILA I--V)}
+      \field{subtitle}{Recueil des inscriptions en linéaire A (GORILA)}
+      \field{title}{Études crétoises}
+      \field{volume}{21}
+      \field{year}{1976--1985}
+      \verb{urlraw}
+      \verb https://cefael.efa.gr/result.php?site_id=1&serie_id=EtCret
+      \endverb
+      \verb{url}
+      \verb https://cefael.efa.gr/result.php?site_id=1&serie_id=EtCret
+      \endverb
+    \endentry
+    \entry{DigitalImageProcessing}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=07713b8c79fe78ffaf9ab728a5f3ce88}{%
+           family={Gonzalez},
+           familyi={G\bibinitperiod},
+           given={Rafael\bibnamedelima C.},
+           giveni={R\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f7e4f4ce32d8e1ac04f7ee5eefcabe8f}{%
+           family={Woods},
+           familyi={W\bibinitperiod},
+           given={Richard\bibnamedelima E.},
+           giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {Pearson}%
+      }
+      \strng{namehash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{fullhash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{fullhashraw}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{bibnamehash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{authorbibnamehash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{authornamehash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{authorfullhash}{629c2754a63b62c1f205866b8ab085f9}
+      \strng{authorfullhashraw}{629c2754a63b62c1f205866b8ab085f9}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{4}
+      \field{isbn}{978-0133356724}
+      \field{title}{Digital Image Processing}
+      \field{year}{2018}
+      \verb{urlraw}
+      \verb https://www.cl72.org/090imagePLib/books/Gonzales,Woods-Digital.Image.Processing.4th.Edition.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cl72.org/090imagePLib/books/Gonzales,Woods-Digital.Image.Processing.4th.Edition.pdf
+      \endverb
+    \endentry
+    \entry{sam}{article}{}{}
+      \name{author}{12}{}{%
+        {{un=0,uniquepart=base,hash=28c5859f568975f174c8668976ed369d}{%
+           family={Kirillov},
+           familyi={K\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=190ac13c22d694c31877cdf31c0db652}{%
+           family={Mintun},
+           familyi={M\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=29e72fba9e2b3c5537682a7be7bc14e4}{%
+           family={Ravi},
+           familyi={R\bibinitperiod},
+           given={Nikhila},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=326137dec73ca7ba28f804a81dd26892}{%
+           family={Mao},
+           familyi={M\bibinitperiod},
+           given={Hanzi},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=026df7884d750eef80a162ac4d80a24d}{%
+           family={Rolland},
+           familyi={R\bibinitperiod},
+           given={Chloe},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=34706d6f5a4acd2ebc4ccdc87ff94abf}{%
+           family={Gustafson},
+           familyi={G\bibinitperiod},
+           given={Laura},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=67a93f2daf98d4f31676c25eda4c18e7}{%
+           family={Xiao},
+           familyi={X\bibinitperiod},
+           given={Tete},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=259dade43a9cc48bae8dab29de90785d}{%
+           family={Whitehead},
+           familyi={W\bibinitperiod},
+           given={Spencer},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=963e9b2526a7150c418b4e9e9d19a82f}{%
+           family={Berg},
+           familyi={B\bibinitperiod},
+           given={Alexander\bibnamedelima C.},
+           giveni={A\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ded9c87ea6ee89a4e33bfa0830f0231a}{%
+           family={Lo},
+           familyi={L\bibinitperiod},
+           given={Wan-Yen},
+           giveni={W\bibinithyphendelim Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ecd149fdcb3e0503881d49e545744c3d}{%
+           family={Dollár},
+           familyi={D\bibinitperiod},
+           given={Piotr},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bd5dadbe57bedc5957c19a3154c4d424}{%
+           family={Girshick},
+           familyi={G\bibinitperiod},
+           given={Ross},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ae3509cef74d700bc72e166cef519778}
+      \strng{fullhash}{35aa6f56cd021270d387680af0c2260a}
+      \strng{fullhashraw}{35aa6f56cd021270d387680af0c2260a}
+      \strng{bibnamehash}{ae3509cef74d700bc72e166cef519778}
+      \strng{authorbibnamehash}{ae3509cef74d700bc72e166cef519778}
+      \strng{authornamehash}{ae3509cef74d700bc72e166cef519778}
+      \strng{authorfullhash}{35aa6f56cd021270d387680af0c2260a}
+      \strng{authorfullhashraw}{35aa6f56cd021270d387680af0c2260a}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2304.02643}
+      \field{title}{Segment Anything}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://arxiv.org/pdf/2304.02643
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/pdf/2304.02643
+      \endverb
+    \endentry
+    \entry{dhsegment}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=cd98106740e05148d0d6324c1a3e7c89}{%
+           family={Oliveira},
+           familyi={O\bibinitperiod},
+           given={Saïd},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6c9efe1f68087e0541cc94c59aa0d464}{%
+           family={Seguin},
+           familyi={S\bibinitperiod},
+           given={Benoît},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=870a6bb41c4c7724f382dd342ea128dc}{%
+           family={Kaplan},
+           familyi={K\bibinitperiod},
+           given={Frédéric},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{fullhash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{fullhashraw}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{bibnamehash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{authorbibnamehash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{authornamehash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{authorfullhash}{d3d3c3380352f21e3b81023b1381aef6}
+      \strng{authorfullhashraw}{d3d3c3380352f21e3b81023b1381aef6}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:1804.10371}
+      \field{title}{dhSegment: A generic deep-learning approach for document segmentation}
+      \field{year}{2018}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/1804.10371
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/1804.10371
+      \endverb
+    \endentry
+    \entry{opencv_imgproc_docs}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=5bd3dfdc302c8d0660444d98cf3baa60}{%
+           family={{OpenCV Team}},
+           familyi={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{fullhash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{fullhashraw}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{bibnamehash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{authorbibnamehash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{authornamehash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{authorfullhash}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \strng{authorfullhashraw}{5bd3dfdc302c8d0660444d98cf3baa60}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.opencv.org/4.x/d2/d96/tutorial_py_table_of_contents_imgproc.html}}
+      \field{note}{Accessed February 2026}
+      \field{title}{OpenCV-Python Image Processing Tutorials}
+      \field{year}{2024}
+    \endentry
+    \entry{Otsu1979}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=4c9490b4888796e772e507d10bb89b3f}{%
+           family={Otsu},
+           familyi={O\bibinitperiod},
+           given={Nobuyuki},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{fullhash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{fullhashraw}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{bibnamehash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{authorbibnamehash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{authornamehash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{authorfullhash}{4c9490b4888796e772e507d10bb89b3f}
+      \strng{authorfullhashraw}{4c9490b4888796e772e507d10bb89b3f}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Systems, Man, and Cybernetics}
+      \field{number}{1}
+      \field{title}{A Threshold Selection Method from Gray-Level Histograms}
+      \field{volume}{9}
+      \field{year}{1979}
+      \field{pages}{62\bibrangedash 66}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1109/TSMC.1979.4310076
+      \endverb
+      \verb{urlraw}
+      \verb https://engineering.purdue.edu/kak/computervision/ECE661.08/OTSU_paper.pdf
+      \endverb
+      \verb{url}
+      \verb https://engineering.purdue.edu/kak/computervision/ECE661.08/OTSU_paper.pdf
+      \endverb
+    \endentry
+    \entry{SalgarellaCastellanSigLA2020}{report}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=64b8adbbd2c623ba571d127f8f24becc}{%
+           family={Salgarella},
+           familyi={S\bibinitperiod},
+           given={Ester},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=089bb43a1278884db548621724a37492}{%
+           family={Castellan},
+           familyi={C\bibinitperiod},
+           given={Simon},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{institution}{1}{%
+        {SigLA}%
+      }
+      \strng{namehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{fullhash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{fullhashraw}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{bibnamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorbibnamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authornamehash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorfullhash}{29187f2869433ad7ff12a126fa3daa0c}
+      \strng{authorfullhashraw}{29187f2869433ad7ff12a126fa3daa0c}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Accessed: 2026-02-04}
+      \field{title}{SigLA: The Signs of Linear A: a Palaeographical Database}
+      \field{type}{Research Paper / Technical Report}
+      \field{year}{2020}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/paper.pdf
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/paper.pdf
+      \endverb
+    \endentry
+    \entry{SigLAAboutPage}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=c1db38080e2fc8e4533b27aec8ab0264}{%
+           family={{SigLA}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{bibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorbibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authornamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \field{extraname}{1}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradate}{1}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{About SigLA}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/about.html
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/about.html
+      \endverb
+    \endentry
+    \entry{SigLASearchDocuments}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=c1db38080e2fc8e4533b27aec8ab0264}{%
+           family={{SigLA}},
+           familyi={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{fullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{bibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorbibnamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authornamehash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhash}{c1db38080e2fc8e4533b27aec8ab0264}
+      \strng{authorfullhashraw}{c1db38080e2fc8e4533b27aec8ab0264}
+      \field{extraname}{2}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradate}{2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{SigLA Document Search Interface}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sigla.phis.me/search-document.html
+      \endverb
+      \verb{url}
+      \verb https://sigla.phis.me/search-document.html
+      \endverb
+    \endentry
+    \entry{SteeleAegeanWriting2023}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=fb0b968018dcbf46b5622cd73bf98e6b}{%
+           family={Steele},
+           familyi={S\bibinitperiod},
+           given={Philippa\bibnamedelima M.},
+           giveni={P\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Oxford}%
+      }
+      \list{publisher}{1}{%
+        {Oxbow Books}%
+      }
+      \strng{namehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{fullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{fullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{bibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorbibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authornamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorfullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \strng{authorfullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{series}{Contexts of and Relations between Early Writing Systems}
+      \field{title}{Exploring Writing Systems and Practices in the Bronze Age Aegean}
+      \field{volume}{7}
+      \field{year}{2023}
+      \field{pages}{xiv}
+      \range{pages}{1}
+      \verb{urlraw}
+      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
+      \endverb
+      \verb{url}
+      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
+      \endverb
+    \endentry
+    \entry{mobile_sam}{article}{}{}
+      \name{author}{7}{}{%
+        {{un=1,uniquepart=given,hash=77f0a61ba401854fbe2b7df8736eb027}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Chaoning},
+           giveni={C\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=7a4eef6cf3355871710102871c99449a}{%
+           family={Han},
+           familyi={H\bibinitperiod},
+           given={Dongshen},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2addc56ce0ea3a8fc05ff9b0995f74f4}{%
+           family={Qiao},
+           familyi={Q\bibinitperiod},
+           given={Yu},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=90b8f38847a1128cf06f8af0d166c676}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jung\bibnamedelima Uk},
+           giveni={J\bibinitperiod\bibinitdelim U\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=5bfbcf48af7589ba2b4b23308789e5a0}{%
+           family={Bae},
+           familyi={B\bibinitperiod},
+           given={Sung-Ho},
+           giveni={S\bibinithyphendelim H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9feed55707aa8d11726b5ff7c7dff935}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Seungkyu},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1383f5ef4e6c3639dc82c6aa8af308d7}{%
+           family={Hong},
+           familyi={H\bibinitperiod},
+           given={Choong\bibnamedelima Seon},
+           giveni={C\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b2d6324b7e4b443e3930ae6ae0e7ad13}
+      \strng{fullhash}{32eb20e4a8403965e36ab3c0cba3da57}
+      \strng{fullhashraw}{32eb20e4a8403965e36ab3c0cba3da57}
+      \strng{bibnamehash}{b2d6324b7e4b443e3930ae6ae0e7ad13}
+      \strng{authorbibnamehash}{b2d6324b7e4b443e3930ae6ae0e7ad13}
+      \strng{authornamehash}{b2d6324b7e4b443e3930ae6ae0e7ad13}
+      \strng{authorfullhash}{32eb20e4a8403965e36ab3c0cba3da57}
+      \strng{authorfullhashraw}{32eb20e4a8403965e36ab3c0cba3da57}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2306.14289}
+      \field{title}{Faster Segment Anything: Towards Lightweight SAM for Mobile Applications}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://arxiv.org/pdf/2306.14289
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/pdf/2306.14289
+      \endverb
+    \endentry
+    \entry{DeepLearningSegmentation}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=1,uniquepart=given,hash=e894575928482651e4b5b7b26b35fd3e}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Pan},
+           giveni={P\bibinitperiod},
+           givenun=1}}%
+        {{un=0,uniquepart=base,hash=ad699cc0ff44aa8ef2a872dab8e20175}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Chao},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4c19afdda3e41152460376ce2108590c}{%
+           family={Sun},
+           familyi={S\bibinitperiod},
+           given={Yuanhua},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{fullhash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{fullhashraw}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{bibnamehash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{authorbibnamehash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{authornamehash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{authorfullhash}{b99f40732d01a3ee55d56b55ef8445fb}
+      \strng{authorfullhashraw}{b99f40732d01a3ee55d56b55ef8445fb}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Discover Applied Sciences}
+      \field{number}{10}
+      \field{title}{Stone Inscription Image Segmentation Based on Stacked-UNets and GANs}
+      \field{volume}{6}
+      \field{year}{2024}
+      \field{pages}{550}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1007/s42452-024-06264-8
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1007/s42452-024-06264-8
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1007/s42452-024-06264-8
+      \endverb
+    \endentry
+    \entry{mobile_sam_v2}{article}{}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=f79215132dad5094a6a084f1445d13ef}{%
+           family={Zhao},
+           familyi={Z\bibinitperiod},
+           given={Xu},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9abf48c0fc41e6cd5832fb70a538b14d}{%
+           family={Tang},
+           familyi={T\bibinitperiod},
+           given={Yang},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=f7e71ef5358c34ca1ea57e39d0f2c053}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Wenjing},
+           giveni={W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=cc39f0d03180551c2e4552ef7a78c8b9}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Xiaojie},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0133f3318ccae0951dfa800fda64bbdb}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Zhiwei},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{97c011fd189e2ba3767f1e3e56df425b}
+      \strng{fullhash}{a76a31add4aa9a2b212e2ba695a64d4c}
+      \strng{fullhashraw}{a76a31add4aa9a2b212e2ba695a64d4c}
+      \strng{bibnamehash}{97c011fd189e2ba3767f1e3e56df425b}
+      \strng{authorbibnamehash}{97c011fd189e2ba3767f1e3e56df425b}
+      \strng{authornamehash}{97c011fd189e2ba3767f1e3e56df425b}
+      \strng{authorfullhash}{a76a31add4aa9a2b212e2ba695a64d4c}
+      \strng{authorfullhashraw}{a76a31add4aa9a2b212e2ba695a64d4c}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2312.09579}
+      \field{title}{MobileSAMv2: Faster Segment Anything to Everything}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://arxiv.org/pdf/2312.09579
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/pdf/2312.09579
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

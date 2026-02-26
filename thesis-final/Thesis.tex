@@ -1,0 +1,66 @@
+\input{preamble/static}
+
+%!TEX TS-program = xelatex
+%!TEX root = ../Thesis.tex
+\RequirePackage[l2tabu,orthodox]{nag} % Old habits die hard
+
+\newcommand{\papersizeswitch}[3]{\ifnum\strcmp{\papersize}{#1}=0#2\else#3\fi}
+\papersizeswitch{a4paper}{\def\classfontsize{10pt}}{\def\classfontsize{12pt}}
+
+\documentclass[\classfontsize,\papersize,twoside,showtrims,extrafontsizes]{memoir}
+
+\input{preamble/general}
+\input{preamble/fonts}
+\input{preamble/etc}
+
+\addbibresource{bibliography/Bibliography.bib}
+
+\begin{document}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=center, inner sep=0pt] at (current page.center) {%
+        \includegraphics[page=1, width=\paperwidth, height=\paperheight]{cover/Frontpage.pdf}%
+    };
+\end{tikzpicture}
+
+\prefrontmatter
+\include{prefrontmatter/colophon}
+\clearforchapter
+
+\frontmatter
+\include{frontmatter/Preface}
+\include{frontmatter/Abstract}
+\include{frontmatter/Acknowledgements}
+\clearforchapter
+\tableofcontents
+\include{frontmatter/List_Tables_Figures}
+
+\clearforchapter
+\mylistoftodos
+\mainmatter
+\include{chapters/01_Introduction}
+\include{chapters/02_Methodology}
+\include{chapters/03_Implementation}
+\include{chapters/04_Data.tex}
+\include{chapters/05_Results.tex}
+\include{chapters/06_Discussion.tex}
+\include{chapters/07_Conclusion.tex}
+\include{chapters/08_Future_Work.tex}
+
+\appendix
+\include{appendices/Acronyms}
+\include{appendices/AnAppendix}
+
+
+\backmatter
+\printbibliography
+\clearforchapter
+\thispagestyle{empty}
+\cleartoleftpage
+\clearpage
+\begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=center, inner sep=0pt] at (current page.center) {%
+        \includegraphics[page=1, width=\paperwidth, height=\paperheight]{cover/Backpage.pdf}%
+    };
+\end{tikzpicture}
+\end{document}
