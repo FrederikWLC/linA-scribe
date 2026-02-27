@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  27 FEB 2026 19:04
+This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.1) (preloaded format=xelatex 2026.2.5)  27 FEB 2026 19:50
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -2030,9 +2030,9 @@ Underfull \vbox (badness 5217) has occurred while \output is active []
 
 ]
 Package acronym Info: Label `acro:IPR' newly defined as it shall be overridden
-although it is yet undefined on input line 79.
-)
-[4] [5]
+although it is yet undefined on input line 89.
+
+[4]) [5]
 \openout2 = `chapters/LearningObjectives.aux'.
 
  (chapters/LearningObjectives.tex [6
@@ -2137,7 +2137,7 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2020/03/25>
  ***********
 Package rerunfilecheck Info: File `Thesis.out' has not changed.
-(rerunfilecheck)             Checksum: C6E53AB0276DDCDB81C751169BD5193B;1119.
+(rerunfilecheck)             Checksum: 402C467F678CEA82E984C7554E6D3868;1193.
 Package logreq Info: Writing requests to 'Thesis.run.xml'.
 \openout1 = `Thesis.run.xml'.
 
@@ -2145,7 +2145,7 @@ Package logreq Info: Writing requests to 'Thesis.run.xml'.
 Here is how much of TeX's memory you used:
  46527 strings out of 402982
  916376 string characters out of 5448474
- 2021927 words of memory out of 5000000
+ 2022017 words of memory out of 5000000
  74537 multiletter control sequences out of 15000+600000
  655486 words of font info for 88 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191

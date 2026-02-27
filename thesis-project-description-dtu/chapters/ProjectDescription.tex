@@ -68,7 +68,17 @@ Lastly, for related segmentation work there exists a paper using deep learning (
 \section{Problem statement}
 As previously stated, the aim of this project is to investigate whether parts of the process of creating annotated drawings for SigLA can be automated.
 More specifically, whether some kind of semi-automatic segmentation tool using generalized computer vision - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database.
-This is a problem that can be divided into the following three sub-tasks to be solved: 
+For a decomposition of the problem statement into three research questions, see the following section.
+
+\section{Research questions}
+\begin{enumerate}
+\item How well does advanced state-of-the-art segmentation methods like \acs{SAM} perform compared to simple classical image processing methods?
+\item How much can be automated (clicks/interventions needed)?
+\item How much time can be saved (UI, compared to manual work)?
+\end{enumerate}
+advanced vs simple all the way through, quantitative evaluation
+
+A common operationality of those three is the combination of the following three generic steps:
 1. the pre-processing of original document images to make them suitable for \acs{SAM},
 2. the incorporation of \acs{SAM} into a segmentation tool potentially with the possibility of optional user interaction whose exports can be integrated into SigLA's workflow, and
 3. the quantitative evaluation of the tool's performance compared to baselines against metrics of segmentation quality.
