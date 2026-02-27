@@ -52,6 +52,77 @@
       \verb https://www.cnr.it/en/news/13529/a-major-addition-to-the-linear-a-corpus
       \endverb
     \endentry
+    \entry{RILA-S1}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=061b1a18fc633b4c0a22f23e7225bafa}{%
+           family={Del\bibnamedelima Freo},
+           familyi={D\bibinitperiod\bibinitdelim F\bibinitperiod},
+           given={Maurizio},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=045d677a8d10ec90d2fd027568f737be}{%
+           family={Zurbach},
+           familyi={Z\bibinitperiod},
+           given={Julien},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Athens}%
+      }
+      \list{publisher}{1}{%
+        {École française d’Athènes}%
+      }
+      \strng{namehash}{482202dde0ee50ffc603664aadd76886}
+      \strng{fullhash}{482202dde0ee50ffc603664aadd76886}
+      \strng{fullhashraw}{482202dde0ee50ffc603664aadd76886}
+      \strng{bibnamehash}{482202dde0ee50ffc603664aadd76886}
+      \strng{authorbibnamehash}{482202dde0ee50ffc603664aadd76886}
+      \strng{authornamehash}{482202dde0ee50ffc603664aadd76886}
+      \strng{authorfullhash}{482202dde0ee50ffc603664aadd76886}
+      \strng{authorfullhashraw}{482202dde0ee50ffc603664aadd76886}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Recueil des inscriptions en linéaire A. Supplément 1 (RILA-S1)}
+      \field{year}{2025}
+    \endentry
+    \entry{GELOs}{online}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=4ab40e71b4553c72872af30873fb9019}{%
+           family={{DTU}},
+           familyi={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{fullhash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{fullhashraw}{4ab40e71b4553c72872af30873fb9019}
+      \strng{bibnamehash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{authorbibnamehash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{authornamehash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{authorfullhash}{4ab40e71b4553c72872af30873fb9019}
+      \strng{authorfullhashraw}{4ab40e71b4553c72872af30873fb9019}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Programme Specification (BSc General Engineering)}
+      \field{urlday}{4}
+      \field{urlmonth}{2}
+      \field{urlyear}{2026}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://student.dtu.dk/en/programme-specifications/bachelor-of-science-in-engineering/general-engineering/programme-specification
+      \endverb
+      \verb{url}
+      \verb https://student.dtu.dk/en/programme-specifications/bachelor-of-science-in-engineering/general-engineering/programme-specification
+      \endverb
+    \endentry
     \entry{EtudesCretoises21}{bookseries}{}{}
       \name{editor}{2}{}{%
         {{un=0,uniquepart=base,hash=74d0ef47da1978477459921883462e87}{%
@@ -354,6 +425,72 @@
       \verb https://engineering.purdue.edu/kak/computervision/ECE661.08/OTSU_paper.pdf
       \endverb
     \endentry
+    \entry{Salgarella2020}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=64b8adbbd2c623ba571d127f8f24becc}{%
+           family={Salgarella},
+           familyi={S\bibinitperiod},
+           given={Ester},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Cambridge}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{fullhash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{fullhashraw}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{bibnamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorbibnamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authornamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorfullhash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorfullhashraw}{64b8adbbd2c623ba571d127f8f24becc}
+      \field{extraname}{1}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Aegean Linear Script(s): Rethinking the Relationship Between Linear A and Linear B}
+      \field{year}{2020}
+    \endentry
+    \entry{Salgarella2025}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=64b8adbbd2c623ba571d127f8f24becc}{%
+           family={Salgarella},
+           familyi={S\bibinitperiod},
+           given={Ester},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Cambridge}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{fullhash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{fullhashraw}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{bibnamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorbibnamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authornamehash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorfullhash}{64b8adbbd2c623ba571d127f8f24becc}
+      \strng{authorfullhashraw}{64b8adbbd2c623ba571d127f8f24becc}
+      \field{extraname}{2}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Writing in Bronze Age Crete: {‘Minoan’ Linear A}}
+      \field{year}{2025}
+    \endentry
     \entry{SalgarellaCastellanSigLA2020}{report}{}{}
       \name{author}{2}{}{%
         {{un=0,uniquepart=base,hash=64b8adbbd2c623ba571d127f8f24becc}{%
@@ -465,48 +602,6 @@
       \endverb
       \verb{url}
       \verb https://sigla.phis.me/search-document.html
-      \endverb
-    \endentry
-    \entry{SteeleAegeanWriting2023}{book}{}{}
-      \name{author}{1}{}{%
-        {{un=0,uniquepart=base,hash=fb0b968018dcbf46b5622cd73bf98e6b}{%
-           family={Steele},
-           familyi={S\bibinitperiod},
-           given={Philippa\bibnamedelima M.},
-           giveni={P\bibinitperiod\bibinitdelim M\bibinitperiod},
-           givenun=0}}%
-      }
-      \list{location}{1}{%
-        {Oxford}%
-      }
-      \list{publisher}{1}{%
-        {Oxbow Books}%
-      }
-      \strng{namehash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{fullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{fullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{bibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{authorbibnamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{authornamehash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{authorfullhash}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \strng{authorfullhashraw}{fb0b968018dcbf46b5622cd73bf98e6b}
-      \field{sortinit}{S}
-      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{series}{Contexts of and Relations between Early Writing Systems}
-      \field{title}{Exploring Writing Systems and Practices in the Bronze Age Aegean}
-      \field{volume}{7}
-      \field{year}{2023}
-      \field{pages}{xiv}
-      \range{pages}{1}
-      \verb{urlraw}
-      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
-      \endverb
-      \verb{url}
-      \verb https://crewsproject.wordpress.com/wp-content/uploads/2023/10/steele-2023.pdf
       \endverb
     \endentry
     \entry{mobile_sam}{article}{}{}
