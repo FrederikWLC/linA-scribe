@@ -95,39 +95,48 @@
 % -------------------------
 % Analysis of problem domain
 % -------------------------
-\ganttgroup[group/.append style={fill=green}]{Analysis of problem domain (14 weeks)}{2026-02-02}{2026-05-10}\\
-\ganttgreenbar[name=litreview]{Literature review (2 weeks)}{2026-02-02}{2026-02-15}\\
-\ganttgreenbar[name=datacharacterization]{Data characterization (2 weeks)}{2026-02-16}{2026-03-01}\\
-\ganttgreenbar[name=segmentation]{Segmentation + preprocessing review (6 weeks)}{2026-02-16}{2026-03-29}\\
-\ganttgreenbar[name=annotation]{Annotation workflow analysis (4 weeks)}{2026-03-23}{2026-04-19}\\
-\ganttgreenbar[name=groundtruth]{Ground truth + evaluation assessment (4 weeks)}{2026-04-13}{2026-05-10}\\
+\ganttgroup[group/.append style={fill=green}]{\underline{Analysis of problem domain (14 weeks)}}{2026-02-02}{2026-05-10}\\
+\ganttgreenbar[name=litreview]{Literature review (4 weeks)}{2026-02-02}{2026-03-01}\\
+\ganttgreenbar[name=datacharacterization]{Data characterization (2 weeks)}{2026-03-02}{2026-03-15}\\
+\ganttgreenbar[name=segmentation]{Segmentation + preprocessing review (4 weeks)}{2026-03-02}{2026-03-29}\\
+\ganttgreenbar[name=groundtruth]{Ground truth + evaluation assessment (3 weeks)}{2026-03-16}{2026-04-05}\\
+\ganttgreenbar[name=SAMprompt]{Study of SAM prompting behavior (2 weeks)}{2026-04-06}{2026-04-19}\\
+\ganttgreenbar[name=clickexperimentdefinition]{Definition of interaction–quality evaluation (2 weeks)}{2026-04-13}{2026-04-26}\\
+\ganttgreenbar[name=annotationworkflow]{Annotation workflow analysis (2 weeks)}{2026-04-27}{2026-05-10}\\
+\ganttgreenbar[name=timestudyeval]{Definition of workflow efficiency evaluation (2 weeks)}{2026-04-27}{2026-05-10}\\[grid]
 
 % -------------------------
 % Project definition phase
 % -------------------------
-\ganttgroup[group/.append style={fill=orange}]{Project definition (2 weeks)}{2026-02-02}{2026-02-15}\\
-\ganttorangebar[name=pdr]{Project definition report (2 weeks)}{2026-02-02}{2026-02-15}\\
-\ganttorangebar[name=gc]{Gantt chart (2 weeks)}{2026-02-02}{2026-02-15}\\[grid]
+\ganttgroup[group/.append style={fill=orange}]{\underline{Project definition (4 weeks)}}{2026-02-02}{2026-03-01}\\
+\ganttorangebar[name=pdr]{Project definition report (4 weeks)}{2026-02-02}{2026-03-01}\\
+\ganttorangebar[name=gc]{Gantt chart (4 weeks)}{2026-02-02}{2026-03-01}\\[grid]
 
 
 % -------------------------
 % Implementation phase
 % -------------------------
-\ganttgroup[group/.append style={fill=blue}]{Pipeline development (14 weeks)}{2026-02-16}{2026-05-24}\\
-\ganttbluebar[name=prep]{Image preprocessing (4 weeks)}{2026-02-16}{2026-03-15}\\
-\ganttbluebar[name=sam]{SAM-based segmentation prototype (4 weeks)}{2026-03-02}{2026-03-29}\\
-\ganttbluebar[name=export]{Export formats + tooling (4 weeks)}{2026-03-23}{2026-04-19}\\[grid]
-\ganttbluebar[name=eval]{Evaluation metrics (4 weeks)}{2026-04-13}{2026-05-10}\\
-\ganttbluebar[name=refinement]{Final refinement (2 weeks)}{2026-05-11}{2026-05-24}\\
+\ganttgroup[group/.append style={fill=blue}]{\underline{Pipeline development (11 weeks)}}{2026-03-02}{2026-05-17}\\
+\ganttgroup[group/.append style={fill=blue!35}]{RQ1: Segmentation performance (5 weeks)}{2026-03-02}{2026-04-05}\\
+\ganttbluebar[name=prep]{Image preprocessing (2 weeks)}{2026-03-02}{2026-03-15}\\
+\ganttbluebar[name=sam]{SAM-based segmentation prototype (3 weeks)}{2026-03-09}{2026-03-29}\\
+\ganttbluebar[name=export]{Ground truth extraction + evaluation metrics (3 weeks)}{2026-03-16}{2026-04-05}\\[grid]
+\ganttgroup[group/.append style={fill=blue!35}]{RQ2: Degree of automation (3 weeks)}{2026-04-06}{2026-04-26}\\
+\ganttbluebar[name=interactivity]{Interactive tooling with clicks (2 weeks)}{2026-04-06}{2026-04-19}\\
+\ganttbluebar[name=clickexperiment]{Click-quality experiment + analysis (2 weeks)}{2026-04-13}{2026-04-26}\\
+\ganttgroup[group/.append style={fill=blue!35}]{RQ3: Workflow efficiency (3 weeks)}{2026-04-27}{2026-05-17}\\
+\ganttbluebar[name=stabilization]{Tool stabilization + SigLA-ready export (2 weeks)}{2026-04-27}{2026-05-10}\\
+\ganttbluebar[name=timestudydesign]{Design of time study [manual vs tool-assisted] (2 weeks)}{2026-04-27}{2026-05-10}\\
+\ganttbluebar[name=timestudyexec]{Execution of time study with Dr. Salgarella (1 week)}{2026-05-11}{2026-05-17}\\
 
 % -------------------------
 % Writing
 % -------------------------
-\ganttgroup[group/.append style={fill=red}]{Thesis writing (18 weeks)}{2026-02-02}{2026-06-07}\\
+\ganttgroup[group/.append style={fill=red}]{\underline{Thesis writing (18 weeks)}}{2026-02-02}{2026-06-07}\\
 \ganttredbar[name=intro]{Introduction Chapter (4 weeks)}{2026-02-02}{2026-03-01}\\
-\ganttredbar[name=methdataimpl]{Method. + Data + Implement. Chapters (9 weeks)}{2026-02-16}{2026-04-19}\\
-\ganttredbar[name=resultsdiscussion]{Results + Discussion Chapters (4 weeks)}{2026-04-13}{2026-05-10}\\
-\ganttredbar[name=conclusion]{Conclusion Chapter + revision (2 weeks)}{2026-05-11}{2026-05-24}\\
+\ganttredbar[name=methdataimpl]{Method. + Data + Implement. Chapters (11 weeks)}{2026-03-02}{2026-05-17}\\
+\ganttredbar[name=resultsdiscussion]{Results + Discussion Chapters (8 weeks)}{2026-03-30}{2026-05-24}\\
+\ganttredbar[name=conclusion]{Conclusion Chapter + revision (3 weeks)}{2026-05-11}{2026-05-31}\\
 \ganttredbar[name=final]{Final revision + thesis submission (2 weeks)}{2026-05-25}{2026-06-07}\\
 
 % -------------------------
@@ -135,14 +144,14 @@
 % -------------------------
 \ganttgroup[
   group/.append style={fill=black}
-]{Planned travel / limited availability (3 weeks)}{2026-02-13}{2026-02-28}\\
+]{\underline{Planned travel / limited availability (3 weeks)}}{2026-02-13}{2026-02-26}\\
 
 \ganttgroup[
   group/.append style={fill=black},
   group label text={}
-]{ }{2026-03-14}{2026-03-20}\\\
-\ganttblackbar[name=travel1]{Travel 1 (2 weeks)}{2026-02-13}{2026-02-28}\\
-\ganttblackbar[name=travel3]{Travel 2 (1 week)}{2026-03-14}{2026-03-20}\\
+]{ }{2026-03-14}{2026-03-20}\\
+\ganttblackbar[name=travel1]{Travel 1 (2 weeks)}{2026-02-13}{2026-02-26}\\
+\ganttblackbar[name=travel2]{Travel 2 (1 week)}{2026-03-14}{2026-03-20}\\
 % -------------------------
 % Dependencies (these must reference existing names)
 % -------------------------
