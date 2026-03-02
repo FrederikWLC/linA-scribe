@@ -29,3 +29,11 @@ src/__pycache__
 *.fdb_latexmk
 *.fls
 *.synctex*
+*.out
+*.bcf
+*.bbl-SAVE-ERROR
+*.bbl
+*.blg
+*.lof
+*.lot
+*.toc
