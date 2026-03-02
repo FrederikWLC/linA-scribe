@@ -6,17 +6,18 @@ import numpy as np
 import torch 
 import cv2
 
-if config.SAM_BACKEND == "mobile":
-    from mobile_sam import sam_model_registry, SamPredictor
-else:
-    from segment_anything import sam_model_registry, SamPredictor
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 class Scribe:
 
     def __init__(self):
+        
+        if config.SAM_BACKEND == "mobile":
+            from mobile_sam import sam_model_registry, SamPredictor
+        else:
+            from segment_anything import sam_model_registry, SamPredictor
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
         sam = sam_model_registry[config.SAM_MODEL_TYPE](
             checkpoint=str(config.SAM_CHECKPOINT_PATH)
         )

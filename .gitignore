@@ -24,8 +24,8 @@ src/__pycache__
 */__pycache__
 
 # LaTeX build artifacts
-thesis/*.aux
-thesis/*.log
-thesis/*.fdb_latexmk
-thesis/*.fls
-thesis/*.synctex*
+*.aux
+*.log
+*.fdb_latexmk
+*.fls
+*.synctex*

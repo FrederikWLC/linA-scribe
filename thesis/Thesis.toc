@@ -1,0 +1,60 @@
+\xpg@aux {}{english}
+\contentsline {chapter}{Preface}{i}{chapter*.2}%
+\contentsline {chapter}{Abstract}{iii}{chapter*.4}%
+\contentsline {chapter}{Acknowledgements}{v}{chapter*.6}%
+\contentsline {chapter}{Contents}{vii}{section*.7}%
+\contentsline {chapter}{Acronyms}{ix}{chapter*.10}%
+\contentsline {chapter}{List of Figures}{x}{chapter*.11}%
+\contentsline {chapter}{List of Tables}{xi}{chapter*.12}%
+\contentsline {chapter}{\chapternumberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}A problem of manual digitization}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}A problem of small data}{2}{subsection.1.1.2}%
+\contentsline {section}{\numberline {1.2}Prior work / Literature review}{3}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Research context}{3}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Computer vision literature}{4}{subsection.1.2.2}%
+\contentsline {section}{\numberline {1.3}Problem statement}{4}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Empirical considerations}{5}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Impact -- innovation and application}{5}{section.1.5}%
+\contentsline {chapter}{\chapternumberline {2}Methodology}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Common methodology}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Segmentation quality}{8}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Baseline model configuration}{8}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}State-of-the-art model configuration}{8}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Evaluation protocol and performance metrics}{8}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Interactive semi-automation}{8}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Interactive tool architecture}{8}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Experimental design for automation evaluation}{8}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Definition of automation metrics}{8}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}Workflow efficiency}{8}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Definition of workflow efficiency metrics}{8}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Experimental design of the user study}{8}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Analysis of results}{8}{subsection.2.4.3}%
+\contentsline {chapter}{\chapternumberline {3}Data}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Data sources}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Dataset construction}{9}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Ground truth definition}{9}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Dataset characteristics}{9}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Difficulty stratification}{9}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Dataset limitations and biases}{9}{section.3.6}%
+\contentsline {chapter}{\chapternumberline {4}Results}{11}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Segmentation performance}{11}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Automation evaluation}{11}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Workflow efficiency evaluation}{11}{section.4.3}%
+\contentsline {chapter}{\chapternumberline {5}Discussion}{13}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Segmentation ability}{13}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Automation and interactivity}{13}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Workflow impact}{13}{section.5.3}%
+\contentsline {chapter}{\chapternumberline {6}Conclusion}{15}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Summary of findings per research question}{15}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}RQ1: Segmentation performance}{15}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}RQ2: Degree of automation}{15}{subsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.1.3}RQ3: Workflow efficiency}{15}{subsection.6.1.3}%
+\contentsline {section}{\numberline {6.2}Overall contribution}{15}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Final remarks}{15}{section.6.3}%
+\contentsline {chapter}{\chapternumberline {7}Future Work}{17}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Methodological extensions}{17}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Dataset expansion and diversification}{17}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Further automation opportunities}{17}{section.7.3}%
+\contentsline {chapter}{Bibliography}{19}{section*.18}%
+\contentsline {appendix}{\chapternumberline {A}An Appendix}{21}{appendix.A}%
