@@ -2,9 +2,8 @@ import cv2
 from model.baselines import *
 
 baselines = [
-    BilateralGaussian(),
     CannyFill(),
-    GaussianThreshold(),
+    Gaussian(),
     Otsu(),
     Watershed(),
     GrabCut()]

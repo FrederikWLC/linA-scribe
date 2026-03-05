@@ -9,7 +9,7 @@ class GrabCut(Scribe):
         self.fg_pct = fg_pct
         self.bg_pct = bg_pct
 
-    def scribe(self, image):
+    def segment(self, image):
         
         gray = image
         bgr = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
@@ -44,3 +44,6 @@ class GrabCut(Scribe):
 
         out = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
         return cv2.bitwise_not(out)
+    
+    def preprocess(self, image):
+        return cv2.medianBlur(image, 3)

@@ -6,7 +6,7 @@ class Watershed(Scribe):
     def __init__(self):
         pass
 
-    def scribe(self, image):
+    def segment(self, image):
 
         # Convert to uint8 if needed
         if image.dtype != np.uint8:
@@ -34,3 +34,6 @@ class Watershed(Scribe):
         ink = cv2.dilate(ink, kernel, iterations=3)  
         mask = cv2.bitwise_not(ink)  # back to original convention
         return mask
+    
+    def preprocess(self, image):
+        return cv2.medianBlur(image, 3)

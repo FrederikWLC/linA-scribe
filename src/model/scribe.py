@@ -1,61 +1,19 @@
-from config import config
-from pathlib import Path
-from utils import Mask, Image
-from utils.auto_prompts import auto_boxes
+import cv2
+from utils import Image
 import numpy as np
-import torch 
 from model.evaluator import Evaluator
 
 
-class Scribe(Evaluator):
+class Scribe(Evaluator): # the abstract base class for all "scribe" models.
 
-    def __init__(self):
+    def scribe(self, image: Image | np.ndarray) -> np.ndarray:
+        return self.segment(self.preprocess(image))
+
+    def segment(self, image: Image | np.ndarray) -> np.ndarray: # raw segmentation
+        raise NotImplementedError("Subclasses must implement the segment method.")
+    
+    def preprocess(self, image: Image | np.ndarray) -> np.ndarray: # must be implemented by subclass, default is no preprocessing
+        return image
+
+
         
-        if config.SAM_BACKEND == "mobile":
-            from mobile_sam import sam_model_registry, SamPredictor
-        else:
-            from segment_anything import sam_model_registry, SamPredictor
-
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        sam = sam_model_registry[config.SAM_MODEL_TYPE](
-            checkpoint=str(config.SAM_CHECKPOINT_PATH)
-        )
-        sam.to(device)
-        self.predictor = SamPredictor(sam)
-
-    def generate_masks(
-        self,
-        image: Image | np.ndarray,
-        box: list[int] | tuple[int, int, int, int] = None,
-        points: list[list[int]] = None,
-        labels: list[int] = None
-    ) -> list[dict]:
-
-        image = Image(image)
-        
-        self.predictor.set_image(image)
-
-        masks, scores, logits = self.predictor.predict(
-            box=box,
-            point_coords=points,
-            point_labels=labels,
-            multimask_output=False
-        )
-
-        return [
-            Mask(
-                mask=m,
-                score=float(s),
-                logit=l,
-                source_image=image
-            )
-            for m, s, l in zip(masks, scores, logits)
-        ]
-
-    def scribe(self, image: Image | np.ndarray):
-        boxes = auto_boxes(image)
-        all_masks = []
-        for box in boxes:
-            all_masks.append(self.generate_masks(image,box))
-        return np.concatenate(all_masks).tolist()

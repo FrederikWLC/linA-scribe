@@ -5,9 +5,6 @@ from torchmetrics.classification import (
 import cv2
 import numpy as np
 
-# yhat, y: (H, W) with values {0,1} (int/long)
-
-
 class Evaluator:
 
     def evaluate(self, X: list, Y: list, tolerance=0):
