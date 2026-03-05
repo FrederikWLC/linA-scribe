@@ -1,24 +1,96 @@
 \chapter{Methodology}
 \section{Common methodology}
-\begin{itemize}
-    \item Data assumptions (brief reference to Data chapter)
-    \item Preprocessing pipeline
-    \item General evaluation metrics (IoU, Dice, etc.)
-    \item Experimental conventions
-\end{itemize}
 
+\subsection{Image processing theory}
+\subsubsection{Spatial filtering}
+
+The basics of spatial filtering can be described by the following equation:
+$$ g(x,y) = T[f(x,y)] $$
+, where $f(x,y)$ (also denoted as $I(x,y)$) is the input image, $g(x,y)$ is the output image.\footcite[p.~120]{DigitalImageProcessing}
+
+Convolution is then defined as \footcite[p.~157]{DigitalImageProcessing}:
+$$(w * f)(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) f(x-s, y-t) $$,
+where $w(s,t)$ is the convolution kernel, and $a$ and $b$ are the kernel's half-width and half-height, respectively.
+\subsection{Development environment and tools}
+Python 3.10 was used for all code development, with the following libraries:
+\begin{itemize}
+    \item OpenCV for image processing and computer vision tasks.
+    \item NumPy for numerical operations and array manipulations.
+    \item Matplotlib for data visualization.
+    \item \textit{Add more!}
+\end{itemize}
+\subsection{Data assumptions (brief reference to Data chapter)}
+\subsection{General evaluation metrics}
+\subsection{Experimental conventions}
 
 \section{Segmentation quality}
+The segmentation quality of the tool will be evaluated against a set of baseline models, using a variety of performance metrics.
+In this section, the configuration of the baseline models, the model to be used by the tool, and the evaluation protocol are described in detail.
+
+\noindent\note{Add some context of RQ1 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+
 \subsection{Baseline model configuration}
+The basline models against which the tool will be evaluated against (from simplest to most advanced) are:
+\begin{itemize}
+    \item Otsu's method
+    \item Gaussian adaptive thresholding
+    \item Canny edge detection with morphological filling
+    \item Watershed-based seeded segmentation
+    \item Grabcut-based seeded segmentation
+\end{itemize}
+What follows is a brief description of each of these methods, including their characteristis, how they work, and their implementation details.
+\subsubsection{Otsu's method}
+This is a simple global thresholding  method from gray-level histograms originally proposed by \textcite{Otsu1979}.
+As the simplest of the baselines, it represents the minimum acceptable segmentation quality, only taking the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
+It might therefore perform poorly on images with erosion, uneven lighting, and differences in surface texture, which are the exact characteristics of the Linear A inscriptions to be segmented.\footcite[p.~751]{DigitalImageProcessing}
+
+Here is how it works:
+First, let pixels of the raw image be divided into $L$ shades of gray $[1,2,...,L]$.
+Then, let each pixel be assigned one of two classes $C_0$ or $C_1$, guided by a threshold $k$,
+ where $C_0$ contains the shades $[1,2,...,k]$, and $C_1$ contains the rest $[k+1,k+2,...,L]$.
+Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $k^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
+$$ k^{*} = \underset{1 \leq k < L}{\arg \max} ~ \sigma^2_B(k) $$
+The between-class variance $\sigma^2_B$ can then be defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean shade values per class ($\mu_0$ and $\mu_1$):
+ $$ \sigma^2_B(k) = \omega_0(k) \omega_1(k) [\mu_1(k)-\mu_0(k)]^2$$
+
+\noindent For the implementation of Otsu's method in OpenCV, used are 
+\begin{itemize}
+    \item \texttt{cv2.THRESH\_OTSU} for the thresholding type, and
+    \item \texttt{cv2.THRESH\_BINARY} for the thresholding method.
+\end{itemize}
+
+\subsubsection{Gaussian adaptive thresholding}
+For this method, the threshold is not global, but rather computed for each pixel based on the local neighborhood.
+$$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
+, where $G_{\sigma}$ is the Gaussian kernel, $I$ is the input image, $*$ is the convolution operater, and $C$ is a constant subtracted from the mean to fine-tune the thresholding.
+
+Here, 
+$$(G_{\sigma} * I)(x,y) = \sum_{u=-k}^{k} \sum_{v=-k}^{k} G_{\sigma}(u,v) I(x-u, y-v) $$
+, where $k$ is the kernel size, and $G_{\sigma}(u,v)$ - the value of the Gaussian kernel at position $(u,v)$ - can be defined as:
+$$ G_{\sigma}(u,v) = \frac{1}{2\pi\sigma^2} \exp \left(-\frac{u^2 + v^2}{2\sigma^2}\right) $$
+
+For its implementation, used are \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C}, and \texttt{cv2.THRESH\_BINARY} from OpenCV, respectively.
+\subsubsection{Canny edge detection with morphological filling}
+\subsubsection{Watershed-based seeded segmentation}
+\subsubsection{Grabcut-based seeded segmentation}
+
 \subsection{State-of-the-art model configuration}
+\subsubsection{Model architecture}
+\subsubsection{Model seeds and preprocessing}
+
 \subsection{Evaluation protocol and performance metrics}
+$$ IoU = \frac{TP}{TP + FP + FN} $$
 
 \section{Interactive semi-automation}
+\noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+
 \subsection{Interactive tool architecture}
 \subsection{Experimental design for automation evaluation}
 \subsection{Definition of automation metrics}
 
 \section{Workflow efficiency}
+\noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+
 \subsection{Definition of workflow efficiency metrics}
 \subsection{Experimental design of the user study}
 \subsection{Analysis of results}

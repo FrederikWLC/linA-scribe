@@ -4,10 +4,10 @@ from utils import Mask, Image
 from utils.auto_prompts import auto_boxes
 import numpy as np
 import torch 
-import cv2
+from model.evaluator import Evaluator
 
 
-class Scribe:
+class Scribe(Evaluator):
 
     def __init__(self):
         

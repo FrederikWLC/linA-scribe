@@ -14,7 +14,6 @@ class CannyFill(Scribe):
         return lower, upper
 
     def scribe(self, image):
-        # ensure grayscale uint8
         if image.ndim == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         if image.dtype != np.uint8:
@@ -25,6 +24,5 @@ class CannyFill(Scribe):
         edges = cv2.Canny(image, low, high)
 
         kernel = np.ones((self.kernel_size, self.kernel_size), np.uint8)
-        filled = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
-
+        filled = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=1)
         return cv2.bitwise_not(filled)
