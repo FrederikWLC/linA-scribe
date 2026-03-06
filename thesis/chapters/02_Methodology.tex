@@ -30,16 +30,16 @@ In this section, the configuration of the baseline models, the model to be used 
 \noindent\note{Add some context of RQ1 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
 \subsection{Baseline model configuration}
-The basline models against which the tool will be evaluated against (from simplest to most advanced) are:
+The baseline models against which the tool will be evaluated (from simplest to most advanced) are:
 \begin{itemize}
-    \item Otsu's method
-    \item Gaussian adaptive thresholding
-    \item Canny edge detection with morphological filling
-    \item Watershed-based seeded segmentation
-    \item Grabcut-based seeded segmentation
+    \item Global thresholding (Otsu's method)
+    \item Local adaptive thresholding (Gaussian)
+    \item Edge-based segmentation (Canny edge detection with region filling)
+    \item Topographic segmentation (Watershed)
+    \item Energy-based segmentation (GrabCut)
 \end{itemize}
 What follows is a brief description of each of these methods, including their characteristis, how they work, and their implementation details.
-\subsubsection{Otsu's method}
+\subsubsection{Global thresholding (Otsu's method)}
 This is a simple global thresholding  method from gray-level histograms originally proposed by \textcite{Otsu1979}.
 As the simplest of the baselines, it represents the minimum acceptable segmentation quality, only taking the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
 It might therefore perform poorly on images with erosion, uneven lighting, and differences in surface texture, which are the exact characteristics of the Linear A inscriptions to be segmented.\footcite[p.~751]{DigitalImageProcessing}
@@ -59,7 +59,7 @@ The between-class variance $\sigma^2_B$ can then be defined by a function of the
     \item \texttt{cv2.THRESH\_BINARY} for the thresholding method.
 \end{itemize}
 
-\subsubsection{Gaussian adaptive thresholding}
+\subsubsection{Local adaptive thresholding (Gaussian)}
 For this method, the threshold is not global, but rather computed for each pixel based on the local neighborhood.
 $$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
 , where $G_{\sigma}$ is the Gaussian kernel, $I$ is the input image, $*$ is the convolution operater, and $C$ is a constant subtracted from the mean to fine-tune the thresholding.
@@ -70,9 +70,13 @@ $$(G_{\sigma} * I)(x,y) = \sum_{u=-k}^{k} \sum_{v=-k}^{k} G_{\sigma}(u,v) I(x-u,
 $$ G_{\sigma}(u,v) = \frac{1}{2\pi\sigma^2} \exp \left(-\frac{u^2 + v^2}{2\sigma^2}\right) $$
 
 For its implementation, used are \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C}, and \texttt{cv2.THRESH\_BINARY} from OpenCV, respectively.
-\subsubsection{Canny edge detection with morphological filling}
-\subsubsection{Watershed-based seeded segmentation}
-\subsubsection{Grabcut-based seeded segmentation}
+
+\subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
+
+\subsubsection{Topographic segmentation (Watershed)}
+
+\subsubsection{Energy-based segmentation (GrabCut)}
+
 
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}

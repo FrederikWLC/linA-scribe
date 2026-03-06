@@ -1,4 +1,5 @@
 import cv2
+from pathlib import Path
 from model.baselines import *
 
 baselines = [
@@ -8,13 +9,31 @@ baselines = [
     Watershed(),
     GrabCut()]
 
-raw_images = ["HT7a.jpg","HT7b.jpg"]
 
-for img_name in raw_images:
-    # Read the image.
-    img = cv2.imread(f'data/raw/{img_name}')
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+raw_folder = Path("data/raw")
+easy_raw_folder = raw_folder / "easy"
+medium_raw_folder = raw_folder / "medium"
+hard_raw_folder = raw_folder / "hard"
+output_folder = Path("data/scribed")
 
-    for baseline in baselines:
-        binary = baseline.scribe(img)
-        cv2.imwrite(f'data/{img_name[:-4]}-{baseline.__class__.__name__}.jpg', binary)
+easy_raw_image_paths = easy_raw_folder.glob("*.jpg")
+medium_raw_image_paths = medium_raw_folder.glob("*.jpg")
+hard_raw_image_paths = hard_raw_folder.glob("*.jpg")
+
+def perform_comparison(raw_image_paths, baselines):
+    for img_path in raw_image_paths:
+        img_name = img_path.name
+        img = cv2.imread(str(img_path))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        for baseline in baselines:
+            binary = baseline.scribe(img)
+            output_path = output_folder / f'{img_name[:-4]}-{baseline.__class__.__name__}.jpg'
+            cv2.imwrite(str(output_path), binary)
+
+print("Performing comparison on easy images...")
+perform_comparison(easy_raw_image_paths, baselines)
+print("\nPerforming comparison on medium images...")
+perform_comparison(medium_raw_image_paths, baselines)
+print("\nPerforming comparison on hard images...")
+perform_comparison(hard_raw_image_paths, baselines)
