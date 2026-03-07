@@ -1,9 +1,12 @@
 \chapter{Data}
-\section{Data sources}
+\section{Sources}
+The dataset used in this thesis was constructed from low-resolution photographs of Linear A inscriptions, sourced from GORILLA
+The data to be used for ground truth was obtained from SigLA through Ester Salgarella.
+\section{Characteristics}
 \section{Dataset construction}
-\section{Ground truth definition}
-\section{Data alignment and preprocessing}
-Raw images were cropped to the bounding box of the inscription, and manually aligned in Krita to overlap as well as possible with the ground truth images.
-\section{Dataset characteristics}
-\section{Difficulty stratification}
-\section{Dataset limitations and biases}
+\subsection{Ground truth definition}
+\subsection{Image registration and preprocessing}
+Raw images were cropped to the bounding box of the inscription.
+Ground truth images were then downscaled to the individual scales of their respective raw counterparts, and aligned to the raw images in Krita by translation, rotation, and scaling, using the raw images as background reference.
+\subsection{Difficulty classification}
+\section{Limitations and biases}

@@ -2,23 +2,39 @@
 \section{Common methodology}
 
 \subsection{Image processing theory}
-\subsubsection{Spatial filtering}
 
 The basics of spatial filtering can be described by the following equation:
 $$ g(x,y) = T[f(x,y)] $$
 , where $f(x,y)$ (also denoted as $I(x,y)$) is the input image, $g(x,y)$ is the output image.\footcite[p.~120]{DigitalImageProcessing}
 
-Convolution is then defined as \footcite[p.~157]{DigitalImageProcessing}:
-$$(w * f)(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) f(x-s, y-t) $$,
-where $w(s,t)$ is the convolution kernel, and $a$ and $b$ are the kernel's half-width and half-height, respectively.
+\subsubsection{Binary image thresholding}
+$$ B(x,y) = \begin{cases}
+    1 & \text{if } I(x,y) > T \\
+    0 & \text{otherwise} \end{cases} $$ 
+
+\footcite[p.~743]{DigitalImageProcessing}
+
+
+\subsubsection{Convolutional kernels}
+
+\footcite[p.~159]{DigitalImageProcessing}
+$$ (w \star I)(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(i,j) I(x-i, y-j) $$
+where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~157]{DigitalImageProcessing}
+
+
+
+
+
 \subsection{Development environment and tools}
-Python 3.10 was used for all code development, with the following libraries:
+Python 3.10 was used for all code development (because it has such a big library of image processing functions and machine learning model implementations), with the following libraries:
 \begin{itemize}
     \item OpenCV for image processing and computer vision tasks.
     \item NumPy for numerical operations and array manipulations.
     \item Matplotlib for data visualization.
     \item \textit{Add more!}
 \end{itemize}
+
+Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
 \subsection{Data assumptions (brief reference to Data chapter)}
 \subsection{General evaluation metrics}
 \subsection{Experimental conventions}
@@ -33,56 +49,104 @@ In this section, the configuration of the baseline models, the model to be used 
 The baseline models against which the tool will be evaluated (from simplest to most advanced) are:
 \begin{itemize}
     \item Global thresholding (Otsu's method)
-    \item Local adaptive thresholding (Gaussian)
+    \item Local adaptive thresholding (Gaussian kernel)
     \item Edge-based segmentation (Canny edge detection with region filling)
     \item Topographic segmentation (Watershed)
     \item Energy-based segmentation (GrabCut)
 \end{itemize}
+Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
 What follows is a brief description of each of these methods, including their characteristis, how they work, and their implementation details.
+
 \subsubsection{Global thresholding (Otsu's method)}
-This is a simple global thresholding  method from gray-level histograms originally proposed by \textcite{Otsu1979}.
-As the simplest of the baselines, it represents the minimum acceptable segmentation quality, only taking the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
-It might therefore perform poorly on images with erosion, uneven lighting, and differences in surface texture, which are the exact characteristics of the Linear A inscriptions to be segmented.\footcite[p.~751]{DigitalImageProcessing}
+This is a global thresholding method from gray-level histograms originally proposed by \textcite{Otsu1979}.
+As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
+It might therefore perform poorly on images with erosion, uneven lighting, and differences in surface texture\footcite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the Linear A inscriptions to be segmented.
 
 Here is how it works:
 First, let pixels of the raw image be divided into $L$ shades of gray $[1,2,...,L]$.
-Then, let each pixel be assigned one of two classes $C_0$ or $C_1$, guided by a threshold $k$,
- where $C_0$ contains the shades $[1,2,...,k]$, and $C_1$ contains the rest $[k+1,k+2,...,L]$.
-Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $k^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
-$$ k^{*} = \underset{1 \leq k < L}{\arg \max} ~ \sigma^2_B(k) $$
-The between-class variance $\sigma^2_B$ can then be defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean shade values per class ($\mu_0$ and $\mu_1$):
- $$ \sigma^2_B(k) = \omega_0(k) \omega_1(k) [\mu_1(k)-\mu_0(k)]^2$$
+Then, let each pixel be assigned one of two classes $C_0$ or $C_1$, guided by a threshold $T$,
+ where $C_0$ contains the shades $[1,2,...,T]$, and $C_1$ contains the rest $[T+1,T+2,...,L]$.
+Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $T^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
+$$ T^{*} = \underset{1 \leq T < L}{\arg \max} ~ \sigma^2_B(T) $$
+The between-class variance $\sigma^2_B$ can then be defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
+ $$ \sigma^2_B(T) = \omega_0(T) \omega_1(T) [\mu_1(T)-\mu_0(T)]^2$$
 
-\noindent For the implementation of Otsu's method in OpenCV, used are 
+\noindent For the implementation of Otsu's method in OpenCV, the following parameters are used: 
 \begin{itemize}
     \item \texttt{cv2.THRESH\_OTSU} for the thresholding type, and
-    \item \texttt{cv2.THRESH\_BINARY} for the thresholding method.
+    \item \texttt{cv2.THRESH\_BINARY} for the binary thresholding method.
 \end{itemize}
 
-\subsubsection{Local adaptive thresholding (Gaussian)}
-For this method, the threshold is not global, but rather computed for each pixel based on the local neighborhood.
-$$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
-, where $G_{\sigma}$ is the Gaussian kernel, $I$ is the input image, $*$ is the convolution operater, and $C$ is a constant subtracted from the mean to fine-tune the thresholding.
+\subsubsection{Local adaptive thresholding (Gaussian kernel)}
+For adaptive thresholding, the threshold is not global, but instead computed for each pixel based on its local neighborhood.
+This is an advantage in cases where the image has varying lighting conditions (which is the case for the Linear A inscriptions), as the filter will adapt to local lighting.
+In adaptive thresholding, $T$ is a function of a given pixel position $(x,y)$ usually computed by some kind of weighted sum of the neighborhood. It can be defined as:\footcite[p.~761]{DigitalImageProcessing}
+$$ B(x,y) = \begin{cases}
+    1 & \text{if} ~ I(x,y) > T(x,y) \\
+    0 & \text{otherwise} \end{cases} $$
 
-Here, 
-$$(G_{\sigma} * I)(x,y) = \sum_{u=-k}^{k} \sum_{v=-k}^{k} G_{\sigma}(u,v) I(x-u, y-v) $$
-, where $k$ is the kernel size, and $G_{\sigma}(u,v)$ - the value of the Gaussian kernel at position $(u,v)$ - can be defined as:
-$$ G_{\sigma}(u,v) = \frac{1}{2\pi\sigma^2} \exp \left(-\frac{u^2 + v^2}{2\sigma^2}\right) $$
+There are a few weighting functions to choose from. But for this baseline, the Gaussian kernel is used, as it tends to be better at handling noise due to its method of assigning weights based on distance from the kernel center.
+The pixels closer to the center will have a higher weight, while those farther away will have a lower weight, which helps to reduce the influence of distant noisy pixels.
 
-For its implementation, used are \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C}, and \texttt{cv2.THRESH\_BINARY} from OpenCV, respectively.
+In the case of Gaussian adaptive thresholding, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using convolution ($\star$), this can be expressed as:\footcite{opencv_adaptive_threshold}
+$$ T(x,y) = (G_{\sigma} \star I)(x,y) - C $$
+Here, $G_{\sigma}$ is the Gaussian kernel. Its weight at a given pixel offset $(i,j)$ from the kernel center (where $\alpha$ is a normalization constant ensuring that the sum of the kernel elements equals 1, and $\sigma$ is the standard deviation of the weights) can be defined as follows:\footcite[p.~167]{DigitalImageProcessing}
+
+$$ G_{\sigma}(i,j) = \alpha \cdot \exp \left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
+
+\noindent The OpenCV implementation\footcite{opencv_gaussian_kernel}\footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
+uses the following parameters:
+\begin{itemize}
+    \item \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C} for the thresholding type, and
+    \item \texttt{cv2.THRESH\_BINARY} for the binary thresholding method.
+\end{itemize}
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
+This is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
+Here is how it works:
+First, the input image is smoothed using a Gaussian filter to reduce noise (using the Gaussian kernel as defined in the previous section):
+$$ I_{s}(x,y) = (G_{\sigma} \star I)(x,y) $$
+
+Then, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the orientation $\theta_s(x,y)$ are computed:\footcite[p.~730]{DigitalImageProcessing}
+$$M_s(x,y) = \|\ \nabla I_{s}(x,y) \|\ = \sqrt{\left(\frac{\partial I_{s}}{\partial x}\right)^2 + \left(\frac{\partial I_{s}}{\partial y}\right)^2}$$ 
+$$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}/\partial x} \right)$$
+Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
+This is at last followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
+
+\noindent\note{Add details about region filling here.}
+
+\noindent The OpenCV implementation\footcite{opencv_gaussian_kernel}\footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
+uses the following parameters:
+
+\begin{itemize}
+    \item \texttt{cv2.Canny} for the edge detection method.
+    
+\end{itemize}
 
 \subsubsection{Topographic segmentation (Watershed)}
 
+regional minima (valleys) $V_i$ and maxima (peaks) $P_i$ are identified in the image, and then the watershed algorithm is applied to segment the image based on these features. The watershed algorithm treats the image as a topographic surface, where pixel intensity represents elevation. It simulates water flooding from the minima, filling basins until they meet at watershed lines, which define the boundaries of segments.
+catchment bassin $C(V_i)$ associated with valley $V_i$ is defined as the set of pixels that would be flooded by water starting from $V_i$:
+$$ C(V_i) = \{ p \in I : \text{the path of steepest descent from } p \text{ leads to } V_i \} $$
 \subsubsection{Energy-based segmentation (GrabCut)}
 
 
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}
-\subsubsection{Model seeds and preprocessing}
+Raw image $\rightarrow$ Florence 2 $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+
+\subsubsection{Seeds and preprocessing (Florence 2)}
+Florence 2 \parencite{Wang2025OBIFloSAM}
+
+\subsubsection{Segmentation (MobileSAMv2)}
+MobileSAMv2 \parencite{mobile_sam_v2}
 
 \subsection{Evaluation protocol and performance metrics}
+
+$$ Precision = \frac{TP}{TP + FP} $$
+$$ Recall = \frac{TP}{TP + FN} $$
+$$ F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
+$Dice = F1$
 $$ IoU = \frac{TP}{TP + FP + FN} $$
 
 \section{Interactive semi-automation}
