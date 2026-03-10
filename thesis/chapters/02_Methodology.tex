@@ -51,11 +51,10 @@ The baseline models against which the tool will be evaluated (from simplest to m
     \item Global thresholding (Otsu's method)
     \item Local adaptive thresholding (Gaussian kernel)
     \item Edge-based segmentation (Canny edge detection with region filling)
-    \item Topographic segmentation (Watershed)
     \item Energy-based segmentation (GrabCut)
 \end{itemize}
 Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
-What follows is a brief description of each of these methods, including their characteristis, how they work, and their implementation details.
+What follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
 
 \subsubsection{Global thresholding (Otsu's method)}
 This is a global thresholding method from gray-level histograms originally proposed by \textcite{Otsu1979}.
@@ -78,19 +77,22 @@ The between-class variance $\sigma^2_B$ can then be defined by a function of the
 \end{itemize}
 
 \subsubsection{Local adaptive thresholding (Gaussian kernel)}
-For adaptive thresholding, the threshold is not global, but instead computed for each pixel based on its local neighborhood.
-This is an advantage in cases where the image has varying lighting conditions (which is the case for the Linear A inscriptions), as the filter will adapt to local lighting.
-In adaptive thresholding, $T$ is a function of a given pixel position $(x,y)$ usually computed by some kind of weighted sum of the neighborhood. It can be defined as:\footcite[p.~761]{DigitalImageProcessing}
+Using local adaptive thresholding is an advantage in cases where the image has varying light conditions (which is the case for the Linear A inscriptions), as the filter adapts to local lighting.
+This is due to the fact that the computed threshold $T$ is not global, but instead computed for each pixel based on its local neighborhood.
+
+Mathematically, $T$ is a function of a given pixel position $(x,y)$ usually computed by some kind of weighted sum of the neighborhood.
+The generated binary mask $B$ is then defined as:\footcite[p.~761]{DigitalImageProcessing}
 $$ B(x,y) = \begin{cases}
     1 & \text{if} ~ I(x,y) > T(x,y) \\
     0 & \text{otherwise} \end{cases} $$
 
-There are a few weighting functions to choose from. But for this baseline, the Gaussian kernel is used, as it tends to be better at handling noise due to its method of assigning weights based on distance from the kernel center.
-The pixels closer to the center will have a higher weight, while those farther away will have a lower weight, which helps to reduce the influence of distant noisy pixels.
+To compute $T(x,y)$, there are a few weighting functions to choose from.
+But for this baseline, the Gaussian kernel is used, as it tends to be better at handling noise, since it assigns weights based on distance from the kernel center.
+The pixels closer to the center will have a higher weight, while those farther away will have a lower weight, which limits the influence of distant noisy pixels.
 
-In the case of Gaussian adaptive thresholding, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using convolution ($\star$), this can be expressed as:\footcite{opencv_adaptive_threshold}
+With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using convolution ($\star$), this can be expressed as:\footcite{opencv_adaptive_threshold}
 $$ T(x,y) = (G_{\sigma} \star I)(x,y) - C $$
-Here, $G_{\sigma}$ is the Gaussian kernel. Its weight at a given pixel offset $(i,j)$ from the kernel center (where $\alpha$ is a normalization constant ensuring that the sum of the kernel elements equals 1, and $\sigma$ is the standard deviation of the weights) can be defined as follows:\footcite[p.~167]{DigitalImageProcessing}
+The weight at a given pixel offset $(i,j)$ from the kernel center (where $\alpha$ is a normalization constant ensuring that the sum of the kernel elements equals 1, and $\sigma$ is the standard deviation of the weights) is then defined as follows:\footcite[p.~167]{DigitalImageProcessing}
 
 $$ G_{\sigma}(i,j) = \alpha \cdot \exp \left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
 
@@ -123,20 +125,33 @@ uses the following parameters:
     
 \end{itemize}
 
-\subsubsection{Topographic segmentation (Watershed)}
-
-regional minima (valleys) $V_i$ and maxima (peaks) $P_i$ are identified in the image, and then the watershed algorithm is applied to segment the image based on these features. The watershed algorithm treats the image as a topographic surface, where pixel intensity represents elevation. It simulates water flooding from the minima, filling basins until they meet at watershed lines, which define the boundaries of segments.
-catchment bassin $C(V_i)$ associated with valley $V_i$ is defined as the set of pixels that would be flooded by water starting from $V_i$:
-$$ C(V_i) = \{ p \in I : \text{the path of steepest descent from } p \text{ leads to } V_i \} $$
 \subsubsection{Energy-based segmentation (GrabCut)}
+GrabCut - the most advanced of the baselines considered - is included, as it is an interactive segmentation method, which makes for a good comparison to \acs{SAM}.
+It is also good at producing spatially coherent masks with little large-grained noise, which is useful on Linear A inscriptions, where erosion usually leads to noisy masks even after noise reduction.
+Here is how it works:
+For energy-based segmentation methods, optimal segmentation is achieved by minimizing a cost (energy) function $E$ that combines a data term $D$ and a smoothness term $S$, given an input image $I$, a binary segmentation mask $B$, and a set of parameters $\theta$:\footnote{This is a simplified version of the energy function that is used by GrabCut.}
 
+$$ E(B,I,\theta) = D(B,I,\theta) + S(B,I) $$
+
+\noindent In the case of GrabCut \parencite{Rother2004GrabCut}, the algorithm is interactively initialized by the user, who provides a bounding box around the object of interest.
+Pixels outside this box are marked as definite background, while pixels inside it are marked as initially unknown.
+To further guide the segmentation, the user also has the option to provide an additional number of pixels as definite foreground ($B_n = 1$), and definite background ($B_n = 0$).
+
+The set of parameters $\theta$ then define two \textit{\acp{GMM}} (probabilistic models each consisting of a weighted sum of several Gaussian distributions) that over iterations will be tuned to model the foreground and background pixel distributions.
+These are used to compute the data term $D$ whose energy contribution decreases the better $B$ matches the \acsp{GMM} of foreground and background.
+The smoothness term $S$ then penalizes neighboring pixels that have different labels, encouraging spatial coherence in the segmentation.
+
+At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating between optimizing the \acs{GMM} parameters $\theta$ to model $B$, and minimizing the energy function with respect to $B$:
+
+$$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}
-Raw image $\rightarrow$ Florence 2 $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+Raw image $\rightarrow$ Seed extraction $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
 
-\subsubsection{Seeds and preprocessing (Florence 2)}
-Florence 2 \parencite{Wang2025OBIFloSAM}
+\subsubsection{Preprocessing (Seed extraction)}
+
+
 
 \subsubsection{Segmentation (MobileSAMv2)}
 MobileSAMv2 \parencite{mobile_sam_v2}
@@ -145,9 +160,8 @@ MobileSAMv2 \parencite{mobile_sam_v2}
 
 $$ Precision = \frac{TP}{TP + FP} $$
 $$ Recall = \frac{TP}{TP + FN} $$
-$$ F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
-$Dice = F1$
-$$ IoU = \frac{TP}{TP + FP + FN} $$
+$$ Dice = F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
+$$ IoU = \frac{Dice}{2 - Dice} = \frac{TP}{TP + FP + FN} $$
 
 \section{Interactive semi-automation}
 \noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
@@ -162,3 +176,4 @@ $$ IoU = \frac{TP}{TP + FP + FN} $$
 \subsection{Definition of workflow efficiency metrics}
 \subsection{Experimental design of the user study}
 \subsection{Analysis of results}
+

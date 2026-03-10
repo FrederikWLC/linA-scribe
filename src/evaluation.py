@@ -1,13 +1,18 @@
 import cv2
 from pathlib import Path
+from model.sam import Sam, SamAutoBox
 from model.baselines import *
 
 baselines = [
     CannyFill(),
     Gaussian(),
     Otsu(),
-    Watershed(),
-    GrabCut()]
+    GrabCut(),
+    GrabCutAutoBox(),
+    GrabCutAutoBrush(),
+    Sam(),
+    SamAutoBox()
+    ]
 
 raw_folder = Path("data/raw")
 easy_raw_folder = raw_folder / "easy"

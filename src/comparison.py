@@ -1,13 +1,15 @@
 import cv2
 from pathlib import Path
+from model.sam import Sam
 from model.baselines import *
 
 baselines = [
-    CannyFill(),
+    #CannyFill(),
     Gaussian(),
     Otsu(),
-    Watershed(),
-    GrabCut()]
+    GrabCut()
+    #,Sam()
+    ]
 
 
 raw_folder = Path("data/raw")
@@ -23,6 +25,7 @@ hard_raw_image_paths = hard_raw_folder.glob("*.jpg")
 def perform_comparison(raw_image_paths, baselines):
     for img_path in raw_image_paths:
         img_name = img_path.name
+        print(f"\nSegmenting {img_name}...")
         img = cv2.imread(str(img_path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -30,6 +33,7 @@ def perform_comparison(raw_image_paths, baselines):
             binary = baseline.scribe(img)
             output_path = output_folder / f'{img_name[:-4]}-{baseline.__class__.__name__}.jpg'
             cv2.imwrite(str(output_path), binary)
+            print(f"Done for {baseline.__class__.__name__}!")
 
 print("Performing comparison on easy images...")
 perform_comparison(easy_raw_image_paths, baselines)

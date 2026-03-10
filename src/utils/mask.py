@@ -22,7 +22,6 @@ class Mask:
         ).astype("uint8"))
 
     def to_image(self) -> Image:
-        mask_img = (self.mask * 255).astype("uint8")
-        if mask_img.ndim == 2:
-            mask_img = np.stack([mask_img]*3,axis=-1)
-        return Image(mask_img)
+        image = (self.mask * 255).astype("uint8")
+        print(f"Mask to image: {image.shape}, {image.dtype}")
+        return Image(image)
