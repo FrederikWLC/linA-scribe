@@ -1,14 +1,19 @@
 import cv2
 from pathlib import Path
-from model.sam import Sam
-from model.baselines import *
+from model.sam import Sam, SamAutoBox
+from model.baselines.canny_fill import CannyFill
+from model.baselines.gaussian import Gaussian
+from model.baselines.otsu import Otsu
+from model.baselines.grabcut import GrabCutAutoBox, GrabCutAutoBrush
 
 baselines = [
-    #CannyFill(),
+    CannyFill(),
     Gaussian(),
     Otsu(),
-    GrabCut()
-    #,Sam()
+    GrabCutAutoBox(),
+    GrabCutAutoBrush(),
+    Sam(),
+    SamAutoBox()
     ]
 
 

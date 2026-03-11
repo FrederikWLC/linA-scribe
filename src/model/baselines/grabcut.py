@@ -53,7 +53,15 @@ class GrabCutAutoBrush(GrabCut):
         seeds = [BrushSeed(sure_fgd_pixels,1),BrushSeed(sure_bgd_pixels,0)]
         return seeds
 
+    @property
+    def name(self):
+        return "GCautobrush"
+
 class GrabCutAutoBox(GrabCut):
     def autoseed(self, image: np.ndarray) -> list[BoxSeed]:        
         seeds = [BoxSeed(x1, y1, x2, y2) for [[x1, y1], [x2, y2]] in auto_boxes(image)]
         return seeds
+    
+    @property
+    def name(self):
+        return "GCautobox"

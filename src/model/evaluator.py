@@ -13,9 +13,9 @@ class Evaluator:
         prec = BinaryPrecision()
         rec  = BinaryRecall()
         spec = BinarySpecificity()
-        metrics = dict(Accuracy=acc, Precision=prec, Recall=rec, Specificity=spec, F1=f1)
+        metrics = dict(accuracy=acc, precision=prec, recall=rec, specificity=spec, f1=f1)
         results = self.compute_metrics(X, Y, metrics, tolerance)
-        results["IoU"] = results["F1"] / (2-results["F1"]) # IoU can be derived from F1
+        results["iou"] = results["f1"] / (2-results["f1"]) # IoU can be derived from F1
         
         return results
     
@@ -38,9 +38,11 @@ class Evaluator:
         Y_t = []
         for x, y in zip(X, Y):
             
-            if tolerance > 0:
-                y = dilate_mask(y, tolerance)
-                y_hat = dilate_mask(self.scribe(x), tolerance)
+            if tolerance > 0: # implement some tolerance (as ground truth / raw are not perfectly aligned registered)
+                w,h = x.shape[:2]
+                scaled_tolerance = round(tolerance/1000 * min(w,h)) # scale tolerance such that its unit is one thousandth of smallest image dimension size
+                y = dilate_mask(y, scaled_tolerance)
+                y_hat = dilate_mask(self.scribe(x), scaled_tolerance)
             
             y = torch.from_numpy(y).squeeze()
             y = (y > 127).long()

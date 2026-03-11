@@ -1,7 +1,11 @@
 \chapter{Methodology}
 \section{Common methodology}
 
+\note{TODO: WRITE A C}
+
 \subsection{Image processing theory}
+
+\note{SHOULD THIS SECTION EXIST? IF SO, I SHOULD FINISH IT}
 
 The basics of spatial filtering can be described by the following equation:
 $$ g(x,y) = T[f(x,y)] $$
@@ -26,6 +30,8 @@ where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/
 
 
 \subsection{Development environment and tools}
+
+\note{TODO: EXTEND THIS SECTION}
 Python 3.10 was used for all code development (because it has such a big library of image processing functions and machine learning model implementations), with the following libraries:
 \begin{itemize}
     \item OpenCV for image processing and computer vision tasks.
@@ -39,9 +45,8 @@ Krita was used for manual image registration, making sure the raw image ground t
 \subsection{General evaluation metrics}
 \subsection{Experimental conventions}
 
-\section{Segmentation quality}
-The segmentation quality of the tool will be evaluated against a set of baseline models, using a variety of performance metrics.
-In this section, the configuration of the baseline models, the model to be used by the tool, and the evaluation protocol are described in detail.
+\section{Segmentation quality} \label{Segmentation quality}
+Here, the one-shot segmentation quality of SAM will be evaluated against a set of baseline models, using a variety of performance metrics.
 
 \noindent\note{Add some context of RQ1 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
@@ -55,7 +60,8 @@ The baseline models against which the tool will be evaluated (from simplest to m
 \end{itemize}
 Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
 What follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
-
+\note{TODO: ADD MORE IMPLEMENTATION DETAILS BESIDES PURE THEORY}
+\note{SHOULD I REDUCE THEORY? HOW LONG SHOULD THESE BE? PROBABLY NOT MORE THAN A PAGE FOR EACH BASELINE}
 \subsubsection{Global thresholding (Otsu's method)}
 This is a global thresholding method from gray-level histograms originally proposed by \textcite{Otsu1979}.
 As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
@@ -144,26 +150,31 @@ The smoothness term $S$ then penalizes neighboring pixels that have different la
 At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating between optimizing the \acs{GMM} parameters $\theta$ to model $B$, and minimizing the energy function with respect to $B$:
 
 $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
+\note{THIS CLASSICAL INTERACTIVE SEGMENTATION METHOD MIGHT FOLLOW SAM INTO RQ2}
 
+\note{MAYBE IT SHOULD BE GIVEN MORE IMPORTANCE?}
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}
-Raw image $\rightarrow$ Seed extraction $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+Raw image $\rightarrow$ Automatic box prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
 
-\subsubsection{Preprocessing (Seed extraction)}
-
-
+\subsubsection{Seed extraction (Autoboxes)}
+Even though the MobileSAMv2 implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
+Those box prompts are generalized, and work best on natural images, not on image inscriptions.
+Therefore, there is to be made two versions of MobileSAMv2 for comparison: one with the native box prompts \texit{mSAM}, and one with box recognition done by contours in the image \textit{mSAMautobox}.
+\note{Please improve this draft sub sub section}
 
 \subsubsection{Segmentation (MobileSAMv2)}
 MobileSAMv2 \parencite{mobile_sam_v2}
 
 \subsection{Evaluation protocol and performance metrics}
-
+\note{Please add elaboration and sources!!}
 $$ Precision = \frac{TP}{TP + FP} $$
 $$ Recall = \frac{TP}{TP + FN} $$
 $$ Dice = F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
 $$ IoU = \frac{Dice}{2 - Dice} = \frac{TP}{TP + FP + FN} $$
 
 \section{Interactive semi-automation}
+Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.
 \noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
 \subsection{Interactive tool architecture}

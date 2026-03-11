@@ -1,10 +1,8 @@
 import cv2
 
 from config import config
-from model.baselines.gaussian import Gaussian
-from model.scribe import SeedableScribe, Seed
-from utils import Mask, Image
 from utils.auto_prompts import auto_boxes
+from model.scribe import SeedableScribe, Seed
 import numpy as np
 import torch 
 from utils.seeds import Seed, BoxSeed, get_boxes, get_points_and_labels
@@ -28,49 +26,66 @@ class Sam(SeedableScribe):
 
     def generate_masks(
         self,
-        image: Image | np.ndarray,
+        image: np.ndarray,
         points: list[list[int]] = None,
         labels: list[int] = None,
         boxes: list[int] | tuple[int, int, int, int] = None,
     ) -> list[dict]:
-
-        image = Image(image)
         
         self.predictor.set_image(image)
 
         masks = []
-        for box in boxes:
+        if boxes:
+            for box in boxes:
+                mask, score, logit = self.predictor.predict(
+                    box = box,
+                    point_coords=points,
+                    point_labels=labels,
+                    multimask_output=False
+                )
+                masks.append(np.squeeze(mask))
+        else:
             mask, score, logit = self.predictor.predict(
-                box = box,
-                point_coords=points,
-                point_labels=labels,
-                multimask_output=False
-            )
+                    point_coords=points,
+                    point_labels=labels,
+                    multimask_output=False
+                )
             masks.append(np.squeeze(mask))
         return masks
 
-    def scribe(self, image: Image | np.ndarray, seeds: list[Seed] = None) -> np.ndarray:
+    def scribe(self, image :np.ndarray, seeds: list[Seed] = None) -> np.ndarray:
         autoseed = True if seeds is None else False
         return super().scribe(image,seeds,autoseed)
 
-    def segment(self, image: Image | np.ndarray, seeds: list[Seed] = None): 
+    def segment(self, image: np.ndarray, seeds: list[Seed] = None): 
         points, labels = get_points_and_labels(seeds) if seeds else (None, None)
-        boxes = get_boxes(seeds) if seeds else None
+        boxes = get_boxes(seeds) if seeds else []
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # convert to rgb for sam
         #print("SAM input shape:", image.shape, image.dtype, image.min(), image.max())
         #cv2.imwrite("debug_sam_input.jpg", image)
         masks = self.generate_masks(image,points,labels,boxes)
-        combined = (255 - np.maximum.reduce(masks) * 255).astype("uint8")
-        return combined
+        if len(masks) > 1: # combine masks
+            mask = (255 - np.maximum.reduce(masks) * 255).astype("uint8")
+        else:
+            mask = (255 - masks[0] * 255).astype("uint8")
+        return mask
     
-    def autoseed(self, image: Image | np.ndarray) -> list[BoxSeed]:        
+    def autoseed(self, image: np.ndarray) -> list[Seed]:        
         return []
 
-    def preprocess(self, image: Image | np.ndarray) -> np.ndarray:
-        return cv2.GaussianBlur(cv2.bilateralFilter(image, 15, 75, 75), (5,5), 0)
+    def preprocess(self, image: np.ndarray) -> np.ndarray:
+        return image
+    
+    @property
+    def name(self):
+        return "mSAM"
 
 class SamAutoBox(Sam):
-     def autoseed(self, image: Image | np.ndarray) -> list[BoxSeed]:       
+    def autoseed(self, image: np.ndarray) -> list[BoxSeed]:       
         seeds = [BoxSeed(x1, y1, x2, y2) for [[x1, y1], [x2, y2]] in auto_boxes(image)]
         #print("Autoseeding generated boxes:", len(seeds))
         return seeds
+        
+    @property
+    def name(self):
+        return "mSAMautobox"

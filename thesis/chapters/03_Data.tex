@@ -1,12 +1,98 @@
 \chapter{Data}
 \section{Sources}
-The dataset used in this thesis was constructed from low-resolution photographs of Linear A inscriptions, sourced from GORILLA
-The data to be used for ground truth was obtained from SigLA through Ester Salgarella.
-\section{Characteristics}
-\section{Dataset construction}
-\subsection{Ground truth definition}
-\subsection{Image registration and preprocessing}
-Raw images were cropped to the bounding box of the inscription.
-Ground truth images were then downscaled to the individual scales of their respective raw counterparts, and aligned to the raw images in Krita by translation, rotation, and scaling, using the raw images as background reference.
+The dataset used in this thesis was constructed from photographs of raw Linear A inscriptions, and their corresponding ground truth annotations.
+\acs{Cefael} \parencite[see][]{EtudesCretoises21} was chosen as the source for raw document images, since it is the only online and widely publicly available source of the printed five volume corpus - \acf{GORILA}. 
+As all raw document images on the pages of this corpus are accompanied by annotated drawings, an argument could be made to make use of those as ground truth annotations.
+However, annotations provided by Ester Salgarella from SigLA \parencite[see][]{SalgarellaCastellanSigLA2020} were chosen instead, as they are more up to date, and are already in a binary mask format that is suitable for comparison with segmentation model outputs.
+
+What follows in this chapter is a detailed description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
+
+\subsection{Characteristics and construction}
+The dataset was made to consists of 32 chosen image pairs of raw documents and their corresponding ground truth annotations.
+Only inscriptions with clay as writing support were included, as they are the most common and representative of the Linear A corpus, and are the only ones for which SigLA ground truth annotations were already available (IS THIS TRUE?).
+The raw document images from \acs{Cefael} are screenshots of images within the scanned printed edition of the corpus, and thus are not of the highest quality, but they are the only widely publicly available images of the Linear A inscriptions.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[t]{0.4\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT7b.jpg}}
+    \caption{Raw image (HT7b)}
+\end{subfigure}
+\hspace{0.04\textwidth}
+\begin{subfigure}[t]{0.4\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT7b.jpg}}
+    \caption{Ground truth (HT7b)}
+\end{subfigure}
+
+\caption{Example of a raw inscription image and its corresponding ground truth annotation.}
+\label{fig:ht7b_example}
+\end{figure}
+
 \subsection{Difficulty classification}
+The dataset was categorized into three difficulty levels (easy, medium, hard) based on the visual quality of the raw images and the clarity of the inscriptions.
+This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
+Concretely, the following criteria were used to classify each difficulty set:
+\begin{figure}
+\centering
+X\begin{itemize}
+    \item Easy: labeled as such for documents with clear ingravings, good contrast, minimal noise, and constant lighting.
+    \item Hard: labeled to those with poor contrast, significant noise, and substantial damage making it hard even for the naked eye to read the inscriptions.
+    \item Medium: labeled to all those inbetween the qualities of easy and hard.
+\end{itemize}
+\caption{Criteria for classifying the dataset into easy, medium, and hard difficulty levels.}
+\label{fig:difficulty_criteria}
+\end{figure}
+\subsection{Image registration and preprocessing}
+To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations first had to be aligned and registered to each other.
+This was done manually in Krita by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
+
+\begin{figure}[htbp]
+\centering
+
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/KHWc2104.jpg}}
+    \caption{Easy KHWc2104 (raw)}
+\end{subfigure}
+\hspace{0.02\textwidth}
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/KHWc2104.jpg}}
+    \caption{Easy KHWc2104 (gt)}
+\end{subfigure}
+
+\vspace{0.6em}
+
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/medium/MA1a.jpg}}
+    \caption{Medium MA1a (raw)}
+\end{subfigure}
+\hspace{0.02\textwidth}
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/MA1a.jpg}}
+    \caption{Medium MA1a (gt)}
+\end{subfigure}
+
+\vspace{0.6em}
+
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/hard/HT3.jpg}}
+    \caption{Hard HT3 (raw)}
+\end{subfigure}
+\hspace{0.02\textwidth}
+\begin{subfigure}[c]{0.45\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT3.jpg}}
+    \caption{Hard HT3 (ground truth)}
+\end{subfigure}
+
+\caption{Examples of images with different levels of segmentation difficulty: easy, medium, and hard. For each case, the raw image (left) and the corresponding ground truth annotation (right) are shown.}
+\label{fig:difficulty_examples}
+
+\end{figure}
 \section{Limitations and biases}

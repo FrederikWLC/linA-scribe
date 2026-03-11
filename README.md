@@ -1,3 +1,5 @@
 # linA-scribe
 
-linA-scribe is a semi-automatic tool for tracing Linear A signs from low-contrast CEFAEL-style images. Manual digitization is slow and uneven, so the tool uses preprocessing and the Segment Anything Model to generate initial annotations. The aim is not full automation, but a practical workflow that cuts manual effort, increases consistency, and helps projects like SigLA grow reliable annotated datasets.
+This is documenting the development of a semi-automatic tool meant to trace Linear A signs from low-contrast CEFAEL-style images as part of the Bachelor Project *Machine Learning for Semi-Automated Annotations of the Linear A Inscriptions* at DTU. Besides the software segmentation quality evaluation in the *src* folder, it also includes the LaTex project of the Thesis and the Project Definition Report (PDR) in the *thesis* and *pdr* folders, respectively.
+
+The *data* folder within *src* is exclusively included locally, as to avoid any Intellectual Property Rights (IPR) issues.
