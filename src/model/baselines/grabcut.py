@@ -2,21 +2,19 @@ import cv2
 import numpy as np
 from model.scribe import SeedableScribe
 from utils.auto_prompts import auto_boxes, auto_brushes
+from utils.binary_mask import BinaryMask
 from utils.seeds import Seed, BoxSeed, BrushSeed, get_boxseeds, get_brushseeds
 
+# implementation of GrabCut
 class GrabCut(SeedableScribe):
     def __init__(self, iters=5):
         self.iters = iters
 
-    def scribe(self, image: np.ndarray, seeds: list[Seed] = None) -> np.ndarray:
-        autoseed = True if seeds is None else False
-        return super().scribe(image,seeds,autoseed)
-
-    def segment(self, image, seeds=None):
+    def segment(self, image: np.ndarray, seeds=None) -> BinaryMask:
         if len(image.shape) == 2:  # convert to bgr
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         mask = np.zeros(image.shape[:2],np.uint8)
-        boxseeds = get_boxseeds(seeds)
+        boxseeds = get_boxseeds(seeds) if seeds else []
         
         mask[True] = cv2.GC_PR_BGD # default is probable background
         if boxseeds:
@@ -27,36 +25,35 @@ class GrabCut(SeedableScribe):
         if brushseeds:
             for brush in brushseeds:
                 xs, ys = zip(*brush.pixels)
-                if brush.label == 1:
-                    if brush.label == 1:
-                        mask[ys, xs] = cv2.GC_FGD
-                    else:
-                        mask[ys, xs] = cv2.GC_BGD
+                mask[ys, xs] = brush.label
 
         bgdModel = np.zeros((1,65),np.float64)
         fgdModel = np.zeros((1,65),np.float64)
         
         mask, bgdModel, fgdModel = cv2.grabCut(image,mask,None,bgdModel,fgdModel,self.iters,cv2.GC_INIT_WITH_MASK)
-               
-        out = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
-        return cv2.bitwise_not(out)
+        
+        # end result is union of sure foreground and probable foreground
+        is_fgd = (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD)
+        return BinaryMask.from_bool(is_fgd)
     
-    def preprocess(self, image):
+    def preprocess(self, image: np.ndarray) -> np.ndarray:
         return cv2.GaussianBlur(image, (3, 3), 0)
 
-    def autoseed(self, image: np.ndarray) -> list[Seed]:       
-        return []
-
+# implementation of GrabCut with automatic brushes given as seeds
 class GrabCutAutoBrush(GrabCut):
     def autoseed(self, image: np.ndarray) -> list[BrushSeed]:      
-        sure_fgd_pixels, sure_bgd_pixels = auto_brushes(image)
-        seeds = [BrushSeed(sure_fgd_pixels,1),BrushSeed(sure_bgd_pixels,0)]
+        sure_fgd_pixels, sure_bgd_pixels  = auto_brushes(image,2)
+        seeds = [
+                 BrushSeed(sure_fgd_pixels,cv2.GC_FGD),
+                 BrushSeed(sure_bgd_pixels,cv2.GC_BGD)
+                 ]
         return seeds
 
     @property
     def name(self):
         return "GCautobrush"
 
+# implementation of GrabCut with automatic boxes given as seed
 class GrabCutAutoBox(GrabCut):
     def autoseed(self, image: np.ndarray) -> list[BoxSeed]:        
         seeds = [BoxSeed(x1, y1, x2, y2) for [[x1, y1], [x2, y2]] in auto_boxes(image)]

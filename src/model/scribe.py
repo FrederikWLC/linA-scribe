@@ -1,35 +1,55 @@
+from abc import ABC, abstractmethod
 import numpy as np
-from model.evaluator import Evaluator
 from utils.seeds import Seed
+from utils.binary_mask import BinaryMask
 
+class BaseScribe(ABC):
 
-class Scribe(Evaluator): # the abstract base class for all "scribe" models.
-
-    def scribe(self, image: np.ndarray) -> np.ndarray:
-        return self.segment(self.preprocess(image))
-
-    def segment(self, image: np.ndarray) -> np.ndarray: # raw segmentation
-        raise NotImplementedError("Subclasses must implement the segment method.")
-    
+    # method where the preprocessing happens (returns an image, not a binary mask)
     def preprocess(self, image: np.ndarray) -> np.ndarray: # must be implemented by subclass, default is no preprocessing
         return image
-    
+
+    # name of the model, used for display and evaluation purposes
     @property
-    def name(self):
-        return self.__class__.__name__
+    def name(self) -> str:
+        return type(self).__name__
+    
+# the abstract base class for all "scribe" models.
+class Scribe(BaseScribe):
 
-
-class SeedableScribe(Scribe): # the abstract base class for scribe models that require seeds (e.g. points or boxes)
-
-    def scribe(self, image: np.ndarray, seeds : list[Seed] = None, autoseed : bool = False) -> np.ndarray:
+    # main method consisting of preprocessing followed by segmenation (returns a binary mask)
+    def predict(self, image: np.ndarray) -> BinaryMask:
         preprocessed = self.preprocess(image)
-        seeds = seeds if not autoseed else self.autoseed(preprocessed)
+        return self.segment(preprocessed)
+
+    # method where the segmentation happens (returns a binary mask)
+    @abstractmethod
+    def segment(self, image: np.ndarray) -> BinaryMask: # raw segmentation
+        pass
+
+# the abstract base class for scribe models that can take seeds (i.e. prompts, e.g. points or boxes)
+class SeedableScribe(BaseScribe): 
+
+    # main method consisting of preprocessing followed by seed parsing and segmenation (returns a binary mask)
+    def predict(self, image: np.ndarray, seeds : list[Seed] | None = None, autoseed : bool = True) -> BinaryMask:
+        preprocessed = self.preprocess(image)
+        if seeds is None and autoseed: # if no seeds are provided but autoseeding is enabled, autoseeding happens
+            seeds = self.autoseed(image) # autoseeding is supposed to be done on the raw image, not the preprocessed one
         return self.segment(preprocessed, seeds)
     
-    def segment(self, image: np.ndarray, seeds: list[Seed] = None) -> np.ndarray: # raw segmentation
-        raise NotImplementedError("Subclasses must implement the segment method.")
+    # method where the autoseeding happens
+    def autoseed(self, image: np.ndarray) -> list[Seed] | None:
+        return None
 
-    def autoseed(self, image: np.ndarray) -> list[Seed]: # autoseeding
-        raise NotImplementedError("Subclasses must implement the autoseed method.")
+    # method where the segmentation happens (returns a binary mask)
+    @abstractmethod
+    def segment(self, image: np.ndarray, seeds: list[Seed] | None = None) -> BinaryMask:
+        pass
 
+def predict(model: BaseScribe, image, seeds: Seed | None = None) -> BinaryMask:
+    if isinstance(model, SeedableScribe):
+        return model.predict(image,seeds=seeds)
+    return model.predict(image)
 
+def predict_batch(model: BaseScribe, images: list[np.ndarray], seeds=None) -> list[BinaryMask]:
+    return [predict(model,img,seeds) for img in images]

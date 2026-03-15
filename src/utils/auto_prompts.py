@@ -18,8 +18,7 @@ def show_boxes(image, boxes):
 
 def auto_boxes(image: np.ndarray, min_area=10000, max_area=250*250, min_boxes=10, max_boxes=20):
 
-    gthresh = Gaussian().scribe(image)
-    gthresh = cv2.bitwise_not(gthresh)
+    gthresh = Gaussian().predict(image)
     kernel = np.ones((3,3), np.uint8)
     dilation = cv2.dilate(gthresh,kernel,iterations = 2)
     closing = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, kernel, iterations=2)
@@ -55,18 +54,21 @@ def auto_boxes(image: np.ndarray, min_area=10000, max_area=250*250, min_boxes=10
     #show_boxes(image,boxes)
     return np.array(boxes)
 
-def auto_brushes(image):
-    gthresh = Gaussian().scribe(image)
-    gthresh_not = cv2.bitwise_not(gthresh)
+def auto_brushes(image,erosion_iter=2):
+    gthresh = Gaussian().predict(image)
     #return extract_positive_points(gthresh),extract_negative_points(gthresh)
-    fgd_brush = cv2.morphologyEx(gthresh_not, cv2.MORPH_OPEN, np.ones((3,3), np.uint8), iterations=4)
-    bgd_brush = cv2.morphologyEx(gthresh, cv2.MORPH_OPEN, np.ones((3,3), np.uint8), iterations=3)
+    fgd_brush = cv2.morphologyEx(gthresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    bgd_brush = cv2.morphologyEx(gthresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    #prb_fgd_brush = cv2.morphologyEx(gthresh, cv2.MORPH_DILATE, np.ones((3,3), np.uint8), iterations=erosion_iter)
     
     ys, xs = fgd_brush.nonzero()
     fgd_pixels = np.column_stack((xs, ys))
 
     ys, xs = bgd_brush.nonzero()
     bgd_pixels = np.column_stack((xs, ys))
+
+    #ys, xs = prb_fgd_brush.nonzero()
+    #prb_fgd_pixels = np.column_stack((xs, ys))
 
     return fgd_pixels, bgd_pixels
 

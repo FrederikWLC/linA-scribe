@@ -4,18 +4,17 @@ from model.sam import Sam, SamAutoBox
 from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.otsu import Otsu
-from model.baselines.grabcut import GrabCutAutoBox, GrabCutAutoBrush
+from model.baselines.grabcut import GrabCutAutoBrush
+from model.scribe import predict
 
 baselines = [
     CannyFill(),
     Gaussian(),
     Otsu(),
-    GrabCutAutoBox(),
     GrabCutAutoBrush(),
     Sam(),
     SamAutoBox()
     ]
-
 
 raw_folder = Path("data/raw")
 easy_raw_folder = raw_folder / "easy"
@@ -35,9 +34,10 @@ def perform_comparison(raw_image_paths, baselines):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         for baseline in baselines:
-            binary = baseline.scribe(img)
+            prediction = predict(baseline, img)
+            image = prediction.to_image()
             output_path = output_folder / f'{img_name[:-4]}-{baseline.__class__.__name__}.jpg'
-            cv2.imwrite(str(output_path), binary)
+            cv2.imwrite(str(output_path), image)
             print(f"Done for {baseline.__class__.__name__}!")
 
 print("Performing comparison on easy images...")

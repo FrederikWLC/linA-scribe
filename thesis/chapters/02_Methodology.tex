@@ -160,18 +160,27 @@ Raw image $\rightarrow$ Automatic box prompts $\rightarrow$ MobileSAMv2 $\righta
 \subsubsection{Seed extraction (Autoboxes)}
 Even though the MobileSAMv2 implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
 Those box prompts are generalized, and work best on natural images, not on image inscriptions.
-Therefore, there is to be made two versions of MobileSAMv2 for comparison: one with the native box prompts \texit{mSAM}, and one with box recognition done by contours in the image \textit{mSAMautobox}.
+Therefore, there is to be made two versions of MobileSAMv2 for comparison: one with the native box prompts \textit{mSAM}, and one with box recognition done by contours in the image \textit{mSAMautobox}.
 \note{Please improve this draft sub sub section}
 
 \subsubsection{Segmentation (MobileSAMv2)}
 MobileSAMv2 \parencite{mobile_sam_v2}
 
 \subsection{Evaluation protocol and performance metrics}
-\note{Please add elaboration and sources!!}
+
+\subsubsection{Choice of metrics}
 $$ Precision = \frac{TP}{TP + FP} $$
 $$ Recall = \frac{TP}{TP + FN} $$
 $$ Dice = F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
 $$ IoU = \frac{Dice}{2 - Dice} = \frac{TP}{TP + FP + FN} $$
+
+\acs{Dice} is more commonly used in cases where have heavy class imbalances (e.g. lots of background compared to regions segmented), or the objects to be segmented are small and thin.
+It is naturally more foregiving than \acs{IoU}, which tends to be rather strict and used to evaluate segmentation where small displacements really matter.
+Therefore, this thesis will measure segmentation performance and report it using \acs{Dice}.
+\parencite{Metrics2025}
+\subsubsection{Statistical tests}
+Non-parametric Friedmann test + Bonferroni corrected Wilcoxon tests. As opposed to parametric ANOVA and paired t-test.
+\parencite{Rainio2024}
 
 \section{Interactive semi-automation}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.

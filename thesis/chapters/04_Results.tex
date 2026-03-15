@@ -8,14 +8,14 @@
 \caption{Segmentation performance on easy images.}
 \pgfplotstabletypeset[
     col sep=comma,
-    columns={model,accuracy,precision,recall,specificity,f1,iou},
+    columns={model,accuracy_mean,precision_mean,recall_mean,specificity_mean,f1_mean,iou_mean},
     columns/model/.style={string type,column name=Model},
-    columns/accuracy/.style={fixed,precision=3,column name=Accuracy},
-    columns/precision/.style={fixed,precision=3,column name=Precision},
-    columns/recall/.style={fixed,precision=3,column name=Recall},
-    columns/specificity/.style={fixed,precision=3,column name=Specificity},
-    columns/f1/.style={fixed,precision=3,column name=$F_1$},
-    columns/iou/.style={fixed,precision=3,column name=IoU},
+    columns/accuracy_mean/.style={fixed,precision=3,column name=Accuracy},
+    columns/precision_mean/.style={fixed,precision=3,column name=Precision},
+    columns/recall_mean/.style={fixed,precision=3,column name=Recall},
+    columns/specificity_mean/.style={fixed,precision=3,column name=Specificity},
+    columns/f1_mean/.style={fixed,precision=3,column name=$F_1$},
+    columns/iou_mean/.style={fixed,precision=3,column name=IoU},
     row predicate/.code={
         \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\loadedtable}
         \edef\temp{\pgfplotsretval}
@@ -35,14 +35,14 @@
 \caption{Segmentation performance on medium images.}
 \pgfplotstabletypeset[
     col sep=comma,
-    columns={model,accuracy,precision,recall,specificity,f1,iou},
+    columns={model,accuracy_mean,precision_mean,recall_mean,specificity_mean,f1_mean,iou_mean},
     columns/model/.style={string type,column name=Model},
-    columns/accuracy/.style={fixed,precision=3,column name=Accuracy},
-    columns/precision/.style={fixed,precision=3,column name=Precision},
-    columns/recall/.style={fixed,precision=3,column name=Recall},
-    columns/specificity/.style={fixed,precision=3,column name=Specificity},
-    columns/f1/.style={fixed,precision=3,column name=$F_1$},
-    columns/iou/.style={fixed,precision=3,column name=IoU},
+    columns/accuracy_mean/.style={fixed,precision=3,column name=Accuracy},
+    columns/precision_mean/.style={fixed,precision=3,column name=Precision},
+    columns/recall_mean/.style={fixed,precision=3,column name=Recall},
+    columns/specificity_mean/.style={fixed,precision=3,column name=Specificity},
+    columns/f1_mean/.style={fixed,precision=3,column name=$F_1$},
+    columns/iou_mean/.style={fixed,precision=3,column name=IoU},
     row predicate/.code={
         \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\loadedtable}
         \edef\temp{\pgfplotsretval}
@@ -62,14 +62,14 @@
 \caption{Segmentation performance on hard images.}
 \pgfplotstabletypeset[
     col sep=comma,
-    columns={model,accuracy,precision,recall,specificity,f1,iou},
+    columns={model,accuracy_mean,precision_mean,recall_mean,specificity_mean,f1_mean,iou_mean},
     columns/model/.style={string type,column name=Model},
-    columns/accuracy/.style={fixed,precision=3,column name=Accuracy},
-    columns/precision/.style={fixed,precision=3,column name=Precision},
-    columns/recall/.style={fixed,precision=3,column name=Recall},
-    columns/specificity/.style={fixed,precision=3,column name=Specificity},
-    columns/f1/.style={fixed,precision=3,column name=$F_1$},
-    columns/iou/.style={fixed,precision=3,column name=IoU},
+    columns/accuracy_mean/.style={fixed,precision=3,column name=Accuracy},
+    columns/precision_mean/.style={fixed,precision=3,column name=Precision},
+    columns/recall_mean/.style={fixed,precision=3,column name=Recall},
+    columns/specificity_mean/.style={fixed,precision=3,column name=Specificity},
+    columns/f1_mean/.style={fixed,precision=3,column name=$F_1$},
+    columns/iou_mean/.style={fixed,precision=3,column name=IoU},
     row predicate/.code={
         \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\loadedtable}
         \edef\temp{\pgfplotsretval}
@@ -83,6 +83,34 @@
     every last row/.style={after row=\bottomrule}
 ]{\loadedtable}
 \end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Segmentation IoU on easy images.}
+\pgfplotstabletypeset[
+    col sep=comma,
+    columns={model,iou_mean,iou_std,iou_std_error,iou_n},
+    columns/model/.style={string type,column name=Model},
+    columns/iou_mean/.style={fixed,precision=3,column name=Mean IoU},
+    columns/iou_std/.style={fixed,precision=3,column name=$\sigma$},
+    columns/iou_std_error/.style={fixed,precision=3,column name=Standard error},
+    columns/iou_n/.style={fixed,precision=3,column name=$n$},
+    row predicate/.code={
+        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\loadedtable}
+        \edef\temp{\pgfplotsretval}
+        \def\match{easy}
+        \ifx\temp\match
+        \else
+            \pgfplotstableuserowfalse
+        \fi
+    },
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+]{\loadedtable}
+\end{table}
+
+$$ v = \frac{\left(\frac{s_1^2}{n} + \frac{s_2^2}{n}\right)^2}{\frac{\left(\frac{s_1^2}{n}\right)^2}{n-1}+\frac{\left(\frac{s_1^2}{n}\right)^2}{n-1}}$$
+$$ t = \frac{(\delta)}{\sqrt{n}}$$
 
 \begin{figure}[htbp]
 \centering
@@ -165,7 +193,7 @@ symbolic x coords={Otsu,Gaussian,CannyFill,GCautobox,GCautobrush,mSAM,mSAMautobo
 xtick=data,
 xticklabel style={rotate=45,anchor=east},
 ]
-\addplot table [x=model,y=iou,col sep=comma] {\loadedtable};
+\addplot table [x=model,y=iou_mean,col sep=comma] {\loadedtable};
 \end{axis}
 \end{tikzpicture}
 \caption{IoU performance per model. Each bar shows the overall performance, while the horizontal lines within each bar indicate the IoU values obtained for the easy, medium, and hard difficulty subsets.}

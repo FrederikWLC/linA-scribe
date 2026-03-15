@@ -1,6 +1,7 @@
 import cv2
 
 from model.scribe import Scribe
+from utils.binary_mask import BinaryMask
 
 class Otsu(Scribe):
     def __init__(self):
@@ -8,9 +9,22 @@ class Otsu(Scribe):
 
     def segment(self, image):
         
-        _, binary = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # simultaneously computes
+        # the optimal Otsu threshold T
+        # and the thresholded image...
+        # 0 is a threshold value not even used by the method (overwritten by Otsu's threshold)
+        # 255 is the value put 
+        # for the brightests pixels
+        # that pass the threshold...
+        # in our case, this is the white background
+        _, thresholded = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # it gives the thresholded image
+        # as 255 (white, background)
+        # and black (0, ink)
 
-        return binary
+        # Convert and return image as binary mask
+        # having 1 as foreground (ink), and 0 as background
+        return BinaryMask.from_image(thresholded)
     
     def preprocess(self, image):
         return cv2.bilateralFilter(image, 15, 75, 75)
