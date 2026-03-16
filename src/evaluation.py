@@ -77,6 +77,14 @@ def perform_evaluation(raw_images, ground_truths, baselines, difficulty, labels,
         df_raw.to_csv(csv_path[:-4]+"-raw.csv", index=False)
         df_resume.to_csv(csv_path[:-4]+"-resume.csv", index=False)
 
+        pivot_df = (
+            df_raw
+            .pivot(index=["difficulty","label"], columns="model", values="f1")
+            .reset_index()
+        )
+
+        pivot_df.to_csv(csv_path[:-4]+"-raw-pivot.csv", index=False)
+
 def do_statistical_tests(csv_path="data/evaluation.csv", alpha=0.05):
     df_raw = pd.read_csv(csv_path[:-4]+"-raw.csv")
     try:
