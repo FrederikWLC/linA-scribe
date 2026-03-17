@@ -6,10 +6,11 @@ from model.baselines.gaussian import Gaussian
 from model.baselines.otsu import Otsu
 from model.baselines.grabcut import GrabCutAutoBrush
 import pandas as pd
-from utils.evaluation import evaluate_model, BinaryF1Score, BinaryIoU
-from scipy.stats import friedmanchisquare, wilcoxon
+from utils.evaluation import evaluate_model, BinaryF1Score
+from scipy.stats import friedmanchisquare, wilcoxon, ttest_rel, shapiro
+import numpy as np
 
-metrics = {"f1": BinaryF1Score, "iou": BinaryIoU}
+metrics = {"f1": BinaryF1Score}
 
 baselines = [
     Otsu(),
@@ -39,9 +40,9 @@ easy_ground_truths = [cv2.imread(ground_truth_folder / img_path.name, cv2.IMREAD
 medium_ground_truths = [cv2.imread(ground_truth_folder / img_path.name, cv2.IMREAD_GRAYSCALE) for img_path in medium_raw_image_paths]
 hard_ground_truths = [cv2.imread(ground_truth_folder / img_path.name, cv2.IMREAD_GRAYSCALE) for img_path in hard_raw_image_paths]
 
-raw_columns = resume_columns = base_columns = ["model","difficulty"]
-resume_columns += [f"{m}_{key}" for m in metrics.keys() for key in ["mean", "std", "std_error","n"]]
-raw_columns += metrics.keys()
+base_columns = ["model","difficulty"]
+resume_columns = base_columns + [f"{m}_{key}" for m in metrics.keys() for key in ["mean", "std", "std_error","n"]]
+raw_columns = base_columns + list(metrics.keys())
 
 def perform_evaluation(raw_images, ground_truths, baselines, difficulty, labels, csv_path="data/evaluation.csv"):
     try:
@@ -90,9 +91,14 @@ def do_statistical_tests(csv_path="data/evaluation.csv", alpha=0.05):
     try:
         df_friedman_tests = pd.read_csv(csv_path[:-4]+"-friedman-tests.csv")
         df_wilcoxon_tests = pd.read_csv(csv_path[:-4]+"-wilcoxon-tests.csv")
+        df_paired_t_tests = pd.read_csv(csv_path[:-4]+"-paired-t-tests.csv")
+        df_shapiro_tests = pd.read_csv(csv_path[:-4]+"-shapiro-tests.csv")
     except:
-        df_friedman_tests = pd.DataFrame(columns=["metric", "difficulty", "models", "statistic", "p_value", "significant"])
-        df_wilcoxon_tests = pd.DataFrame(columns=["metric", "difficulty", "models", "statistic", "p_value", "significant"])
+        cols = ["metric", "difficulty", "statistic", "model1", "model2", "p_value", "significant"]
+        df_friedman_tests = pd.DataFrame(columns=["metric", "difficulty", "statistic", "p_value", "significant"])
+        df_wilcoxon_tests = pd.DataFrame(columns=cols)
+        df_paired_t_tests = pd.DataFrame(columns=cols)
+        df_shapiro_tests = pd.DataFrame(columns=cols)
     metrics = [col for col in df_raw.columns if col not in ["model","difficulty","label"]]
 
     # perform friedman test for each metric and difficulty level (including all together)
@@ -104,16 +110,18 @@ def do_statistical_tests(csv_path="data/evaluation.csv", alpha=0.05):
                 subset = df_raw[df_raw["difficulty"] == difficulty]
 
             groups = [subset[subset["model"] == model][metric].tolist() for model in subset["model"].unique()]
-            statistic, p_value = friedmanchisquare(*groups)
-            significant = p_value < alpha
+            
+            friedman_statistic, friedman_p_value = friedmanchisquare(*groups)
+            friedman_significant = friedman_p_value < alpha
             df_friedman_tests = pd.concat([df_friedman_tests, pd.DataFrame([{
                 "metric": metric,
                 "difficulty": difficulty,
-                "statistic": statistic,
-                "p_value": p_value,
-                "significant": significant
+                "statistic": friedman_statistic,
+                "p_value": friedman_p_value,
+                "significant": friedman_significant
             }])], ignore_index=True)
-            
+
+
             # DO REPLACEMENT OF ROWS WITH SAME MODEL AND DIFFICULTY (keep only last one)
             df_friedman_tests.drop_duplicates(subset=["metric", "difficulty"], keep="last", inplace=True)
 
@@ -123,25 +131,58 @@ def do_statistical_tests(csv_path="data/evaluation.csv", alpha=0.05):
                     model1, model2 = models[i], models[j]
                     data1 = subset[subset["model"] == model1][metric]
                     data2 = subset[subset["model"] == model2][metric]
-                    statistic, p_value = wilcoxon(data1, data2)
-                    significant = p_value < alpha
+                    wilcoxon_statistic, wilcoxon_p_value = wilcoxon(data1, data2)
+                    wilcoxon_significant = wilcoxon_p_value < alpha
                     df_wilcoxon_tests = pd.concat([df_wilcoxon_tests, pd.DataFrame([{
                         "metric": metric,
                         "difficulty": difficulty,
                         "model1": model1,
                         "model2": model2,
-                        "statistic": statistic,
-                        "p_value": p_value,
-                        "significant": significant
+                        "statistic": wilcoxon_statistic,
+                        "p_value": wilcoxon_p_value,
+                        "significant": wilcoxon_significant
+                    }])], ignore_index=True)
+
+                    data1_numpy = data1.to_numpy()
+                    data2_numpy = data2.to_numpy()
+                    print("Data1: ", data1_numpy)
+                    print("Data2: ", data2_numpy)
+                    residuals = data1.to_numpy() - data2.to_numpy()
+                    print(f"Residuals for {model1} vs {model2} on {difficulty} difficulty: {residuals.tolist()}")
+                    shapiro_statistic, shapiro_p_value = shapiro(residuals.tolist())
+                    print(f"Shapiro test for {model1} vs {model2} on {difficulty} difficulty: statistic={shapiro_statistic}, p_value={shapiro_p_value}")
+                    shapiro_significant = shapiro_p_value < alpha
+                    df_shapiro_tests = pd.concat([df_shapiro_tests, pd.DataFrame([{
+                        "metric": metric,
+                        "difficulty": difficulty,
+                        "model1": model1,
+                        "model2": model2,
+                        "statistic": shapiro_statistic,
+                        "p_value": shapiro_p_value,
+                        "significant": shapiro_significant
+                    }])], ignore_index=True)
+
+                    paired_t_statistic, paired_t_p_value = ttest_rel(data1, data2)
+                    paired_t_significant = paired_t_p_value < alpha
+                    df_paired_t_tests = pd.concat([df_paired_t_tests, pd.DataFrame([{
+                        "metric": metric,
+                        "difficulty": difficulty,
+                        "model1": model1,
+                        "model2": model2,
+                        "statistic": paired_t_statistic,
+                        "p_value": paired_t_p_value,
+                        "significant": paired_t_significant
                     }])], ignore_index=True)
             df_wilcoxon_tests.drop_duplicates(subset=["metric","difficulty","model1","model2"],keep="last",inplace=True)
-
+            df_paired_t_tests.drop_duplicates(subset=["metric","difficulty","model1","model2"],keep="last",inplace=True)
+            df_shapiro_tests.drop_duplicates(subset=["metric","difficulty","model1","model2"],keep="last",inplace=True)
         
     df_friedman_tests.to_csv(csv_path[:-4]+"-friedman-tests.csv", index=False)       
     df_wilcoxon_tests.to_csv(csv_path[:-4]+"-wilcoxon-tests.csv", index=False)
+    df_paired_t_tests.to_csv(csv_path[:-4]+"-paired-t-tests.csv", index=False)
+    df_shapiro_tests.to_csv(csv_path[:-4]+"-shapiro-tests.csv", index=False)
 
 
-do_statistical_tests()
 print("Evaluating on easy images...")
 perform_evaluation(easy_raw_images, easy_ground_truths, baselines, difficulty="easy",labels=[path.name[:-4] for path in easy_raw_image_paths])
 do_statistical_tests()
