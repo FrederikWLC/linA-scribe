@@ -85,7 +85,7 @@ def summarize_results(results: dict[str, list[float]]) -> dict[str, float]:
         mean = stats.mean(values) # sample mean
         std = stats.stdev(values) # sample standard deviation
         std_error = std / math.sqrt(n) # sample standard error
-        resume.update({name+"_"+key : value for key, value in {'n':n,'mean': mean, 'std': std, 'std_error': std_error}.items()})
+        resume.update({name+"_"+key : value for key, value in {'mean': mean, 'std': std, 'std_error': std_error,'n':n}.items()})
     return resume
 
 # Evaluate a model on a dataset
