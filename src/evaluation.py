@@ -162,16 +162,16 @@ def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0
                 data2 = df_raw[df_raw["model"] == model2][metric].dropna().to_numpy()
 
                 wilcoxon_statistic, wilcoxon_p_value = wilcoxon(data1, data2)
-                wilcoxon_significant = bool(wilcoxon_p_value < alpha) if not np.isnan(wilcoxon_p_value) else False
+                wilcoxon_significant = bool(wilcoxon_p_value < alpha)
 
                 residuals = data1 - data2
                 do_qqplot(residuals, metric, model1, model2)
 
                 shapiro_statistic, shapiro_p_value = shapiro(residuals)
-                shapiro_significant = bool(shapiro_p_value < alpha) if not np.isnan(shapiro_p_value) else False
+                shapiro_significant = bool(shapiro_p_value < alpha)
 
                 paired_t_statistic, paired_t_p_value = ttest_rel(data1, data2)
-                paired_t_significant = bool(paired_t_p_value < alpha) if not np.isnan(paired_t_p_value) else False
+                paired_t_significant = bool(paired_t_p_value < alpha)
 
                 pair_rows = {
                     "metric": metric,
@@ -256,97 +256,97 @@ def do_qqplot(residuals, metric, model1, model2):
 def _series_by_model(df_resume: pd.DataFrame, difficulty: str, metric_field: str, model_names: list[str]) -> list[float]:
     subset = df_resume[df_resume["difficulty"] == difficulty]
     values_by_model = subset.set_index("model")[metric_field].to_dict()
-    return [values_by_model.get(model, 0.0) for model in model_names]
+    return np.array([values_by_model.get(model, 0.0) for model in model_names])
 
 
-def do_barplot(csv_path: str = "data/evaluation.csv"):
+def do_barplots(csv_path: str = "data/evaluation.csv"):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
+    
+    model_names = np.array([baseline.name for baseline in BASELINES])
 
-    model_names = [baseline.name for baseline in BASELINES]
+    for metric in METRICS.keys():
 
-    dice_mean = _series_by_model(df_resume, "all", "f1_mean", model_names)
-    easy_mean = _series_by_model(df_resume, "easy", "f1_mean", model_names)
-    medium_mean = _series_by_model(df_resume, "medium", "f1_mean", model_names)
-    hard_mean = _series_by_model(df_resume, "hard", "f1_mean", model_names)
+        metric_mean = _series_by_model(df_resume, "all", f"{metric}_mean", model_names)
+        easy_mean = _series_by_model(df_resume, "easy", f"{metric}_mean", model_names)
+        medium_mean = _series_by_model(df_resume, "medium", f"{metric}_mean", model_names)
+        hard_mean = _series_by_model(df_resume, "hard", f"{metric}_mean", model_names)
 
-    dice_std = _series_by_model(df_resume, "all", "f1_std", model_names)
-    easy_std = _series_by_model(df_resume, "easy", "f1_std", model_names)
-    medium_std = _series_by_model(df_resume, "medium", "f1_std", model_names)
-    hard_std = _series_by_model(df_resume, "hard", "f1_std", model_names)
+        metric_std_error = _series_by_model(df_resume, "all", f"{metric}_std_error", model_names)
+        easy_std_error = _series_by_model(df_resume, "easy", f"{metric}_std_error", model_names)
+        medium_std_error = _series_by_model(df_resume, "medium", f"{metric}_std_error", model_names)
+        hard_std_error = _series_by_model(df_resume, "hard", f"{metric}_std_error", model_names)
 
-    x = np.arange(len(model_names))
-    width = 0.2
+        order = np.argsort(-metric_mean)
 
-    _, ax = plt.subplots(figsize=(8, 5))
+        model_names = model_names[order]
+        easy_mean = easy_mean[order]
+        medium_mean = medium_mean[order]
+        hard_mean = hard_mean[order]
+        metric_mean = metric_mean[order]
+        metric_std_error = metric_std_error[order]
 
-    ax.bar(
-        x,
-        dice_mean,
-        width=width * 2.2,
-        color="lightgray",
-        alpha=0.4,
-        label="Overall Dice",
-        zorder=1,
-    )
-    ax.errorbar(
-        x,
-        dice_mean,
-        yerr=dice_std,
-        fmt="none",
-        ecolor="black",
-        elinewidth=2.5,
-        capsize=8,
-        capthick=2.5,
-        zorder=5,
-    )
+        x = np.arange(len(model_names))
+        width = 0.15
 
-    ax.bar(
-        x - width,
-        easy_mean,
-        width,
-        yerr=easy_std,
-        capsize=4,
-        error_kw=dict(elinewidth=1, capthick=1),
-        label="Easy",
-        zorder=3,
-    )
-    ax.bar(
-        x,
-        medium_mean,
-        width,
-        yerr=medium_std,
-        capsize=4,
-        error_kw=dict(elinewidth=1, capthick=1),
-        label="Medium",
-        zorder=3,
-    )
-    ax.bar(
-        x + width,
-        hard_mean,
-        width,
-        yerr=hard_std,
-        capsize=4,
-        error_kw=dict(elinewidth=1, capthick=1),
-        label="Hard",
-        zorder=3,
-    )
+        x_metric = x - 1.5 * width
+        x_easy = x - 0.5 * width
+        x_medium = x + 0.5 * width
+        x_hard = x + 1.5 * width
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(model_names)
-    ax.set_ylabel("Dice Score")
-    ax.set_title("Dice Score per Model with Difficulty Breakdown")
-    ax.set_ylim(0, 1)
-    ax.legend()
+        _, ax = plt.subplots(figsize=(8, 5))
 
-    Path("data/plots").mkdir(parents=True, exist_ok=True)
-    plt.tight_layout()
-    plt.savefig("data/plots/dice_score_comparison.png")
-    plt.close()
+        # Mean Metric (background bars)
+        ax.bar(x_metric, metric_mean, width, yerr=metric_std_error, capsize=4, 
+            alpha=1, label='Mean ' + metric.capitalize() + ' (All Difficulties)', color='lightblue', edgecolor='none',
+            error_kw=dict(
+                ecolor='deepskyblue',
+                elinewidth=1.5,
+                capthick=1.5
+            ))
+
+        # Difficulty component bars
+        ax.bar(x_easy, easy_mean, width, yerr=easy_std_error, capsize=4, label='Easy',color='green',
+               alpha=1,
+               error_kw=dict(
+                ecolor='darkgreen',
+                elinewidth=1.5,
+                capthick=1.5
+            ))
+        ax.bar(x_medium, medium_mean, width, yerr=medium_std_error, capsize=4, label='Medium',color='orange',
+               alpha=1,
+               error_kw=dict(
+                ecolor='darkorange',
+                elinewidth=1.5,
+                capthick=1.5
+            ))
+        ax.bar(x_hard, hard_mean, width, yerr=hard_std_error, capsize=4, label='Hard',color='red',
+               alpha=1,
+               error_kw=dict(
+                ecolor='darkred',
+                elinewidth=1.5,
+                capthick=1.5
+            ))
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(model_names)
+        ax.set_ylabel(metric.capitalize())
+        ax.set_title(f"{metric.capitalize()} Score per Model with Difficulty Breakdown")
+        ax.set_ylim(0, 1)
+        ax.legend()
+        ax.yaxis.grid(True, linestyle='--', linewidth=0.6, alpha=0.5)
+        ax.set_axisbelow(True)
+
+        Path("data/plots").mkdir(parents=True, exist_ok=True)
+        plt.tight_layout()
+        plt.savefig(f"data/plots/{metric}_score_comparison.png")
+        plt.close()
 
 
 def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
+    do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
+    do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation
     for difficulty in DIFFICULTIES:
         print(f"Evaluating on {difficulty} images...")
         raw_images, ground_truths, labels = _load_difficulty_set(difficulty)
@@ -362,7 +362,7 @@ def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
         do_statistical_tests(csv_path=csv_path)
 
     do_resume(csv_path=csv_path)
-    do_barplot(csv_path=csv_path)
+    do_barplots(csv_path=csv_path)
     do_statistical_tests(csv_path=csv_path)
 
 if __name__ == "__main__":
