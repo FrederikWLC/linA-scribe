@@ -12,7 +12,6 @@ baselines = [
     Gaussian(),
     Otsu(),
     GrabCutAutoBrush(),
-    Sam(),
     SamAutoBox()
     ]
 

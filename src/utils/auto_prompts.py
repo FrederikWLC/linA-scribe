@@ -1,28 +1,16 @@
 import cv2
 import numpy as np
-from model.baselines.gaussian import Gaussian
+from utils.seeds import BoxSeed, BrushSeed, PointSeed
 
-def show_boxes(image, boxes):
-    vis = image.copy()
+def auto_boxes(thresh: np.ndarray, min_area=25*25, max_area=200*200, max_boxes=20) -> list[BoxSeed]:
 
-    # ensure color image so the rectangles are visible
-    if len(vis.shape) == 2:
-        vis = cv2.cvtColor(vis, cv2.COLOR_GRAY2BGR)
-
-    for (x1, y1), (x2, y2) in boxes:
-        cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-    cv2.imshow("boxes", vis)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-def auto_boxes(image: np.ndarray, min_area=10000, max_area=250*250, min_boxes=10, max_boxes=20):
-
-    gthresh = Gaussian().predict(image)
-    kernel = np.ones((3,3), np.uint8)
-    dilation = cv2.dilate(gthresh,kernel,iterations = 2)
-    closing = cv2.morphologyEx(dilation, cv2.MORPH_CLOSE, kernel, iterations=2)
-    image = closing
+    kernel_erosion = np.ones((1,1), np.uint8)
+    erosion = cv2.erode(thresh, kernel_erosion, iterations = 2)
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,2))
+    opening = cv2.morphologyEx(erosion, cv2.MORPH_OPEN, kernel_open)
+    kernel_dilate = np.ones((2,2),np.uint8)
+    dilation = cv2.dilate(opening,kernel_dilate,iterations = 4)
+    image = dilation
 
     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -35,30 +23,23 @@ def auto_boxes(image: np.ndarray, min_area=10000, max_area=250*250, min_boxes=10
 
         x, y, w, h = cv2.boundingRect(c)
         area = w*h
-        if (area < min_area) or (area > max_area):
-            continue
-        boxes.append([[x, y], [x + w, y + h]])
+        if (area >= min_area) and (area <= max_area):
+            boxes.append([[x, y], [x + w, y + h]])
 
         if len(boxes) >= max_boxes:
             break
 
-    if len(boxes) < min_boxes:
-        for c in contours:
-            if len(boxes) >= min_boxes:
-                break
-            # Skip ones already included
-            x, y, w, h = cv2.boundingRect(c)
-            candidate = [[x, y], [x + w, y + h]]
-            if candidate not in boxes:
-                boxes.append(candidate)
     #show_boxes(image,boxes)
-    return np.array(boxes)
+    return [BoxSeed(x1, y1, x2, y2) for [[x1, y1], [x2, y2]] in boxes]
 
-def auto_brushes(image,erosion_iter=2):
-    gthresh = Gaussian().predict(image)
+def auto_box(thresh: np.ndarray, min_area=25*25, max_area=200*200, max_boxes=20) -> BoxSeed:
+    boxes = auto_boxes(thresh, min_area, max_area, max_boxes)
+    return BoxSeed.bigger_from_boxes(boxes)
+
+def auto_brushes(thresh,erosion_iter=2) -> list[BrushSeed]:
     #return extract_positive_points(gthresh),extract_negative_points(gthresh)
-    fgd_brush = cv2.morphologyEx(gthresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
-    bgd_brush = cv2.morphologyEx(gthresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
     #prb_fgd_brush = cv2.morphologyEx(gthresh, cv2.MORPH_DILATE, np.ones((3,3), np.uint8), iterations=erosion_iter)
     
     ys, xs = fgd_brush.nonzero()
@@ -69,26 +50,45 @@ def auto_brushes(image,erosion_iter=2):
 
     #ys, xs = prb_fgd_brush.nonzero()
     #prb_fgd_pixels = np.column_stack((xs, ys))
+    
+    return [
+            BrushSeed(fgd_pixels,cv2.GC_FGD),
+            BrushSeed(bgd_pixels,cv2.GC_BGD)
+            ]
 
-    return fgd_pixels, bgd_pixels
+def auto_points(thresh, num_points=10,erosion_iter=2) -> list[PointSeed]:
+    fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+    fgd_points = extract_innermost_points(fgd_brush,num_points=num_points)
+    bgd_points = extract_innermost_points(bgd_brush,num_points=num_points)
+    return [
+        PointSeed(x, y, 1) for x, y in fgd_points
+    ] + [
+        PointSeed(x, y, 0) for x, y in bgd_points
+    ]
 
+def extract_innermost_points(mask,num_points=9) -> list[tuple[int, int]]:
+    w, h = mask.shape
+    min_distance = round(np.sqrt(w * h)/num_points)
+    border_margin = 1
+    # add zero border so image edges are also "bad"
+    padded = cv2.copyMakeBorder(
+        mask,
+        top=border_margin,
+        bottom=border_margin,
+        left=border_margin,
+        right=border_margin,
+        borderType=cv2.BORDER_CONSTANT,
+        value=0
+    )
 
-def extract_positive_points(mask,min_blob_area=50):
-    num_labels, blob_labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
-    points = []
-    for label in range(1, num_labels):  # skip background blobs
-        area = stats[label, cv2.CC_STAT_AREA]
-        if area < min_blob_area:
-            continue
-        blob = np.uint8(blob_labels == label) * 255
-        dist = cv2.distanceTransform(blob, cv2.DIST_L2, 5)
-        _, _, _, most_interior = cv2.minMaxLoc(dist)
-        points.append(most_interior)
-    return points
+    dist = cv2.distanceTransform(padded, cv2.DIST_L2, 0).astype(np.uint8)
 
-def extract_negative_points(mask,num_points=3,min_distance=20):
-    background = cv2.bitwise_not(mask)
-    dist = cv2.distanceTransform(background, cv2.DIST_L2, 5)
+    # remove padding again so coordinates match original image
+    dist = dist[
+        border_margin:border_margin + mask.shape[0],
+        border_margin:border_margin + mask.shape[1]
+    ]
     points = []
     dist_work = dist.copy()
     for _ in range(num_points):
@@ -97,10 +97,13 @@ def extract_negative_points(mask,num_points=3,min_distance=20):
             break
 
         points.append(most_exterior)
-
+        x,y = most_exterior
         # remove neighborhood around found point
         # for the next point not to be too nearby
-        x,y = most_exterior
-        cv2.circle(dist_work,(x,y),min_distance,0,-1)
-    return points
+        cv2.circle(dist_work, center=(x, y), radius=min_distance, color=0, thickness=-1)
+        # for visualization of the distance transform and the found points:
+        #dist_vis = cv2.normalize(dist_work, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        #cv2.imshow("dist", dist_vis)
+        #cv2.waitKey(0)
 
+    return points

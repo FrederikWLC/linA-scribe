@@ -34,6 +34,15 @@ class BoxSeed(Seed):
         self.x2 = x2
         self.y2 = y2
 
+    def bigger_from_boxes(boxes: list['BoxSeed']) -> 'BoxSeed':
+        if not boxes:
+            return None
+        x1 = min(box.x1 for box in boxes)
+        y1 = min(box.y1 for box in boxes)
+        x2 = max(box.x2 for box in boxes)
+        y2 = max(box.y2 for box in boxes)
+        return BoxSeed(x1, y1, x2, y2)
+
 class BrushSeed(Seed):
     def __init__(self, pixels: list[tuple[int,int]], label: int):
         self.pixels = pixels

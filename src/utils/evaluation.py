@@ -1,7 +1,5 @@
 import math
 import statistics as stats
-from scipy.stats import friedmanchisquare
-from scipy.stats import wilcoxon
 from utils.binary_mask import BinaryMask
 from model.scribe import predict_batch
 import numpy as np
@@ -81,11 +79,12 @@ def compute_metrics(Y_hat: list[BinaryMask], Y: list[BinaryMask], metrics: dict[
 def summarize_results(results: dict[str, list[float]]) -> dict[str, float]:
     resume = {}
     for name, values in results.items():
-        n = len(values) # number of sample observations
+        median = stats.median(values) # sample median
         mean = stats.mean(values) # sample mean
         std = stats.stdev(values) # sample standard deviation
+        n = len(values) # number of sample observations
         std_error = std / math.sqrt(n) # sample standard error
-        resume.update({name+"_"+key : value for key, value in {'mean': mean, 'std': std, 'std_error': std_error,'n':n}.items()})
+        resume.update({name+"_"+key : value for key, value in {'median': median, 'mean': mean, 'std': std, 'std_error': std_error,'n':n}.items()})
     return resume
 
 # Evaluate a model on a dataset

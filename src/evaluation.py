@@ -10,19 +10,19 @@ from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import Sam
+from model.sam import SamAutoBox
 from utils.evaluation import BinaryF1Score, evaluate_model, summarize_results
 
 
 METRICS = {"Dice": BinaryF1Score}
-BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(), Sam()]
+BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), SamAutoBox(display_seeds=False)]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")
 GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")
 
 BASE_COLUMNS = ["difficulty","model"]
 RESUME_COLUMNS = BASE_COLUMNS + [
-    f"{metric}_{key}" for metric in METRICS.keys() for key in ["mean", "std", "std_error", "n"]
+    f"{metric}_{key}" for metric in METRICS.keys() for key in ["median","mean", "std", "std_error", "n"]
 ]
 RAW_COLUMNS = BASE_COLUMNS.copy()
 RAW_COLUMNS.insert(1, "label")
@@ -343,8 +343,60 @@ def do_barplots(csv_path: str = "data/evaluation.csv"):
         plt.savefig(f"data/plots/{metric}_score_comparison.png")
         plt.close()
 
+def do_boxplots(csv_path: str = "data/evaluation.csv"):
+    df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
+    if df_resume.empty:
+        return
+    
+    base_model_names = np.array([baseline.name for baseline in BASELINES])
+
+    for metric in METRICS.keys():
+
+        df_raw_pivot = _safe_read_csv(_variant_path(csv_path, f"raw-pivot-{metric}"), RAW_COLUMNS)
+        if df_raw_pivot.empty:
+            continue
+
+        metric_median = _series_by_model(df_resume, "all", f"{metric}_median", base_model_names)
+        order = np.argsort(-metric_median)
+
+        model_names = base_model_names[order]
+
+        data = [df_raw_pivot[m].values for m in model_names]
+
+        x = np.arange(len(model_names))
+
+        plt.figure(figsize=(10, 6))
+        ax = plt.gca()
+
+        ax.boxplot(
+            data,
+            positions=x,
+            widths=0.5,
+            showfliers=False,
+            patch_artist=True,
+            boxprops=dict(facecolor='lightblue', alpha=1),
+            medianprops=dict(color='black', linewidth=2),
+            whiskerprops=dict(color='black'),
+            capprops=dict(color='black')
+        )
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(model_names, rotation=45)
+        ax.set_title(f"{metric.capitalize()} Distribution per Model")
+        ax.set_xlabel("Model")
+        ax.set_ylabel(metric.capitalize())
+
+        ax.grid(axis="y", linestyle="--", alpha=0.7)
+        ax.set_axisbelow(True)
+
+        Path("data/plots").mkdir(parents=True, exist_ok=True)
+        plt.tight_layout()
+        plt.savefig(f"data/plots/{metric}_boxplot.png")
+        plt.close()
+
 
 def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
+    do_boxplots(csv_path=csv_path) # ensure boxplots are up to date before starting evaluation
     do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
     do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation
     for difficulty in DIFFICULTIES:
@@ -363,6 +415,7 @@ def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
 
     do_resume(csv_path=csv_path)
     do_barplots(csv_path=csv_path)
+    do_boxplots(csv_path=csv_path)
     do_statistical_tests(csv_path=csv_path)
 
 if __name__ == "__main__":

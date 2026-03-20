@@ -4,10 +4,12 @@ from model.scribe import SeedableScribe
 from utils.auto_prompts import auto_boxes, auto_brushes
 from utils.binary_mask import BinaryMask
 from utils.seeds import Seed, BoxSeed, BrushSeed, get_boxseeds, get_brushseeds
+from model.baselines.gaussian import Gaussian
 
 # implementation of GrabCut
 class GrabCut(SeedableScribe):
-    def __init__(self, iters=5):
+    def __init__(self, display_seeds: bool = False, iters=10):
+        super().__init__(display_seeds)
         self.iters = iters
 
     def segment(self, image: np.ndarray, seeds=None) -> BinaryMask:
@@ -41,24 +43,11 @@ class GrabCut(SeedableScribe):
 
 # implementation of GrabCut with automatic brushes given as seeds
 class GrabCutAutoBrush(GrabCut):
-    def autoseed(self, image: np.ndarray) -> list[BrushSeed]:      
-        sure_fgd_pixels, sure_bgd_pixels  = auto_brushes(image,2)
-        seeds = [
-                 BrushSeed(sure_fgd_pixels,cv2.GC_FGD),
-                 BrushSeed(sure_bgd_pixels,cv2.GC_BGD)
-                 ]
-        return seeds
+    def autoseed(self, image: np.ndarray) -> list[BrushSeed]:
+        thresh = Gaussian().predict(image)       
+        brushes = auto_brushes(thresh,2)
+        return brushes
 
     @property
     def name(self):
         return "GCautobrush"
-
-# implementation of GrabCut with automatic boxes given as seed
-class GrabCutAutoBox(GrabCut):
-    def autoseed(self, image: np.ndarray) -> list[BoxSeed]:        
-        seeds = [BoxSeed(x1, y1, x2, y2) for [[x1, y1], [x2, y2]] in auto_boxes(image)]
-        return seeds
-    
-    @property
-    def name(self):
-        return "GCautobox"
