@@ -2,7 +2,7 @@
 \chapter{An Appendix}
 
 \section{Raw segmentation performance}
-\pgfplotstableread[col sep=comma]{../src/data/evaluation-raw-pivot.csv}\rawpivot
+\pgfplotstableread[col sep=comma]{../src/data/evaluation-raw-pivot-Dice.csv}\rawpivot
 
 \pgfplotstableset{
     columns/CannyFill/.style={column name=CannyFill},
@@ -92,4 +92,29 @@
     every head row/.style={before row=\toprule,after row=\midrule},
     every last row/.style={after row=\bottomrule}
 ]{\rawpivot}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Segmentation Dice Score on easy images.}
+\pgfplotstabletypeset[
+    col sep=comma,
+    columns={model,Dice_mean,Dice_std,Dice_std_error,Dice_n},
+    columns/model/.style={string type,column name=Model},
+    columns/Dice_mean/.style={fixed,precision=3,column name=Mean Dice},
+    columns/Dice_std/.style={fixed,precision=3,column name=$\sigma$},
+    columns/Dice_std_error/.style={fixed,precision=3,column name=Standard error},
+    columns/Dice_n/.style={fixed,precision=3,column name=$n$},
+    row predicate/.code={
+        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
+        \edef\temp{\pgfplotsretval}
+        \def\match{easy}
+        \ifx\temp\match
+        \else
+            \pgfplotstableuserowfalse
+        \fi
+    },
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+]{\resumetable}
 \end{table}

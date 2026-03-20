@@ -1,46 +1,14 @@
 \chapter{Results}
 \section{Segmentation performance}
 
-\pgfplotstableread[col sep=comma]{../src/data/evaluation.csv}\resumetable
-
-
-\begin{table}[ht]
-\centering
-\caption{Segmentation IoU on easy images.}
-\pgfplotstabletypeset[
-    col sep=comma,
-    columns={model,iou_mean,iou_std,iou_std_error,iou_n},
-    columns/model/.style={string type,column name=Model},
-    columns/iou_mean/.style={fixed,precision=3,column name=Mean IoU},
-    columns/iou_std/.style={fixed,precision=3,column name=$\sigma$},
-    columns/iou_std_error/.style={fixed,precision=3,column name=Standard error},
-    columns/iou_n/.style={fixed,precision=3,column name=$n$},
-    row predicate/.code={
-        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
-        \edef\temp{\pgfplotsretval}
-        \def\match{easy}
-        \ifx\temp\match
-        \else
-            \pgfplotstableuserowfalse
-        \fi
-    },
-    every head row/.style={before row=\toprule,after row=\midrule},
-    every last row/.style={after row=\bottomrule}
-]{\resumetable}
-\end{table}
-
-$$ v = \frac{\left(\frac{s_1^2}{n} + \frac{s_2^2}{n}\right)^2}{\frac{\left(\frac{s_1^2}{n}\right)^2}{n-1}+\frac{\left(\frac{s_1^2}{n}\right)^2}{n-1}}$$
-$$ t = \frac{(\delta)}{\sqrt{n}}$$
+\pgfplotstableread[col sep=comma]{../src/data/evaluation-resume.csv}\resumetable
+\pgfplotstableread[col sep=comma]{../src/data/evaluation-shapiro-tests.csv}\shapirotable
+\pgfplotstablegetelem{9}{p_value}\of\shapirotable
+\edef\ShapiroPValueResidualGrabCutSam{\pgfplotsretval}
 
 \begin{figure}[htbp]
 \centering
 
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT118.jpg}}
-    \caption{Raw}
-\end{subfigure}
-\hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT118.jpg}}
@@ -52,15 +20,14 @@ $$ t = \frac{(\delta)}{\sqrt{n}}$$
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Otsu.jpg}}
     \caption{Otsu}
 \end{subfigure}
-
-\vspace{0.5em}
-
+\hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Gaussian.jpg}}
     \caption{Gaussian}
 \end{subfigure}
-\hfill
+\vspace{0.5em}
+
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-CannyFill.jpg}}
@@ -69,22 +36,8 @@ $$ t = \frac{(\delta)}{\sqrt{n}}$$
 \hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-GrabCutAutoBox.jpg}}
-    \caption{GCautobox}
-\end{subfigure}
-
-\vspace{0.5em}
-
-\begin{subfigure}{0.3\textwidth}
-    \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-GrabCutAutoBrush.jpg}}
     \caption{GCautobrush}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Sam.jpg}}
-    \caption{mSAM}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.3\textwidth}
@@ -100,50 +53,25 @@ $$ t = \frac{(\delta)}{\sqrt{n}}$$
 
 \begin{figure}
 \centering
-\begin{tikzpicture}
-\begin{axis}[
-ybar,
-bar width=12pt,
-width=12cm,
-height=7cm,
-ylabel={IoU},
-ymin=0,
-ymax=0.45,
-symbolic x coords={Otsu,Gaussian,CannyFill,GCautobox,GCautobrush,mSAM,mSAMautobox},
-xtick=data,
-xticklabel style={rotate=45,anchor=east},
-]
-\addplot table [x=model,y=iou_mean,col sep=comma] {\resumetable};
-\end{axis}
-\end{tikzpicture}
-\caption{IoU performance per model. Each bar shows the overall performance, while the horizontal lines within each bar indicate the IoU values obtained for the easy, medium, and hard difficulty subsets.}
+\includegraphics[width=\linewidth]{../src/data/plots/dice_score_comparison}
+\caption{Dice Score performance per model. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
 \end{figure}
 
-\begin{table}[ht]
-\centering
-\caption{Segmentation IoU on easy images.}
-\pgfplotstabletypeset[
-    col sep=comma,
-    columns={model,iou_mean,iou_std,iou_std_error,iou_n},
-    columns/model/.style={string type,column name=Model},
-    columns/iou_mean/.style={fixed,precision=3,column name=Mean IoU},
-    columns/iou_std/.style={fixed,precision=3,column name=$\sigma$},
-    columns/iou_std_error/.style={fixed,precision=3,column name=Standard error},
-    columns/iou_n/.style={fixed,precision=3,column name=$n$},
-    row predicate/.code={
-        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
-        \edef\temp{\pgfplotsretval}
-        \def\match{easy}
-        \ifx\temp\match
-        \else
-            \pgfplotstableuserowfalse
-        \fi
-    },
-    every head row/.style={before row=\toprule,after row=\midrule},
-    every last row/.style={after row=\bottomrule}
-]{\resumetable}
-\end{table}
+\subsection{Statistical significance}
 
+\subsubsection{Normality of residuals}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GCautobrush_vs_mSAM}
+    \caption{QQplot of the residuals of the paired t-test comparing GCautobrush and mSAM. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
+    Furthermore, the Shapiro-Wilk test for normality on these residuals yields a p-value of $\pgfmathprintnumber[fixed,precision=2]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.}
+    \label{fig:qqplot}
+\end{figure}
+
+\subsubsection{Paired t-tests}
+
+$$ t = \frac{(\delta)}{\sqrt{n}}$$
 
 \section{Automation evaluation}
 \section{Workflow efficiency evaluation}
