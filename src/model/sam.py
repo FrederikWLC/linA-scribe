@@ -1,6 +1,6 @@
 import cv2
 from config import config
-from utils.auto_prompts import auto_box, auto_boxes, auto_points
+from utils.auto_prompts import auto_box, auto_points
 from model.scribe import SeedableScribe
 import numpy as np
 import torch 

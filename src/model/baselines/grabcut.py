@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 from model.scribe import SeedableScribe
-from utils.auto_prompts import auto_boxes, auto_brushes
+from utils.auto_prompts import auto_brushes
 from utils.binary_mask import BinaryMask
-from utils.seeds import Seed, BoxSeed, BrushSeed, get_boxseeds, get_brushseeds
+from utils.seeds import BrushSeed, get_boxseeds, get_brushseeds
 from model.baselines.gaussian import Gaussian
 
 # implementation of GrabCut
