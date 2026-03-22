@@ -3,12 +3,33 @@
 
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-resume.csv}\resumetable
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-shapiro-tests.csv}\shapirotable
-\pgfplotstablegetelem{9}{p_value}\of\shapirotable
+\pgfplotstableread[col sep=comma]{../src/data/evaluation-paired-t-tests.csv}\ttable
+
+\pgfplotstablegetelem{8}{p_value}\of\shapirotable
 \edef\ShapiroPValueResidualGrabCutSam{\pgfplotsretval}
+
+\pgfplotstablegetelem{17}{p_value}\of\ttable
+\edef\ttestpvalueGCmSAM{\pgfplotsretval}
+
+\pgfplotstablegetelem{17}{statistic}\of\ttable
+\edef\tteststatGCmSAM{\pgfplotsretval}
+
+\pgfplotstablegetelem{1}{Dice_mean}\of\resumetable
+\edef\GCbrushmean{\pgfplotsretval}
+
+\pgfplotstablegetelem{6}{Dice_mean}\of\resumetable
+\edef\mSAMmean{\pgfplotsretval}
+
+\pgfmathsetmacro{\deltameanGCmSAM}{\GCbrushmean - \mSAMmean}
 
 \begin{figure}[htbp]
 \centering
-
+\begin{subfigure}{0.3\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT118.jpg}}
+    \caption{Raw Image}
+\end{subfigure}
+\hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT118.jpg}}
@@ -20,14 +41,13 @@
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Otsu.jpg}}
     \caption{Otsu}
 \end{subfigure}
-\hfill
+\vspace{0.5em}
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Gaussian.jpg}}
     \caption{Gaussian}
 \end{subfigure}
-\vspace{0.5em}
-
+\hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-CannyFill.jpg}}
@@ -36,14 +56,26 @@
 \hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-GrabCutAutoBrush.jpg}}
-    \caption{GCautobrush}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-GC+brush.jpg}}
+    \caption{GC+brush}
+\end{subfigure}
+\vspace{0.5em}
+\begin{subfigure}{0.3\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM.jpg}}
+    \caption{mSAM}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-SamAutoBox.jpg}}
-    \caption{mSAMautobox}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM+box.jpg}}
+    \caption{mSAM+box}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.3\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM+pts.jpg}}
+    \caption{mSAM+pts}
 \end{subfigure}
 
 \caption{Comparison of segmentation outputs from different models against the raw image and ground truth.}
@@ -63,15 +95,21 @@
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GCautobrush_vs_mSAM}
-    \caption{QQplot of the residuals of the paired t-test comparing GCautobrush and mSAM. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
-    Furthermore, the Shapiro-Wilk test for normality on these residuals yields a p-value of $\pgfmathprintnumber[fixed,precision=2]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.}
+    \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GC+brush_vs_mSAM+pts}
+    \caption{QQplot of the residuals of the paired t-test comparing G+brush and mSAM+pts. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
+    Furthermore, the Shapiro-Wilk test for normality on these residuals yields a p-value of $\pgfmathprintnumber[sci,precision=2]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.}
     \label{fig:qqplot}
 \end{figure}
 
-\subsubsection{Paired t-tests}
+\subsubsection{Paired t-test}
+To determine whether the classic baseline model \acs{GC+brush} signficiantly outperforms \acs{mSAM+pts}, a paired t-test is conducted on the \acs{Dice} scores obtained for each image across these two models.
+The null hypothesis ($H_0$) states that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) states that \acs{GC+brush} has a higher mean \acs{Dice} score than \acs{mSAM+pts}.
+$$ \delta = \mu_1 - \mu_2 = \pgfmathprintnumber[fixed,precision=2]{\GCbrushmean} - \pgfmathprintnumber[fixed,precision=2]{\mSAMmean} = \pgfmathprintnumber[fixed,precision=2]{\deltameanGCmSAM} $$
+$$ t = \pgfmathprintnumber[fixed,precision=2]{\tteststatGCmSAM} $$
+$$ P(T > t) = \pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} $$
 
-$$ t = \frac{(\delta)}{\sqrt{n}}$$
+Thus, as $\pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} < \alpha = 0.05$, the null hypothesis can be rejected, and it can be concluded that \acs{GC+brush} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
+Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods in one-shot segmentation of Linear A tablets.
 
 \section{Automation evaluation}
 \section{Workflow efficiency evaluation}

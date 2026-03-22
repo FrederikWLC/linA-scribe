@@ -41,7 +41,6 @@ Python 3.10 was used for all code development (because it has such a big library
 \end{itemize}
 
 Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
-\subsection{Data assumptions (brief reference to Data chapter)}
 \subsection{General evaluation metrics}
 \subsection{Experimental conventions}
 
@@ -150,6 +149,15 @@ The smoothness term $S$ then penalizes neighboring pixels that have different la
 At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating between optimizing the \acs{GMM} parameters $\theta$ to model $B$, and minimizing the energy function with respect to $B$:
 
 $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
+
+\begin{figure}[htbp]
+\centering
+
+    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-GC+brush.jpg}}
+\caption{A visualization of seed distribution for \acf{GC+brush} on HT118. 
+Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and absence of overlay represents probable background pixels.}
+\end{figure}
+
 \note{THIS CLASSICAL INTERACTIVE SEGMENTATION METHOD MIGHT FOLLOW SAM INTO RQ2}
 
 \note{MAYBE IT SHOULD BE GIVEN MORE IMPORTANCE?}
@@ -157,11 +165,31 @@ $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 \subsubsection{Model architecture}
 Raw image $\rightarrow$ Automatic box prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
 
-\subsubsection{Seed extraction (Autoboxes)}
+\subsubsection{Seed extraction}
 Even though the MobileSAMv2 implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
 Those box prompts are generalized, and work best on natural images, not on image inscriptions.
-Therefore, there is to be made two versions of MobileSAMv2 for comparison: one with the native box prompts \textit{mSAM}, and one with box recognition done by contours in the image \textit{mSAMautobox}.
-\note{Please improve this draft sub sub section}
+Therefore, there is to be made three versions of MobileSAMv2 for comparison: 
+\begin{itemize}
+    \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
+    \item \textbf{\acs{mSAM+box}}: \acl{mSAM+box},
+    \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts}.
+\end{itemize}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.47\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/autoseed_displays/HT118-mSAM+box.jpg}}
+    \caption{mSAM+box}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.47\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/autoseed_displays/HT118-mSAM+pts.jpg}}
+    \caption{mSAM+pts}
+\end{subfigure}
+\caption{A visualization of \acf{mSAM+box}, and \acf{mSAM+pts}, overlayed on \acs{HT}118.}
+\end{figure}
 
 \subsubsection{Segmentation (MobileSAMv2)}
 MobileSAMv2 \parencite{mobile_sam_v2}
@@ -169,18 +197,22 @@ MobileSAMv2 \parencite{mobile_sam_v2}
 \subsection{Evaluation protocol and performance metrics}
 
 \subsubsection{Choice of metrics}
-$$ Precision = \frac{TP}{TP + FP} $$
-$$ Recall = \frac{TP}{TP + FN} $$
-$$ Dice = F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} $$
-$$ IoU = \frac{Dice}{2 - Dice} = \frac{TP}{TP + FP + FN} $$
+When it comes to evaluation of segmentation models, the two most commonly used metrics are: 1. the \acf{Dice} and 2. the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
+It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements really matter.
+Therefore, this thesis will report segmentation performance using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
 
-\acs{Dice} is more commonly used in cases where have heavy class imbalances (e.g. lots of background compared to regions segmented), or the objects to be segmented are small and thin.
-It is naturally more foregiving than \acs{IoU}, which tends to be rather strict and used to evaluate segmentation where small displacements really matter.
-Therefore, this thesis will measure segmentation performance and report it using \acs{Dice}.
-\parencite{Metrics2025}
+$$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
+
+\noindent Thus, the raw metrics will end up consisting of the \acs{Dice} score for each image, and each model.
+
 \subsubsection{Statistical tests}
-Non-parametric Friedmann test + Bonferroni corrected Wilcoxon tests. As opposed to parametric ANOVA and paired t-test.
-\parencite{Rainio2024}
+To determine whether the observed differences in scores between models are statistically significant, paired t-tests will be needed.
+More specifically, it is of interest to compare the best performing baseline model against the best performing version of MobileSAMv2.
+The paired t-test has two main assumptions: 1. independence of observations, and 2. normality of residuals.
+The first assumption is already satisfied, since the segmentation performance of one image does not directly influence the performance on another.
+However, the second assumption depends on the results.
+Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question will be checked for normality using a QQ-plot and the Shapiro-Wilk test.
+And in case the normality assumption is violated, the non-parametric Wilcoxon signed-rank test will be used instead.\footcite{Rainio2024}
 
 \section{Interactive semi-automation}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.

@@ -50,4 +50,4 @@ class GrabCutAutoBrush(GrabCut):
 
     @property
     def name(self):
-        return "GCautobrush"
+        return "GC+brush"

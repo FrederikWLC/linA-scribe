@@ -5,17 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, probplot, shapiro, ttest_rel, wilcoxon
-
 from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import SamAutoBox
-from utils.evaluation import BinaryF1Score, evaluate_model, summarize_results
+from model.sam import MobileSAMv2,MobileSAMv2AutoBox, MobileSAMv2AutoPoint
+from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
 
 
-METRICS = {"Dice": BinaryF1Score}
-BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), SamAutoBox(display_seeds=False)]
+METRICS = {"Dice": BinaryDiceScore}
+BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), MobileSAMv2(), MobileSAMv2AutoBox(), MobileSAMv2AutoPoint(display_seeds=False)]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")
 GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")

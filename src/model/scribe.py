@@ -55,12 +55,15 @@ class SeedableScribe(BaseScribe):
                 color = (0, 255, 0) if seed.label == 1 else (0, 0, 255)
                 cv2.circle(drawn, (seed.x, seed.y), 5, color, -1)
             elif isinstance(seed, BrushSeed): # green pixels for fgd, red pixels for bgd
+                brush_alpha = 0.3
                 pixels = np.array(seed.pixels)
                 xs = pixels[:, 0]
                 ys = pixels[:, 1]
                 mask = (xs >= 0) & (ys >= 0) & (xs < drawn.shape[1]) & (ys < drawn.shape[0])
-                color = (0, 255, 0) if seed.label == cv2.GC_FGD else (0, 0, 255)
-                drawn[ys[mask], xs[mask]] = color
+                color = np.array((0, 255, 0) if seed.label == cv2.GC_FGD else (0, 0, 255), dtype=np.float32)
+                drawn[ys[mask], xs[mask]] = (
+                    (1 - brush_alpha) * drawn[ys[mask], xs[mask]] + brush_alpha * color
+                ).astype(np.uint8)
         return drawn
     
     # method where the autoseeding happens

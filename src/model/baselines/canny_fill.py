@@ -6,7 +6,7 @@ from utils.binary_mask import BinaryMask
 # implementation of the 
 # Canny edge detection + filling method
 class CannyFill(Scribe):
-    def __init__(self, sigma=0.33, kernel_size=5):
+    def __init__(self, sigma=0.55, kernel_size=5):
         self.sigma = sigma
         self.kernel_size = kernel_size
 
@@ -36,3 +36,7 @@ class CannyFill(Scribe):
     
     def preprocess(self, image: np.ndarray) -> np.ndarray:
         return cv2.GaussianBlur(image, (self.kernel_size, self.kernel_size), 0)
+
+    @property
+    def name(self):
+        return "CannyFill"

@@ -4,24 +4,24 @@ from utils.auto_prompts import auto_box, auto_boxes, auto_points
 from model.scribe import SeedableScribe
 import numpy as np
 import torch 
-from utils.seeds import Seed, BoxSeed, get_boxes, get_points_and_labels
+from utils.seeds import PointSeed, Seed, BoxSeed, get_boxes, get_points_and_labels
 from utils.binary_mask import BinaryMask
 from model.baselines.gaussian import Gaussian
 # the SAM implementation class
-class Sam(SeedableScribe):
 
-    def __init__(self,display_seeds: bool = False):
+class SAM(SeedableScribe):
+    def __init__(self,display_seeds: bool = False, sam_backend: str = config.SAM_BACKEND, sam_model_type: str = config.SAM_MODEL_TYPE, sam_checkpoint_path: str = config.SAM_CHECKPOINT_PATH):
         super().__init__(display_seeds)
         
-        if config.SAM_BACKEND == "mobile":
+        if sam_backend == "mobile":
             from mobile_sam import sam_model_registry, SamPredictor
         else:
             from segment_anything import sam_model_registry, SamPredictor
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        sam = sam_model_registry[config.SAM_MODEL_TYPE](
-            checkpoint=str(config.SAM_CHECKPOINT_PATH)
+        sam = sam_model_registry[sam_model_type](
+            checkpoint=str(sam_checkpoint_path)
         )
         sam.to(device)
         self.predictor = SamPredictor(sam)
@@ -69,20 +69,42 @@ class Sam(SeedableScribe):
             mask = BinaryMask.from_intersection(*masks)
         else:
             mask = BinaryMask(masks[0])
+        
         return mask
+    
+    @property
+    def name(self):
+        return "mSAMv2"
+
+class MobileSAMv2(SAM):
+
+    def __init__(self, display_seeds: bool = False):
+        super().__init__(display_seeds, sam_backend=config.MOBILE_SAM_BACKEND, sam_model_type=config.MOBILESAM_MODEL_TYPE, sam_checkpoint_path=config.MOBILESAM_CHECKPOINT_PATH)
+
     
     @property
     def name(self):
         return "mSAM"
 
-class SamAutoBox(Sam):
+class MobileSAMv2AutoBox(MobileSAMv2):
     
-    def autoseed(self, image: np.ndarray) -> list[Seed]:
-        thresh = Gaussian().predict(image)     
-        box = auto_box(thresh)
-        points = auto_points(thresh,num_points=100)
-        return [box] + points
+    def autoseed(self, image: np.ndarray) -> list[BoxSeed]:
+        thresh = Gaussian().predict(image)    
+        box = auto_box(thresh) 
+        return [box]
         
     @property
     def name(self):
-        return "mSAM"
+        return "mSAM+box"
+    
+class MobileSAMv2AutoPoint(MobileSAMv2):
+    
+    def autoseed(self, image: np.ndarray) -> list[PointSeed]:
+        thresh = Gaussian().predict(image)
+        box = auto_box(thresh) 
+        points = auto_points(thresh,num_fgd_points=1000,num_bgd_points=1000,erosion_iter=1)
+        return points
+        
+    @property
+    def name(self):
+        return "mSAM+pts"

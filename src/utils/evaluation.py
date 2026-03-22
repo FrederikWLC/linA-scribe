@@ -5,6 +5,18 @@ from model.scribe import predict_batch
 import numpy as np
 
 
+# F1 / Dice score metric
+def BinaryDiceScore(y_hat: BinaryMask, y: BinaryMask) -> float:
+    intersection = BinaryMask.from_intersection(y_hat, y).sum()
+    dice = 2*intersection / (y_hat.sum() + y.sum()) if (y_hat.sum() + y.sum()) > 0 else 0
+    return float(dice)
+
+# Intersection over Union metric
+def BinaryIoU(y_hat: BinaryMask, y: BinaryMask) -> float:
+    intersection = BinaryMask.from_intersection(y_hat, y).sum()
+    union = BinaryMask.from_union(y_hat, y).sum()
+    return float(intersection / union if union > 0 else 0)
+
 # True Positives: the number of pixels correctly predicted as foreground (ink)
 def tp(y_hat: BinaryMask, y: BinaryMask) -> int:
     # equals the intersection of predicted and actual foreground (ink) pixels
@@ -24,17 +36,6 @@ def fn(y_hat: BinaryMask, y: BinaryMask) -> int:
 def tn(y_hat: BinaryMask, y: BinaryMask) -> int:
     # equals the intersection of the inverted masks, which includes size of correctly predicted background
     return BinaryMask.from_intersection(y_hat.invert(), y.invert()).sum()
-
-# Intersection over Union metric
-def BinaryIoU(y_hat: BinaryMask, y: BinaryMask) -> float:
-    intersection = BinaryMask.from_intersection(y_hat, y).sum()
-    union = BinaryMask.from_union(y_hat, y).sum()
-    return float(intersection / union if union > 0 else 0)
-
-# F1 / Dice score metric
-def BinaryF1Score(y_hat: BinaryMask, y: BinaryMask) -> float:
-    iou = BinaryIoU(y_hat, y)
-    return 2 * iou / (iou + 1)
 
 # Accuracy metric
 def BinaryAccuracy(y_hat: BinaryMask, y: BinaryMask) -> float:
@@ -61,7 +62,7 @@ def BinarySpecificity(y_hat: BinaryMask, y: BinaryMask) -> float:
     return float(specificity)
 
 
-METRICS = dict(f1=BinaryF1Score, iou=BinaryIoU)
+METRICS = dict(dice=BinaryDiceScore)
 
 # Compute metrics for each datapoint
 # given predictions and ground truths
