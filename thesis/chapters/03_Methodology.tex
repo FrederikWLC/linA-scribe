@@ -82,6 +82,7 @@ The between-class variance $\sigma^2_B$ can then be defined by a function of the
 \end{itemize}
 
 \subsubsection{Local adaptive thresholding (Gaussian kernel)}
+\label{subsubsec:gaussian_baseline}
 Using local adaptive thresholding is an advantage in cases where the image has varying light conditions (which is the case for the Linear A inscriptions), as the filter adapts to local lighting.
 This is due to the fact that the computed threshold $T$ is not global, but instead computed for each pixel based on its local neighborhood.
 
@@ -152,7 +153,6 @@ $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 
 \begin{figure}[htbp]
 \centering
-
     \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-GC+brush.jpg}}
 \caption{A visualization of seed distribution for \acf{GC+brush} on HT118. 
 Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and absence of overlay represents probable background pixels.}
@@ -163,42 +163,55 @@ Green overlay represents sure foreground pixels, while red overlay represents su
 \note{MAYBE IT SHOULD BE GIVEN MORE IMPORTANCE?}
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}
-Raw image $\rightarrow$ Automatic box prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+
+
+Raw image $\rightarrow$ Automatic prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+
+\subsubsection{Segmentation (MobileSAMv2)}
+For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} will be used instead of the full \acs{SAM} model.
+This is a lightweight version of the original \acs{SAM} model, which is designed to run efficiently on mobile devices while still maintaining good segmentation performance.
+It is ... but trained on the same dataset as the original \acs{SAM}, and thus has the same one-shot segmentation capabilities, although with a slightly lower performance than the original.
+
+Here is how it works:
+ViT encoder, prompt encoder, mask decoder, etc.
 
 \subsubsection{Seed extraction}
-Even though the MobileSAMv2 implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
-Those box prompts are generalized, and work best on natural images, not on image inscriptions.
-Therefore, there is to be made three versions of MobileSAMv2 for comparison: 
+Even though the \acs{mSAM} implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
+Those box prompts are generalized for and work best on natural images.
+Hence, they may not perform well on gray-scale images of clay tablets with Linear A inscriptions, as those were not part of the training data. 
+Thus, \acs{mSAM} will need to be adapted through the use of prompts. 
+The model takes two types of prompts: 1. a single box prompt, and/or 2. point prompts labeled as either foreground or background.
+For the one-shot segmentation capability of the model, these prompts will have to be automatically generated, rather than interactively placed by a user.
+However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts will be used.
+Therefore, there is to be made two versions of MobileSAMv2 for comparison: 
 \begin{itemize}
     \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
-    \item \textbf{\acs{mSAM+box}}: \acl{mSAM+box},
-    \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts}.
+    \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
+
+\noindent The automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) will be derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+as it seems to be the best at extracting foreground from the Linear A tablets, albeit with a degree of noise.
+This will be done by randomly sampling a number of foreground and background pixels from the mask as seeds for \acs{mSAM+pts}.
+For the sake of simplicity, this number will be kept equal for both point types to a 1000 points each, which should be large enough to provide good coverage of the image, while still being computationally feasible for the model to process.
 
 \begin{figure}[htbp]
 \centering
-\begin{subfigure}{0.47\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/autoseed_displays/HT118-mSAM+box.jpg}}
-    \caption{mSAM+box}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.47\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/autoseed_displays/HT118-mSAM+pts.jpg}}
-    \caption{mSAM+pts}
-\end{subfigure}
-\caption{A visualization of \acf{mSAM+box}, and \acf{mSAM+pts}, overlayed on \acs{HT}118.}
+    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-mSAM+pts.jpg}}
+\caption{A visualization of seed distribution for \acf{mSAM+pts}, overlayed on \acs{HT}118.
+Green points represent foreground seeds, while red points represent background seeds.}
+\label{fig:autoseed_mSAM}
 \end{figure}
 
-\subsubsection{Segmentation (MobileSAMv2)}
-MobileSAMv2 \parencite{mobile_sam_v2}
 
 \subsection{Evaluation protocol and performance metrics}
+For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests will need to be defined to be able to determine whether one model performs significantly better than another.
+More specifically, it is of interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
+
+The following subsections will therefore document the choice of metrics and statistical tests for the evaluation, used to answer RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}.
 
 \subsubsection{Choice of metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are: 1. the \acf{Dice} and 2. the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
-It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements really matter.
+It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements are critical for results.
 Therefore, this thesis will report segmentation performance using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
 
 $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
@@ -207,12 +220,11 @@ $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|
 
 \subsubsection{Statistical tests}
 To determine whether the observed differences in scores between models are statistically significant, paired t-tests will be needed.
-More specifically, it is of interest to compare the best performing baseline model against the best performing version of MobileSAMv2.
 The paired t-test has two main assumptions: 1. independence of observations, and 2. normality of residuals.
 The first assumption is already satisfied, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on the results.
 Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question will be checked for normality using a QQ-plot and the Shapiro-Wilk test.
-And in case the normality assumption is violated, the non-parametric Wilcoxon signed-rank test will be used instead.\footcite{Rainio2024}
+And in case the normality assumption is violated, the non-parametric domain-specific Wilcoxon signed-rank test will be used instead.\footcite{Rainio2024}
 
 \section{Interactive semi-automation}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.

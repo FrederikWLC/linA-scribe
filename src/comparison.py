@@ -13,7 +13,6 @@ baselines = [
     Otsu(),
     GrabCutAutoBrush(),
     MobileSAMv2(),
-    MobileSAMv2AutoBox(),
     MobileSAMv2AutoPoint()
     ]
 

@@ -1,11 +1,10 @@
 import cv2
 from pathlib import Path
-from model.sam import MobileSAMv2AutoBox, MobileSAMv2AutoPoint
+from model.sam import MobileSAMv2AutoPoint
 from model.baselines.grabcut import GrabCutAutoBrush
 
 baselines = [
     GrabCutAutoBrush(),
-    MobileSAMv2AutoBox(),
     MobileSAMv2AutoPoint()
     ]
 

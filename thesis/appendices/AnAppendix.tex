@@ -17,13 +17,13 @@
 
 \begin{table}[ht]
 \centering
-\caption{Segmentation \acs{Dice} score on easy images.}
-\subcaption{Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
+\caption{Raw \acs{Dice} score data on easy images.
+Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
 \pgfplotstabletypeset[
     col sep=comma,
     fixed,
     precision=3,
-    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive},
+    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive,\modelsix},
     columns/label/.style={
         string type,
         column name=Label
@@ -44,13 +44,13 @@
 
 \begin{table}[ht]
 \centering
-\caption{Segmentation \acs{Dice} score on medium images.}
-\subcaption{Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
+\caption{Raw \acs{Dice} score data on medium images.
+Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
 \pgfplotstabletypeset[
     col sep=comma,
     fixed,
     precision=3,
-    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive},
+    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive,\modelsix},
     columns/label/.style={
         string type,
         column name=Label
@@ -71,13 +71,13 @@
 
 \begin{table}[ht]
 \centering
-\caption{Segmentation \acs{Dice} score on hard images.}
-\subcaption{Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
+\caption{Raw \acs{Dice} score data on hard images.
+Label column represents the name of the document segmented, while all other columns represent \acs{Dice} scores obtained for those documents for a given model.}
 \pgfplotstabletypeset[
     col sep=comma,
     fixed,
     precision=3,
-    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive},
+    columns={label,\modelone,\modeltwo,\modelthree,\modelfour,\modelfive,\modelsix},
     columns/label/.style={
         string type,
         column name=Label
@@ -98,19 +98,94 @@
 
 \begin{table}[ht]
 \centering
-\caption{Segmentation Dice Score on easy images.}
+\caption{Summary Statistics per Model of Dice Score on all images.}
 \pgfplotstabletypeset[
     col sep=comma,
     columns={model,Dice_mean,Dice_std,Dice_std_error,Dice_n},
     columns/model/.style={string type,column name=Model},
     columns/Dice_mean/.style={fixed,precision=3,column name=Mean Dice},
-    columns/Dice_std/.style={fixed,precision=3,column name=$\sigma$},
+    columns/Dice_std/.style={fixed,precision=3,column name=Standard deviation},
+    columns/Dice_std_error/.style={fixed,precision=3,column name=Standard error},
+    columns/Dice_n/.style={fixed,precision=3,column name=$n$},
+    row predicate/.code={
+        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
+        \edef\temp{\pgfplotsretval}
+        \def\match{all}
+        \ifx\temp\match
+        \else
+            \pgfplotstableuserowfalse
+        \fi
+    },
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+]{\resumetable}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Summary Statistics per Model of Dice Score on easy images.}
+\pgfplotstabletypeset[
+    col sep=comma,
+    columns={model,Dice_mean,Dice_std,Dice_std_error,Dice_n},
+    columns/model/.style={string type,column name=Model},
+    columns/Dice_mean/.style={fixed,precision=3,column name=Mean Dice},
+    columns/Dice_std/.style={fixed,precision=3,column name=Standard deviation},
     columns/Dice_std_error/.style={fixed,precision=3,column name=Standard error},
     columns/Dice_n/.style={fixed,precision=3,column name=$n$},
     row predicate/.code={
         \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
         \edef\temp{\pgfplotsretval}
         \def\match{easy}
+        \ifx\temp\match
+        \else
+            \pgfplotstableuserowfalse
+        \fi
+    },
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+]{\resumetable}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Summary Statistics per Model of Dice Score on medium images.}
+\pgfplotstabletypeset[
+    col sep=comma,
+    columns={model,Dice_mean,Dice_std,Dice_std_error,Dice_n},
+    columns/model/.style={string type,column name=Model},
+    columns/Dice_mean/.style={fixed,precision=3,column name=Mean Dice},
+    columns/Dice_std/.style={fixed,precision=3,column name=Standard deviation},
+    columns/Dice_std_error/.style={fixed,precision=3,column name=Standard error},
+    columns/Dice_n/.style={fixed,precision=3,column name=$n$},
+    row predicate/.code={
+        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
+        \edef\temp{\pgfplotsretval}
+        \def\match{medium}
+        \ifx\temp\match
+        \else
+            \pgfplotstableuserowfalse
+        \fi
+    },
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+]{\resumetable}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Summary Statistics per Model of Dice Score on hard images.}
+\pgfplotstabletypeset[
+    col sep=comma,
+    columns={model,Dice_mean,Dice_std,Dice_std_error,Dice_n},
+    columns/model/.style={string type,column name=Model},
+    columns/Dice_mean/.style={fixed,precision=3,column name=Mean Dice},
+    columns/Dice_std/.style={fixed,precision=3,column name=Standard deviation},
+    columns/Dice_std_error/.style={fixed,precision=3,column name=Standard error},
+    columns/Dice_n/.style={fixed,precision=3,column name=$n$},
+    row predicate/.code={
+        \pgfplotstablegetelem{\pgfplotstablerow}{difficulty}\of{\resumetable}
+        \edef\temp{\pgfplotsretval}
+        \def\match{hard}
         \ifx\temp\match
         \else
             \pgfplotstableuserowfalse

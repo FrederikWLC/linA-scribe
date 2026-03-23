@@ -65,13 +65,7 @@
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM.jpg}}
     \caption{mSAM}
 \end{subfigure}
-\hfill
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM+box.jpg}}
-    \caption{mSAM+box}
-\end{subfigure}
-\hfill
+\hspace{1em}
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM+pts.jpg}}
@@ -109,7 +103,7 @@ $$ t = \pgfmathprintnumber[fixed,precision=2]{\tteststatGCmSAM} $$
 $$ P(T > t) = \pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} $$
 
 Thus, as $\pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} < \alpha = 0.05$, the null hypothesis can be rejected, and it can be concluded that \acs{GC+brush} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
-Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods in one-shot segmentation of Linear A tablets.
+Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods for one-shot segmentation of Linear A tablets.
 
 \section{Automation evaluation}
 \section{Workflow efficiency evaluation}

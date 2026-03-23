@@ -9,12 +9,12 @@ from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import MobileSAMv2,MobileSAMv2AutoBox, MobileSAMv2AutoPoint
+from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
 from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
 
 
 METRICS = {"Dice": BinaryDiceScore}
-BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), MobileSAMv2(), MobileSAMv2AutoBox(), MobileSAMv2AutoPoint(display_seeds=False)]
+BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), MobileSAMv2(), MobileSAMv2AutoPoint(display_seeds=False)]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")
 GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")
@@ -248,6 +248,7 @@ def do_qqplot(residuals, metric, model1, model2):
     plt.xlabel("Theoretical Quantiles")
     plt.ylabel("Ordered Residuals")
     plt.grid()
+    plt.tight_layout()
     plt.savefig(f"data/qqplots/{metric}_{model1}_vs_{model2}.png")
     plt.close()
 
