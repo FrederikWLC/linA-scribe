@@ -8,12 +8,12 @@ from model.baselines.grabcut import GrabCutAutoBrush
 from model.scribe import predict
 
 baselines = [
-    CannyFill(),
-    Gaussian(),
-    Otsu(),
-    GrabCutAutoBrush(),
-    MobileSAMv2(),
-    MobileSAMv2AutoPoint()
+    #CannyFill(),
+    Gaussian()
+    #Otsu()
+    #GrabCutAutoBrush(),
+    #MobileSAMv2(),
+    #MobileSAMv2AutoPoint()
     ]
 
 raw_folder = Path("data/raw")

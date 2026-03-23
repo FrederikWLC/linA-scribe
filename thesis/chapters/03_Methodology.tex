@@ -1,8 +1,6 @@
 \chapter{Methodology}
 \section{Common methodology}
 
-\note{TODO: WRITE A C}
-
 \subsection{Image processing theory}
 
 \note{SHOULD THIS SECTION EXIST? IF SO, I SHOULD FINISH IT}
@@ -22,7 +20,7 @@ $$ B(x,y) = \begin{cases}
 \subsubsection{Convolutional kernels}
 
 \footcite[p.~159]{DigitalImageProcessing}
-$$ (w \star I)(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(i,j) I(x-i, y-j) $$
+$$ (w \star I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~157]{DigitalImageProcessing}
 
 
@@ -42,29 +40,29 @@ Python 3.10 was used for all code development (because it has such a big library
 
 Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
 \subsection{General evaluation metrics}
-\subsection{Experimental conventions}
 
 \section{Segmentation quality} \label{Segmentation quality}
-Here, the one-shot segmentation quality of SAM will be evaluated against a set of baseline models, using a variety of performance metrics.
+To answer the question of RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}, the one-shot segmentation quality of a computationally efficient implementation of \acs{SAM} (\acl{mSAM}) was evaluated against a set of baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
+All models were manually tuned to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
-\noindent\note{Add some context of RQ1 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+The following subsections will therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol and performance metrics used to answer RQ1.
 
 \subsection{Baseline model configuration}
-The baseline models against which the tool will be evaluated (from simplest to most advanced) are:
+The baseline models against which the best \acs{SAM} implementation was evaluated (from simplest to most advanced) were:
 \begin{itemize}
     \item Global thresholding (Otsu's method)
-    \item Local adaptive thresholding (Gaussian kernel)
+    \item Local adaptive thresholding (Gaussian) with bilateral pre-filtering
     \item Edge-based segmentation (Canny edge detection with region filling)
-    \item Energy-based segmentation (GrabCut)
+    \item Energy-based segmentation (GrabCut with brushseeds)
 \end{itemize}
 Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
-What follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
-\note{TODO: ADD MORE IMPLEMENTATION DETAILS BESIDES PURE THEORY}
-\note{SHOULD I REDUCE THEORY? HOW LONG SHOULD THESE BE? PROBABLY NOT MORE THAN A PAGE FOR EACH BASELINE}
+What follows is a brief description of each of these methods, including their characteristics, how they work, and most importantly their implementation details.
+
 \subsubsection{Global thresholding (Otsu's method)}
-This is a global thresholding method from gray-level histograms originally proposed by \textcite{Otsu1979}.
-As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global pixel intensity into account, with no assumptions about any spatial relationships between pixels.
-It might therefore perform poorly on images with erosion, uneven lighting, and differences in surface texture\footcite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the Linear A inscriptions to be segmented.
+Otsu's method is a global thresholding method that works on gray-level histograms, which was originally proposed by \textcite{Otsu1979}.
+As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global gray level distribution into account, with no assumptions about any spatial relationships between pixels.
+It is therefore expected to perform poorly on images with erosion, uneven lighting, and differences in surface texture\footcite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the images to be segmented.
+\vspace{1em}
 
 Here is how it works:
 First, let pixels of the raw image be divided into $L$ shades of gray $[1,2,...,L]$.
@@ -72,45 +70,58 @@ Then, let each pixel be assigned one of two classes $C_0$ or $C_1$, guided by a 
  where $C_0$ contains the shades $[1,2,...,T]$, and $C_1$ contains the rest $[T+1,T+2,...,L]$.
 Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $T^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
 $$ T^{*} = \underset{1 \leq T < L}{\arg \max} ~ \sigma^2_B(T) $$
-The between-class variance $\sigma^2_B$ can then be defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
+The between-class variance $\sigma^2_B$ is then defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
  $$ \sigma^2_B(T) = \omega_0(T) \omega_1(T) [\mu_1(T)-\mu_0(T)]^2$$
 
-\noindent For the implementation of Otsu's method in OpenCV, the following parameters are used: 
-\begin{itemize}
-    \item \texttt{cv2.THRESH\_OTSU} for the thresholding type, and
-    \item \texttt{cv2.THRESH\_BINARY} for the binary thresholding method.
+\noindent For the implementation of Otsu's method in OpenCV, which takes no hyperparameters, \texttt{cv2.threshold} was used as the thresholding function, with the following two arguments:
+\begin{itemize}   
+    \item \texttt{cv2.THRESH\_OTSU} for computation of the global Otsu threshold, and
+    \item \texttt{cv2.THRESH\_BINARY} for the production of a binary output mask, given the computed threshold.
 \end{itemize}
 
-\subsubsection{Local adaptive thresholding (Gaussian kernel)}
+\subsubsection{Local adaptive thresholding (Gaussian) with bilateral pre-filtering}
 \label{subsubsec:gaussian_baseline}
-Using local adaptive thresholding is an advantage in cases where the image has varying light conditions (which is the case for the Linear A inscriptions), as the filter adapts to local lighting.
-This is due to the fact that the computed threshold $T$ is not global, but instead computed for each pixel based on its local neighborhood.
+Local adaptive thresholding works by computing a threshold for each pixel based on its local neighborhood.
+This is an advantage in cases where the image has varying light conditions (which is the case for the images to be segmented), as the threshold adapts to local lighting.
 
-Mathematically, $T$ is a function of a given pixel position $(x,y)$ usually computed by some kind of weighted sum of the neighborhood.
+Mathematically, the local threshold $T$ is a function of a given pixel position $(x,y)$ computed by a weighted sum of the neighborhood.
 The generated binary mask $B$ is then defined as:\footcite[p.~761]{DigitalImageProcessing}
 $$ B(x,y) = \begin{cases}
     1 & \text{if} ~ I(x,y) > T(x,y) \\
     0 & \text{otherwise} \end{cases} $$
 
 To compute $T(x,y)$, there are a few weighting functions to choose from.
-But for this baseline, the Gaussian kernel is used, as it tends to be better at handling noise, since it assigns weights based on distance from the kernel center.
-The pixels closer to the center will have a higher weight, while those farther away will have a lower weight, which limits the influence of distant noisy pixels.
-
+For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels by assigning weights based on distance from the kernel center.
 With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using convolution ($\star$), this can be expressed as:\footcite{opencv_adaptive_threshold}
 $$ T(x,y) = (G_{\sigma} \star I)(x,y) - C $$
-The weight at a given pixel offset $(i,j)$ from the kernel center (where $\alpha$ is a normalization constant ensuring that the sum of the kernel elements equals 1, and $\sigma$ is the standard deviation of the weights) is then defined as follows:\footcite[p.~167]{DigitalImageProcessing}
 
-$$ G_{\sigma}(i,j) = \alpha \cdot \exp \left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
+In general, the weight at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel):\footcite[p.~167]{DigitalImageProcessing}
+$$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
 
-\noindent The OpenCV implementation\footcite{opencv_gaussian_kernel}\footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
-uses the following parameters:
+As a pre-filtering step, a bilateral filter \parencite[see][]{TomasiManduchi1998} was applied to the input image before performing the Gaussian thresholding.
+In this way, more noise could be reduced while preserving inscriptions, as this filter is known to be effective at reducing noise while preserving edges.
+It takes three hyperparameters: the kernel window diameter $d$, the spatial standard deviation $\sigma_{\mathrm{space}}$, and the intensity standard deviation $\sigma_{\mathrm{color}}$.
+Discretely, its output intensity $I_{\mathrm{bf}}(p)$ at a given pixel position $p$ (where $q$ is the position of one of its neighbors within the kernel window) can be defined as follows:\footcite{Pan2025InnovativeBilateral}
+$$I_{\mathrm{bf}}(p)=
+\frac{\sum_q I(q)\,W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}
+{\sum_q W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}$$
+
+Here, the spatial weight based on the distance between pixels $p$ and $q$, and the color range weight based on the intensity difference between $p$ and $q$ are respectively given by:
+$$W_{\mathrm{space}}(p,q)=\exp(-\frac{\|p-q\|^2}{2\sigma_{\mathrm{space}}^2})$$
+$$W_{\mathrm{color}}(p,q)=\exp(-\frac{\|I(p)-I(q)\|^2}{2\sigma_{\mathrm{color}}^2})$$
+
+\noindent For the implementation of Gaussian thresholding\footcite{opencv_gaussian_kernel}, and the bilateral pre-filter in OpenCV, the following functions were used: \footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
 \begin{itemize}
-    \item \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C} for the thresholding type, and
-    \item \texttt{cv2.THRESH\_BINARY} for the binary thresholding method.
+    \item \texttt{cv2.bilateralFilter} for the pre-filtering step, with hyperparameters $\mathtt{d}=15$, $\mathtt{sigmaColor}=75$, and $\mathtt{sigmaSpace}=75$,
+    \item \texttt{cv2.adaptiveThreshold} as the thresholding function, with hyperparameters $\mathtt{blockSize}=19$, $\mathtt{C}=5$ ($\sigma$ is determined internally based on the chosen kernel/block size), and with arguments:
+    \begin{itemize}
+        \item \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C} for computation of the adaptive Gaussian threshold, and
+        \item \texttt{cv2.THRESH\_BINARY} for the production of a binary output mask, given the computed threshold.
+    \end{itemize}
 \end{itemize}
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
-This is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
+Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
 Here is how it works:
 First, the input image is smoothed using a Gaussian filter to reduce noise (using the Gaussian kernel as defined in the previous section):
 $$ I_{s}(x,y) = (G_{\sigma} \star I)(x,y) $$
@@ -121,27 +132,31 @@ $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}
 Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
 This is at last followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
 
-\noindent\note{Add details about region filling here.}
+In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
 
-\noindent The OpenCV implementation\footcite{opencv_gaussian_kernel}\footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
-uses the following parameters:
+
+\noindent For the implementation of Canny edge detection with region filling in OpenCV, the following functions were used:
 
 \begin{itemize}
-    \item \texttt{cv2.Canny} for the edge detection method.
-    
+    \item \texttt{cv2.Canny} for the edge detection method, with arguments $\mathtt{threshold1}= \max(0, (1-\sigma)v)$ and $\mathtt{threshold2}=\min(255, (1+\sigma)v)$ where $v$ is the median pixel intensity of the input image, and $\sigma$ was set to $0.1$ after manual tuning.
+    \item \texttt{cv2.morphologyEx} for the region filling method, with arguments:
+    \begin{itemize}
+    \item \texttt{cv2.MORPH\_CLOSE} for the closing operation, and
+    \item a kernel of size $15 \times 15$ for the morphological operation.
+    \end{itemize}
 \end{itemize}
 
-\subsubsection{Energy-based segmentation (GrabCut)}
-GrabCut - the most advanced of the baselines considered - is included, as it is an interactive segmentation method, which makes for a good comparison to \acs{SAM}.
-It is also good at producing spatially coherent masks with little large-grained noise, which is useful on Linear A inscriptions, where erosion usually leads to noisy masks even after noise reduction.
-Here is how it works:
-For energy-based segmentation methods, optimal segmentation is achieved by minimizing a cost (energy) function $E$ that combines a data term $D$ and a smoothness term $S$, given an input image $I$, a binary segmentation mask $B$, and a set of parameters $\theta$:\footnote{This is a simplified version of the energy function that is used by GrabCut.}
+\subsubsection{Energy-based segmentation (GrabCut with brushseeds)}
+GrabCut \parencite{Rother2004GrabCut} is a classical interactive segmentation method, which makes for a good comparison to a deep learning interactive model like \acs{SAM}.
+It is good at producing spatially coherent masks with little large-grained noise, which is ideal for the images to be segmented.
 
-$$ E(B,I,\theta) = D(B,I,\theta) + S(B,I) $$
-
-\noindent In the case of GrabCut \parencite{Rother2004GrabCut}, the algorithm is interactively initialized by the user, who provides a bounding box around the object of interest.
+The algorithm is interactively initialized by the user, who traditionally provide a bounding box around the object of interest.
 Pixels outside this box are marked as definite background, while pixels inside it are marked as initially unknown.
 To further guide the segmentation, the user also has the option to provide an additional number of pixels as definite foreground ($B_n = 1$), and definite background ($B_n = 0$).
+
+As an energy-based segmentation method, optimal segmentation is achieved by minimizing a cost (energy) function $E$ that combines a data term $D$ and a smoothness term $S$, given an input image $I$, a binary segmentation mask $B$, and a set of parameters $\theta$:\footnote{This is a simplified version of the energy function that is used by GrabCut.}
+
+$$ E(B,I,\theta) = D(B,I,\theta) + S(B,I) $$
 
 The set of parameters $\theta$ then define two \textit{\acp{GMM}} (probabilistic models each consisting of a weighted sum of several Gaussian distributions) that over iterations will be tuned to model the foreground and background pixel distributions.
 These are used to compute the data term $D$ whose energy contribution decreases the better $B$ matches the \acsp{GMM} of foreground and background.
@@ -151,16 +166,31 @@ At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating b
 
 $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 
+The automatic brush seeds (see \cref{fig:autoseed_GC} for a visualization) given to GrabCut were derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+as it seems to be the best at extracting foreground from the Linear A tablets, albeit with a degree of noise.
+The erosion of the thresholded mask was given as sure foreground, while the erosion of the inverse of the thresholded mask was given as sure background, and the rest was given as probable background.
+In that way, the model was provided with a good amount of guidance, while still leaving room for the model to get rid of noise and fill in gaps within the engravings of the inscriptions.
+
+\noindent For the implementation of GrabCut in OpenCV, the following function was used:
+\begin{itemize}
+    \item \texttt{cv2.grabCut} for the segmentation method, with arguments:
+    \begin{itemize}
+        \item $\mathtt{iterCount} = 5$ for the number of iterations the algorithm should run for,
+        \item $\mathtt{bgdModel} = np.zeros((1,65),np.float64)$ for the initial background \ac{GMM} parameters,
+        \item $\mathtt{fgdModel} = np.zeros((1,65),np.float64)$ for the initial foreground \ac{GMM} parameters,
+        \item \texttt{cv2.GC\_INIT\_WITH\_MASK} for the initialization method, and
+        \item \texttt{mask} - a binary mask of brushseeds as the input mask, where pixels labeled as definite foreground ($B_n = 1$) were assigned the value \texttt{cv2.GC\_FG}, pixels labeled as definite background ($B_n = 0$) were assigned the value \texttt{cv2.GC\_BG}, and all other pixels were assigned the value \texttt{cv2.GC\_PR\_BG}.
+    \end{itemize}
+\end{itemize}
+
 \begin{figure}[htbp]
 \centering
     \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-GC+brush.jpg}}
 \caption{A visualization of seed distribution for \acf{GC+brush} on HT118. 
 Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and absence of overlay represents probable background pixels.}
+\label{fig:autoseed_GC}
 \end{figure}
 
-\note{THIS CLASSICAL INTERACTIVE SEGMENTATION METHOD MIGHT FOLLOW SAM INTO RQ2}
-
-\note{MAYBE IT SHOULD BE GIVEN MORE IMPORTANCE?}
 \subsection{State-of-the-art model configuration}
 \subsubsection{Model architecture}
 
@@ -175,24 +205,25 @@ It is ... but trained on the same dataset as the original \acs{SAM}, and thus ha
 Here is how it works:
 ViT encoder, prompt encoder, mask decoder, etc.
 
+\note{STILL YET TO DOCUMENT HOW IT WORKS}
+
 \subsubsection{Seed extraction}
 Even though the \acs{mSAM} implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
 Those box prompts are generalized for and work best on natural images.
 Hence, they may not perform well on gray-scale images of clay tablets with Linear A inscriptions, as those were not part of the training data. 
-Thus, \acs{mSAM} will need to be adapted through the use of prompts. 
+Thus, \acs{mSAM}  needed to be adapted through the use of prompts. 
 The model takes two types of prompts: 1. a single box prompt, and/or 2. point prompts labeled as either foreground or background.
-For the one-shot segmentation capability of the model, these prompts will have to be automatically generated, rather than interactively placed by a user.
-However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts will be used.
-Therefore, there is to be made two versions of MobileSAMv2 for comparison: 
+For the one-shot segmentation capability of the model, these prompts had to be automatically generated, rather than interactively placed by a user.
+However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used.
+Therefore, two versions of MobileSAMv2 were made for comparison: 
 \begin{itemize}
     \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
     \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent The automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) will be derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-as it seems to be the best at extracting foreground from the Linear A tablets, albeit with a degree of noise.
-This will be done by randomly sampling a number of foreground and background pixels from the mask as seeds for \acs{mSAM+pts}.
-For the sake of simplicity, this number will be kept equal for both point types to a 1000 points each, which should be large enough to provide good coverage of the image, while still being computationally feasible for the model to process.
+\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) were derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+This was done by randomly sampling a number of foreground and background pixels from the mask as seeds for \acs{mSAM+pts}.
+For the sake of simplicity, this number was kept equal for both point types to a 1000 points each, which is large enough to provide good coverage of the image, while still being computationally feasible for the model to process.
 
 \begin{figure}[htbp]
 \centering
@@ -204,27 +235,27 @@ Green points represent foreground seeds, while red points represent background s
 
 
 \subsection{Evaluation protocol and performance metrics}
-For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests will need to be defined to be able to determine whether one model performs significantly better than another.
-More specifically, it is of interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
+For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests need to be defined to be able to determine whether one model performed significantly better than another.
+More specifically, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
 
 The following subsections will therefore document the choice of metrics and statistical tests for the evaluation, used to answer RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}.
 
 \subsubsection{Choice of metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are: 1. the \acf{Dice} and 2. the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
 It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements are critical for results.
-Therefore, this thesis will report segmentation performance using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
+Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
 
 $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
 
-\noindent Thus, the raw metrics will end up consisting of the \acs{Dice} score for each image, and each model.
+\noindent Thus, the raw metrics ended up consisting of the \acs{Dice} score for each image, and each model.
 
 \subsubsection{Statistical tests}
-To determine whether the observed differences in scores between models are statistically significant, paired t-tests will be needed.
+To determine whether the observed differences in scores between models were statistically significant, paired t-tests were conducted.
 The paired t-test has two main assumptions: 1. independence of observations, and 2. normality of residuals.
-The first assumption is already satisfied, since the segmentation performance of one image does not directly influence the performance on another.
-However, the second assumption depends on the results.
-Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question will be checked for normality using a QQ-plot and the Shapiro-Wilk test.
-And in case the normality assumption is violated, the non-parametric domain-specific Wilcoxon signed-rank test will be used instead.\footcite{Rainio2024}
+The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
+However, the second assumption depends on results.
+Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
+In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
 
 \section{Interactive semi-automation}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.
@@ -235,8 +266,12 @@ Here, the interactivity and quality of human-guided SAM (and GrabCut for compari
 \subsection{Definition of automation metrics}
 
 \section{Workflow efficiency}
-\noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
+\noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+\subsection{Export to Krita}
+\note{It is indeed possible via the Krita Python API to export the predicted segmentation masks as Krita layers, which can then be further edited by hand by a user.
+The question is only if I want to do so via the API (requires Krita installed), or via a Python export script.
+Krita's file format is open, so both are possible.}
 \subsection{Definition of workflow efficiency metrics}
 \subsection{Experimental design of the user study}
 \subsection{Analysis of results}

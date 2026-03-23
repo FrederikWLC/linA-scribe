@@ -25,6 +25,3 @@ class Otsu(Scribe):
         # Convert and return image as binary mask
         # having 1 as foreground (ink), and 0 as background
         return BinaryMask.from_image(thresholded)
-    
-    def preprocess(self, image):
-        return cv2.bilateralFilter(image, 15, 75, 75)

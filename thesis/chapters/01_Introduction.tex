@@ -82,32 +82,5 @@ How much reduction in annotation time can be achieved using the proposed tool co
 \note{Operationalization: The time it takes Ester Salgarella to annotate manually compared to being assisted by the proposed segmentation tool will be measured for a minimum of 5 documents.}
 \end{enumerate}
 
-\section{Empirical considerations}
-For the evaluation of the solution, a dataset will be compiled together with Ester Salgarella of at least 25 images of original 
-documents from the corpus, selected and cropped from \acs{Cefael}.
-These images are subject to \acf{IPR} issues, and can thus not be displayed publicly if not through \acs{Cefael}.
-However, they can still be used for the development and evaluation of the tool (and can be bought if necessary for show-casing within the thesis).
-For direct reference to the primary source of data, the specific links to the \acs{Cefael} online webpages for each document used might have to be cited.
-
-As ground truth, their corresponding digitized layered drawings, stored as Krita (.kra) files on SigLA (provided by Ester Salgarella) will be used and aligned for comparison with tool outputs.
-The ground truth data might then have to be cleared of any marked 
-“deleted signs” or other annotation elements that our model is not intended to reproduce.
-
-The solution will then be built as a pipeline, consisting of
-pre-processing, semi-automatic segmentation, post-processing, and export (e.g. as Krita files).
-At last, the primary deliverable of this project will be delivered to the external partner and co-supervisor Ester Salgarella in the form of a proof-of-concept semi-automatic annotation tool.
-All supporting components, 
-including evaluation results, and analysis will be documented and presented in the written 
-thesis. 
-
-\section{Impact -- innovation and application}
-
-The work of this thesis will present itself as a first proof-of-concept for the use of modern computer vision to accelerate the expansion of the SigLA database, supporting the further digitization of the Linear A corpus.
-Its main contribution will be a semi-automatic annotation tool, which might prove useful to epigraphers for generating segmentations of original document images, as they can then be completed and refined more easily.
-This approach could potentially also be applied to Linear B, as it is the whole field of Aegean studies that seem to suffer from severe under-digitization of the primary evidence, which is a huge problem for the scientific investigations of scholars.
-Hopefully, it will inspire further research and development within the field of digital epigraphy, particularly in the application of generalized and interactive computer vision approaches such as \acs{SAM} on Linear A, and perhaps even in the broader context of use on small corpus ancient writing systems where the lack of big data is ill fit for approaches using deep learning.
-
-\note{TODO: FIX THE INTRO AND FIT IT TO THE THESIS}
-
 \section{Overview of the thesis}
-The rest of this thesis is structured into five main chapters (Methodology, Data, Results, Discussion, Conclusion), all split up into sections concerning each of the three research questions.
+The rest of this thesis is structured into five main chapters (Data, Methodology, Results, Discussion, Conclusion), all split up into sections concerning each of the three research questions.

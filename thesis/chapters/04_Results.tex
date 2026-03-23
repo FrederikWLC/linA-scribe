@@ -1,6 +1,9 @@
 \chapter{Results}
 \section{Segmentation performance}
 
+After running the evaluation of the models on the dataset as illustrated in \cref{fig:model_comparison}, it could already be seen that no implementation of \acf{mSAM} was in the lead, while \acs{GC+brush} seemed to outperform all.
+See the appendix for the full results table, and the next section for a more detailed analysis of the results.
+
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-resume.csv}\resumetable
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-shapiro-tests.csv}\shapirotable
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-paired-t-tests.csv}\ttable
@@ -87,23 +90,27 @@
 
 \subsubsection{Normality of residuals}
 
+As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} appear to be approximately normally distributed, which supports the validity of the paired t-test results.
+Furthermore, the Shapiro-Wilk test for normality on these residuals yields a p-value of $\pgfmathprintnumber[sci,precision=2]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GC+brush_vs_mSAM+pts}
-    \caption{QQplot of the residuals of the paired t-test comparing G+brush and mSAM+pts. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
+    \caption{QQplot of the residuals of the paired t-test comparing \acs{GC+brush} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
     Furthermore, the Shapiro-Wilk test for normality on these residuals yields a p-value of $\pgfmathprintnumber[sci,precision=2]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.}
     \label{fig:qqplot}
 \end{figure}
 
 \subsubsection{Paired t-test}
-To determine whether the classic baseline model \acs{GC+brush} signficiantly outperforms \acs{mSAM+pts}, a paired t-test is conducted on the \acs{Dice} scores obtained for each image across these two models.
+To determine whether the classic baseline model \acs{GC+brush} signficiantly outperformed \acs{mSAM+pts}, a paired t-test is conducted on the \acs{Dice} scores obtained for each image across these two models.
 The null hypothesis ($H_0$) states that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) states that \acs{GC+brush} has a higher mean \acs{Dice} score than \acs{mSAM+pts}.
+Performing the paired t-test yielded the following results:
 $$ \delta = \mu_1 - \mu_2 = \pgfmathprintnumber[fixed,precision=2]{\GCbrushmean} - \pgfmathprintnumber[fixed,precision=2]{\mSAMmean} = \pgfmathprintnumber[fixed,precision=2]{\deltameanGCmSAM} $$
 $$ t = \pgfmathprintnumber[fixed,precision=2]{\tteststatGCmSAM} $$
 $$ P(T > t) = \pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} $$
 
 Thus, as $\pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} < \alpha = 0.05$, the null hypothesis can be rejected, and it can be concluded that \acs{GC+brush} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
-Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods for one-shot segmentation of Linear A tablets.
+Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods for one-shot segmentation of Linear A tablets, even when automatically prompted.
 
 \section{Automation evaluation}
 \section{Workflow efficiency evaluation}

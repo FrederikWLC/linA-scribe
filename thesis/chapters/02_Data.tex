@@ -10,8 +10,8 @@ What follows in this chapter is a detailed description of this dataset, document
 \subsection{Characteristics and construction}
 The dataset was made to consists of 32 chosen image pairs of raw documents and their corresponding ground truth annotations.
 Only inscriptions with clay as writing support were included, as they are the most common and representative of the Linear A corpus, and are the only ones for which SigLA ground truth annotations were already available (IS THIS TRUE?).
-The raw document images from \acs{Cefael} are screenshots of images within the scanned printed edition of the corpus, and thus are not of the highest quality, but they are the only widely publicly available images of the Linear A inscriptions.
-
+The raw document images from \acs{Cefael} are screenshots of grayscale images within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only widely publicly available images of the Linear A inscriptions.
+For an example of a raw document image and its corresponding ground truth annotation, see Figure \ref{fig:ht7b_example}.
 \begin{figure}[htbp]
 \centering
 \begin{subfigure}[t]{0.4\textwidth}
@@ -33,10 +33,10 @@ The raw document images from \acs{Cefael} are screenshots of images within the s
 \subsection{Difficulty classification}
 The dataset was categorized into three difficulty levels (easy, medium, hard) based on the visual quality of the raw images and the clarity of the inscriptions.
 This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
-Concretely, the following criteria were used to classify each difficulty set:
+Concretely, the following criteria were used to classify each difficulty set (see Figure \ref{fig:difficulty_criteria} for a summary of the criteria, and Figure \ref{fig:difficulty_examples} for examples of images with different difficulty levels):
 \begin{figure}
 \centering
-X\begin{itemize}
+\begin{itemize}
     \item Easy: labeled as such for documents with clear ingravings, good contrast, minimal noise, and constant lighting.
     \item Hard: labeled to those with poor contrast, significant noise, and substantial damage making it hard even for the naked eye to read the inscriptions.
     \item Medium: labeled to all those inbetween the qualities of easy and hard.
@@ -44,9 +44,6 @@ X\begin{itemize}
 \caption{Criteria for classifying the dataset into easy, medium, and hard difficulty levels.}
 \label{fig:difficulty_criteria}
 \end{figure}
-\subsection{Image registration and preprocessing}
-To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations first had to be aligned and registered to each other.
-This was done manually in Krita by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
 
 \begin{figure}[htbp]
 \centering
@@ -95,4 +92,12 @@ This was done manually in Krita by downscaling the ground truth images to the in
 \label{fig:difficulty_examples}
 
 \end{figure}
+
+\subsection{Image registration and preprocessing}
+To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations first had to be aligned and registered to each other.
+This was done manually in Krita by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
+
+
 \section{Limitations and biases}
+Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
+This misalignment is a source of noise in the evaluation.
