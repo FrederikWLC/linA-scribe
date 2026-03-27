@@ -73,11 +73,6 @@ $$ T^{*} = \underset{1 \leq T < L}{\arg \max} ~ \sigma^2_B(T) $$
 The between-class variance $\sigma^2_B$ is then defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
  $$ \sigma^2_B(T) = \omega_0(T) \omega_1(T) [\mu_1(T)-\mu_0(T)]^2$$
 
-\noindent For the implementation of Otsu's method in OpenCV, which takes no hyperparameters, \texttt{cv2.threshold} was used as the thresholding function, with the following two arguments:
-\begin{itemize}   
-    \item \texttt{cv2.THRESH\_OTSU} for computation of the global Otsu threshold, and
-    \item \texttt{cv2.THRESH\_BINARY} for the production of a binary output mask, given the computed threshold.
-\end{itemize}
 
 \subsubsection{Local adaptive thresholding (Gaussian) with bilateral pre-filtering}
 \label{subsubsec:gaussian_baseline}
@@ -110,15 +105,6 @@ Here, the spatial weight based on the distance between pixels $p$ and $q$, and t
 $$W_{\mathrm{space}}(p,q)=\exp(-\frac{\|p-q\|^2}{2\sigma_{\mathrm{space}}^2})$$
 $$W_{\mathrm{color}}(p,q)=\exp(-\frac{\|I(p)-I(q)\|^2}{2\sigma_{\mathrm{color}}^2})$$
 
-\noindent For the implementation of Gaussian thresholding\footcite{opencv_gaussian_kernel}, and the bilateral pre-filter in OpenCV, the following functions were used: \footnote{The Gaussian kernel is \textit{separable} and \textit{isotropic}, meaning that it can be implemented (like done in OpenCV) as two consecutive 1-D convolutions, reducing computational complexity from $O(n^2)$ to $O(n)$ for a kernel of size $n \times n$. \parencite[p.~167]{DigitalImageProcessing}.}
-\begin{itemize}
-    \item \texttt{cv2.bilateralFilter} for the pre-filtering step, with hyperparameters $\mathtt{d}=15$, $\mathtt{sigmaColor}=75$, and $\mathtt{sigmaSpace}=75$,
-    \item \texttt{cv2.adaptiveThreshold} as the thresholding function, with hyperparameters $\mathtt{blockSize}=19$, $\mathtt{C}=5$ ($\sigma$ is determined internally based on the chosen kernel/block size), and with arguments:
-    \begin{itemize}
-        \item \texttt{cv2.ADAPTIVE\_THRESH\_GAUSSIAN\_C} for computation of the adaptive Gaussian threshold, and
-        \item \texttt{cv2.THRESH\_BINARY} for the production of a binary output mask, given the computed threshold.
-    \end{itemize}
-\end{itemize}
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
 Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
@@ -133,18 +119,6 @@ Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessin
 This is at last followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
 
 In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
-
-
-\noindent For the implementation of Canny edge detection with region filling in OpenCV, the following functions were used:
-
-\begin{itemize}
-    \item \texttt{cv2.Canny} for the edge detection method, with arguments $\mathtt{threshold1}= \max(0, (1-\sigma)v)$ and $\mathtt{threshold2}=\min(255, (1+\sigma)v)$ where $v$ is the median pixel intensity of the input image, and $\sigma$ was set to $0.1$ after manual tuning.
-    \item \texttt{cv2.morphologyEx} for the region filling method, with arguments:
-    \begin{itemize}
-    \item \texttt{cv2.MORPH\_CLOSE} for the closing operation, and
-    \item a kernel of size $15 \times 15$ for the morphological operation.
-    \end{itemize}
-\end{itemize}
 
 \subsubsection{Energy-based segmentation (GrabCut with brushseeds)}
 GrabCut \parencite{Rother2004GrabCut} is a classical interactive segmentation method, which makes for a good comparison to a deep learning interactive model like \acs{SAM}.
@@ -170,18 +144,6 @@ The automatic brush seeds (see \cref{fig:autoseed_GC} for a visualization) given
 as it seems to be the best at extracting foreground from the Linear A tablets, albeit with a degree of noise.
 The erosion of the thresholded mask was given as sure foreground, while the erosion of the inverse of the thresholded mask was given as sure background, and the rest was given as probable background.
 In that way, the model was provided with a good amount of guidance, while still leaving room for the model to get rid of noise and fill in gaps within the engravings of the inscriptions.
-
-\noindent For the implementation of GrabCut in OpenCV, the following function was used:
-\begin{itemize}
-    \item \texttt{cv2.grabCut} for the segmentation method, with arguments:
-    \begin{itemize}
-        \item $\mathtt{iterCount} = 5$ for the number of iterations the algorithm should run for,
-        \item $\mathtt{bgdModel} = np.zeros((1,65),np.float64)$ for the initial background \ac{GMM} parameters,
-        \item $\mathtt{fgdModel} = np.zeros((1,65),np.float64)$ for the initial foreground \ac{GMM} parameters,
-        \item \texttt{cv2.GC\_INIT\_WITH\_MASK} for the initialization method, and
-        \item \texttt{mask} - a binary mask of brushseeds as the input mask, where pixels labeled as definite foreground ($B_n = 1$) were assigned the value \texttt{cv2.GC\_FG}, pixels labeled as definite background ($B_n = 0$) were assigned the value \texttt{cv2.GC\_BG}, and all other pixels were assigned the value \texttt{cv2.GC\_PR\_BG}.
-    \end{itemize}
-\end{itemize}
 
 \begin{figure}[htbp]
 \centering
