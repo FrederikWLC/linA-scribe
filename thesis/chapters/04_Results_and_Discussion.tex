@@ -1,5 +1,5 @@
-\chapter{Results}
-\section{Segmentation performance}
+\chapter{Results and Discussion}
+\section{Segmentation ability (one-shot)}
 
 After running the evaluation of the models on the dataset as illustrated in \cref{fig:model_comparison}, it could already be seen that no implementation of \acf{mSAM} was in the lead, while \acs{GC+brush} seemed to outperform all.
 See the appendix for the full results table, and the next section for a more detailed analysis of the results.
@@ -112,5 +112,5 @@ $$ P(T > t) = \pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} $$
 Thus, as $\pgfmathprintnumber[sci,precision=2]{\ttestpvalueGCmSAM} < \alpha = 0.05$, the null hypothesis can be rejected, and it can be concluded that \acs{GC+brush} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
 Hence, it can be said that \acs{mSAM} underperforms in comparison to classical segmentation methods for one-shot segmentation of Linear A tablets, even when automatically prompted.
 
-\section{Automation evaluation}
-\section{Workflow efficiency evaluation}
+\section{Automation and interactivity}
+\section{Workflow impact}
