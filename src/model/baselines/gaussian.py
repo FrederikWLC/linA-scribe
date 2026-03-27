@@ -1,14 +1,14 @@
-from model.scribe import Scribe
+from model.scribe import Scribe, Tunable
 import numpy as np
 import cv2
 from utils.binary_mask import BinaryMask
+from optuna import Trial
 
 # implementation of the Gaussian threshold
-class Gaussian(Scribe):
-    def __init__(self, d_bilateral=15, sigma_color=75, sigma_space=75, d_gaussian=19, C=5):
+class Gaussian(Scribe,Tunable):
+    def __init__(self, C=5, d_gaussian=19, d_bilateral=15, sigma=75):
         self.d_bilateral = d_bilateral
-        self.sigma_color = sigma_color
-        self.sigma_space = sigma_space
+        self.sigma = sigma
         self.d_gaussian = d_gaussian
         self.C = C
 
@@ -34,10 +34,26 @@ class Gaussian(Scribe):
         d = self.d_bilateral # kernel size
 
         # spatial standard deviation : intensity-similarity smoothing index
-        sigma_color = self.sigma_color #   (the bigger the difference the smaller the value, the bigger the value the more smoothing of contrasting pixels)
+        sigma_color = self.sigma #   (the bigger the difference the smaller the value, the bigger the value the more smoothing of contrasting pixels)
         
         # intensity/range standard deviation : distance-based smoothing index
         # the further away a pixel is from kernel center the less influence, the bigger the value the more uniform weighting of pixels)
-        sigma_space = self.sigma_space
+        sigma_space = self.sigma
         return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
         
+    @property
+    def hyperparameters(self):
+        return {
+            "C":self.C,
+            "d_gaussian":self.d_gaussian,
+            "d_bilateral":self.d_bilateral,
+            "sigma":self.sigma,
+        }
+    
+    def hyperparameter_ranges(self,trial: Trial) -> dict:
+        return {
+            "C":trial.suggest_int("C", 0, 10),
+            "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
+            "d_bilateral":trial.suggest_categorical("d_bilateral", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
+            "sigma":trial.suggest_int("sigma", 0, 150)
+        }

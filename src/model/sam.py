@@ -1,17 +1,17 @@
 import cv2
+from optuna import Trial
 from config import config
-from utils.auto_prompts import auto_box, auto_points
-from model.scribe import SeedableScribe
+from utils.auto_prompts import auto_points
+from model.scribe import SeedableScribe, Tunable
 import numpy as np
 import torch 
-from utils.seeds import PointSeed, Seed, BoxSeed, get_boxes, get_points_and_labels
+from utils.seeds import PointSeed, Seed, get_boxes, get_points_and_labels
 from utils.binary_mask import BinaryMask
 from model.baselines.gaussian import Gaussian
 # the SAM implementation class
 
 class SAM(SeedableScribe):
-    def __init__(self,display_seeds: bool = False, sam_backend: str = config.SAM_BACKEND, sam_model_type: str = config.SAM_MODEL_TYPE, sam_checkpoint_path: str = config.SAM_CHECKPOINT_PATH):
-        super().__init__(display_seeds)
+    def __init__(self, sam_backend: str = config.SAM_BACKEND, sam_model_type: str = config.SAM_MODEL_TYPE, sam_checkpoint_path: str = config.SAM_CHECKPOINT_PATH):
         
         if sam_backend == "mobile":
             from mobile_sam import sam_model_registry, SamPredictor
@@ -78,14 +78,15 @@ class SAM(SeedableScribe):
 
 class MobileSAMv2(SAM):
 
-    def __init__(self, display_seeds: bool = False):
-        super().__init__(display_seeds, sam_backend=config.MOBILE_SAM_BACKEND, sam_model_type=config.MOBILESAM_MODEL_TYPE, sam_checkpoint_path=config.MOBILESAM_CHECKPOINT_PATH)
+    def __init__(self):
+        super().__init__(sam_backend=config.MOBILE_SAM_BACKEND, sam_model_type=config.MOBILESAM_MODEL_TYPE, sam_checkpoint_path=config.MOBILESAM_CHECKPOINT_PATH)
 
     
     @property
     def name(self):
         return "mSAM"
 
+""""
 class MobileSAMv2AutoBox(MobileSAMv2):
     
     def autoseed(self, image: np.ndarray) -> list[BoxSeed]:
@@ -96,15 +97,65 @@ class MobileSAMv2AutoBox(MobileSAMv2):
     @property
     def name(self):
         return "mSAM+box"
+"""
     
-class MobileSAMv2AutoPoint(MobileSAMv2):
-    
+class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
+
+    def __init__(self, d_bilateral=15, sigma=75, C=5, d_gaussian=19, n_fgd_points=1000, n_bgd_points=1000, d_fgd_erosion=3, d_bgd_erosion=3):
+        super().__init__()
+        self.d_bilateral = d_bilateral
+        self.sigma = sigma
+        self.C = C
+        self.d_gaussian = d_gaussian
+        self.n_fgd_points = n_fgd_points
+        self.n_bgd_points = n_bgd_points
+        self.d_fgd_erosion = d_fgd_erosion
+        self.d_bgd_erosion = d_bgd_erosion
+
     def autoseed(self, image: np.ndarray) -> list[PointSeed]:
-        thresh = Gaussian().predict(image)
-        box = auto_box(thresh) 
-        points = auto_points(thresh,num_fgd_points=1000,num_bgd_points=1000,erosion_iter=1)
+        
+        d_bilateral = self.d_bilateral
+        sigma = self.sigma
+        C = self.C
+        d_gaussian = self.d_gaussian
+        n_fgd_points = self.n_fgd_points
+        n_bgd_points = self.n_bgd_points
+        d_fgd_erosion = self.d_fgd_erosion
+        d_bgd_erosion = self.d_bgd_erosion
+
+        thresh = Gaussian(C,d_gaussian,d_bilateral,sigma).predict(image)
+        points = auto_points(thresh,n_fgd_points,n_bgd_points,d_fgd_erosion,d_bgd_erosion)
         return points
         
     @property
     def name(self):
         return "mSAM+pts"
+    
+    @property
+    def hyperparameters(self) -> dict:
+        return {
+            # General bilateral filter hyperparameters for Gaussian preprocessing
+            "d_bilateral":self.d_bilateral,
+            "sigma":self.sigma,
+            # General Gaussian hyperparameters
+            "C":self.C,
+            # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
+            "d_gaussian":self.d_gaussian,
+            # Seed generation hyperparameters
+            "n_fgd_points":self.n_fgd_points,
+            "n_bgd_points":self.n_bgd_points,
+            "d_fgd_erosion":self.d_fgd_erosion,
+            "d_bgd_erosion":self.d_bgd_erosion
+        }
+    
+    def hyperparameter_ranges(self,trial: Trial) -> dict:
+        return {
+            "d_bilateral":trial.suggest_categorical("d_bilateral", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
+            "sigma":trial.suggest_int("sigma", 0, 150),
+            "C":trial.suggest_int("C", 0, 10),
+            "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
+            "n_fgd_points":trial.suggest_int("n_fgd_points", 1, 2000),
+            "n_bgd_points":trial.suggest_int("n_bgd_points", 1, 2000),
+            "d_fgd_erosion":trial.suggest_categorical("d_fgd_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
+            "d_bgd_erosion":trial.suggest_categorical("d_bgd_erosion", [i * 2 + 1 for i in range(1,11)]) # odd integers from 3 to 21
+        }

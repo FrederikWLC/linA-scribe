@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from utils.seeds import BoxSeed, BrushSeed, PointSeed, Seed
 from utils.binary_mask import BinaryMask
+from optuna import Trial
 
 class BaseScribe(ABC):
 
@@ -31,18 +32,10 @@ class Scribe(BaseScribe):
 # the abstract base class for scribe models that can take seeds (i.e. prompts, e.g. points or boxes)
 class SeedableScribe(BaseScribe):
 
-    def __init__(self, display_seeds: bool = False):
-        self.display_seeds = display_seeds
-
     # main method consisting of preprocessing followed by seed parsing and segmenation (returns a binary mask)
     def predict(self, image: np.ndarray, seeds : list[Seed] | None = None, autoseed : bool = True) -> BinaryMask:
         if seeds is None and autoseed: # if no seeds are provided but autoseeding is enabled, autoseeding happens
             seeds = self.autoseed(image) # autoseeding is supposed to be done on the raw image, not the preprocessed one
-        if self.display_seeds and seeds: # for visualization of the seeds, can be turned off if not wanted or if too slow
-            seed_overlay = self.draw_seeds(image, seeds) if seeds else image
-            cv2.imshow("seeds", seed_overlay)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
         preprocessed = self.preprocess(image)
         return self.segment(preprocessed, seeds)
     
@@ -70,11 +63,27 @@ class SeedableScribe(BaseScribe):
     def autoseed(self, image: np.ndarray) -> list[Seed] | None:
         return None
 
-
     # method where the segmentation happens (returns a binary mask)
     @abstractmethod
     def segment(self, image: np.ndarray, seeds: list[Seed] | None = None) -> BinaryMask:
         pass
+
+class Tunable(ABC):
+
+    @property
+    @abstractmethod
+    def hyperparameters(self) -> dict:
+        pass
+    
+    @abstractmethod
+    def hyperparameter_ranges(self,trial: Trial) -> dict:
+        pass
+    
+    def set_hyperparameters(self, **kwargs):
+        for key, value in kwargs.items():
+            if key in self.hyperparameters:
+                setattr(self, key, value)
+
 
 def predict(model: BaseScribe, image, seeds: Seed | None = None) -> BinaryMask:
     if isinstance(model, SeedableScribe):

@@ -17,6 +17,9 @@ sam
 
 #Data
 src/data/*
+!src/data/plots/*
+!src/data/qqplots/*
+!src/data/*.csv
 
 #Python
 __pycache__

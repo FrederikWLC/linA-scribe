@@ -19,29 +19,37 @@ def auto_box(thresh: np.ndarray) -> BoxSeed:
     return BoxSeed(x1, y1, x2, y2)
 
 # returns foreground pixels and background pixels as brush seeds given a thresholded image, used for autoseeding of GrabCutAutoBrush
-def auto_brushes(thresh,erosion_iter=2) -> list[BrushSeed]:
-    fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
-    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
-    #prb_fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_DILATE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+def auto_brushes(prb_fgd_thresh,sure_fgd_thresh,sure_bgd_kernel_size=3,prb_fgd_kernel_size=3,sure_fgd_kernel_size=3) -> list[BrushSeed]:
+    sure_bgd_kernel = np.ones((sure_bgd_kernel_size,sure_bgd_kernel_size), np.uint8)
+    prb_fgd_kernel = np.ones((prb_fgd_kernel_size,prb_fgd_kernel_size), np.uint8)
+    sure_fgd_kernel = np.ones((sure_fgd_kernel_size,sure_fgd_kernel_size), np.uint8)
     
-    ys, xs = fgd_brush.nonzero()
-    fgd_pixels = np.column_stack((xs, ys))
+    sure_bgd_brush = cv2.morphologyEx(sure_fgd_thresh.invert(), cv2.MORPH_ERODE, sure_bgd_kernel)
+    prb_fgd_brush = cv2.morphologyEx(prb_fgd_thresh, cv2.MORPH_ERODE, prb_fgd_kernel)
+    sure_fgd_brush = cv2.morphologyEx(prb_fgd_thresh, cv2.MORPH_ERODE,sure_fgd_kernel)
 
-    ys, xs = bgd_brush.nonzero()
-    bgd_pixels = np.column_stack((xs, ys))
+    ys, xs = sure_bgd_brush.nonzero()
+    sure_bgd_pixels = np.column_stack((xs, ys))
 
-    #ys, xs = prb_fgd_brush.nonzero()
-    #prb_fgd_pixels = np.column_stack((xs, ys))
+    ys, xs = prb_fgd_brush.nonzero()
+    prb_fgd_pixels = np.column_stack((xs, ys))
+
+    ys, xs = sure_fgd_brush.nonzero()
+    sure_fgd_pixels = np.column_stack((xs, ys))
     
     return [
-            BrushSeed(fgd_pixels,cv2.GC_FGD),
-            BrushSeed(bgd_pixels,cv2.GC_BGD)
+            BrushSeed(sure_bgd_pixels,cv2.GC_BGD),
+            BrushSeed(prb_fgd_pixels,cv2.GC_PR_FGD),
+            BrushSeed(sure_fgd_pixels,cv2.GC_FGD)
             ]
 
 # returns list of point seeds given a thresholded image, used for autoseeding of MobileSAMv2AutoPoint
-def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, erosion_iter=1) -> list[PointSeed]:
-    fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
-    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, np.ones((3,3), np.uint8), iterations=erosion_iter)
+def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, fgd_kernel_size=3, bgd_kernel_size=3) -> list[PointSeed]:
+    fgd_kernel = np.ones((fgd_kernel_size,fgd_kernel_size), np.uint8)
+    bgd_kernel = np.ones((bgd_kernel_size,bgd_kernel_size), np.uint8)
+
+    fgd_brush = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, fgd_kernel)
+    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, bgd_kernel)
     fgd_points = place_points(fgd_brush,num_points=num_fgd_points)
     bgd_points = place_points(bgd_brush, num_points=num_bgd_points)
     return [
