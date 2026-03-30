@@ -2,6 +2,7 @@ import cv2
 from pathlib import Path
 from model.sam import MobileSAMv2AutoPoint
 from model.baselines.grabcut import GrabCutAutoBrush
+from utils.tuning import set_all_tuned_hyperparameters
 
 baselines = [
     GrabCutAutoBrush(),
@@ -19,6 +20,8 @@ medium_raw_image_paths = medium_raw_folder.glob("*.jpg")
 hard_raw_image_paths = hard_raw_folder.glob("*.jpg")
 
 def perform_comparison(raw_image_paths, baselines):
+    set_all_tuned_hyperparameters(baselines)
+
     for img_path in raw_image_paths:
         img_name = img_path.name
         print(f"\Autoseeding {img_name}...")
@@ -26,8 +29,8 @@ def perform_comparison(raw_image_paths, baselines):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         for baseline in baselines:
-            autoseeds = baseline.autoseed(img)
-            image = baseline.draw_seeds(img, autoseeds) if autoseeds else img
+            seed = baseline.autoseed(img)
+            image = baseline.draw_seed(img, seed) if seed is not None else img
             output_path = output_folder / f'{img_name[:-4]}-{baseline.name}.jpg'
             cv2.imwrite(str(output_path), image)
             print(f"Done for {baseline.name}!")

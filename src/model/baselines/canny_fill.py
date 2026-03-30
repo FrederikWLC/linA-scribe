@@ -7,22 +7,25 @@ from utils.binary_mask import BinaryMask
 
 class CannyFill(Scribe,Tunable):
     def __init__(self, d=15,sigma=0.1):
-        self.d = d,
+        self.d = d
         self.sigma = sigma
 
 
     def segment(self, image: np.ndarray) -> BinaryMask:
 
+        sigma = float(self.sigma)
+        d = int(self.d)
+
         # auto canny thresholds
         v = np.median(image)
-        low = int(max(0, (1 - self.sigma) * v))
-        high = int(min(255, (1 + self.sigma) * v))
+        low = int(max(0, (1 - sigma) * v))
+        high = int(min(255, (1 + sigma) * v))
 
         # canny edge detection
         edges = cv2.Canny(image, low, high)
 
         # filling up the edges via morphological closing (dilation followed by erosion)
-        kernel = np.ones((self.d, self.d), np.uint8)
+        kernel = np.ones((d, d), np.uint8)
         filled = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
 
         return BinaryMask(filled)
@@ -38,9 +41,9 @@ class CannyFill(Scribe,Tunable):
     def hyperparameters(self):
         return {
             # Kernel size for morphological closing (filling)
-            "d":self.d,
+            "d":int(self.d),
             # Sigma for auto Canny thresholding (determines how much the thresholds deviate from the median pixel intensity)
-            "sigma":self.sigma
+            "sigma":float(self.sigma)
             }
 
     def hyperparameter_ranges(self,trial: Trial):

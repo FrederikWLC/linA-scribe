@@ -2,21 +2,26 @@ from pathlib import Path
 
 import cv2
 import optuna
-from optuna.samplers import RandomSampler, TPESampler
+from optuna.samplers import TPESampler
 import pandas as pd
 from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 # OTSU HAS NO HYPERPARAMETERS, NOT INCLUDED IN TUNING
 from model.sam import MobileSAMv2AutoPoint
-from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
+from utils.evaluation import BinaryDiceScore, evaluate_model
 
 
 
 METRIC = {"Dice": BinaryDiceScore} # only choose one metric pls
 METRIC_NAME = list(METRIC.keys())[0]
 # the baselines that can be tuned
-BASELINES = [GrabCutAutoBrush(), MobileSAMv2AutoPoint()]
+BASELINES = [
+    #CannyFill(), 
+    #Gaussian(), 
+    #GrabCutAutoBrush() 
+    MobileSAMv2AutoPoint()
+    ]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")
 GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")

@@ -1,19 +1,20 @@
 import cv2
 from pathlib import Path
-from model.sam import MobileSAMv2, MobileSAMv2AutoBox, MobileSAMv2AutoPoint
+from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
 from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.otsu import Otsu
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.scribe import predict
+from utils.tuning import set_all_tuned_hyperparameters
 
 baselines = [
     #CannyFill(),
-    Gaussian()
+    #Gaussian(),
     #Otsu()
-    #GrabCutAutoBrush(),
+    GrabCutAutoBrush(),
     #MobileSAMv2(),
-    #MobileSAMv2AutoPoint()
+    MobileSAMv2AutoPoint()
     ]
 
 raw_folder = Path("data/raw")
@@ -27,6 +28,7 @@ medium_raw_image_paths = medium_raw_folder.glob("*.jpg")
 hard_raw_image_paths = hard_raw_folder.glob("*.jpg")
 
 def perform_comparison(raw_image_paths, baselines):
+    set_all_tuned_hyperparameters(baselines)
     for img_path in raw_image_paths:
         img_name = img_path.name
         print(f"\nSegmenting {img_name}...")

@@ -11,10 +11,18 @@ from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
 from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
 from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
-
+from utils.tuning import set_all_tuned_hyperparameters
 
 METRICS = {"Dice": BinaryDiceScore}
-BASELINES = [Otsu(), Gaussian(), CannyFill(), GrabCutAutoBrush(display_seeds=False), MobileSAMv2(), MobileSAMv2AutoPoint(display_seeds=False)]
+BASELINES = [
+    Otsu(),
+    Gaussian(),
+    CannyFill(),
+    GrabCutAutoBrush(), 
+    MobileSAMv2(),
+    MobileSAMv2AutoPoint()
+    ]
+
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")
 GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")
@@ -82,6 +90,7 @@ def perform_evaluation(
 
         df_raw = pd.concat([df_raw, raw_sub_dataframe], ignore_index=True)
         df_raw.drop_duplicates(subset=["difficulty", "label","model"], keep="last", inplace=True)
+        df_raw.sort_values(by=["difficulty", "label","model"], inplace=True)
 
     df_raw.to_csv(_variant_path(csv_path, "raw"), index=False)
     _build_raw_pivots(df_raw, csv_path)
@@ -396,6 +405,7 @@ def do_boxplots(csv_path: str = "data/evaluation.csv"):
 
 
 def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
+    set_all_tuned_hyperparameters(BASELINES) # ensure all baselines have their tuned hyperparameters set before starting evaluation
     do_boxplots(csv_path=csv_path) # ensure boxplots are up to date before starting evaluation
     do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
     do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation

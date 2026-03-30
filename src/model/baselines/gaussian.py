@@ -13,8 +13,8 @@ class Gaussian(Scribe,Tunable):
         self.C = C
 
     def segment(self, image: np.ndarray) -> BinaryMask:
-        kernel_size = self.d_gaussian # size of kernel (neighborhood)
-        C = self.C # constant to be subtracted for local threshold computation
+        kernel_size = int(self.d_gaussian) # size of kernel (neighborhood)
+        C = int(self.C) # constant to be subtracted for local threshold computation
         # 255 is the value put 
         # for the brightests pixels
         # that pass the threshold...
@@ -31,23 +31,23 @@ class Gaussian(Scribe,Tunable):
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
         # preprocess with bilateral filter
-        d = self.d_bilateral # kernel size
+        d = int(self.d_bilateral) # kernel size
 
         # spatial standard deviation : intensity-similarity smoothing index
-        sigma_color = self.sigma #   (the bigger the difference the smaller the value, the bigger the value the more smoothing of contrasting pixels)
+        sigma_color = int(self.sigma) #   (the bigger the difference the smaller the value, the bigger the value the more smoothing of contrasting pixels)
         
         # intensity/range standard deviation : distance-based smoothing index
         # the further away a pixel is from kernel center the less influence, the bigger the value the more uniform weighting of pixels)
-        sigma_space = self.sigma
+        sigma_space = int(self.sigma)
         return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
         
     @property
     def hyperparameters(self):
         return {
-            "C":self.C,
-            "d_gaussian":self.d_gaussian,
-            "d_bilateral":self.d_bilateral,
-            "sigma":self.sigma,
+            "C":int(self.C),
+            "d_gaussian":int(self.d_gaussian),
+            "d_bilateral":int(self.d_bilateral),
+            "sigma":int(self.sigma),
         }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:

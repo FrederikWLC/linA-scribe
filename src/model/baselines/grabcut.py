@@ -1,121 +1,125 @@
 import cv2
 import numpy as np
 from optuna import Trial
-from model.scribe import SeedableScribe, Tunable
-from utils.auto_prompts import auto_brushes
+from model.scribe import BrushScribe, Tunable
+from utils.auto_prompts import auto_brush
 from utils.binary_mask import BinaryMask
 from utils.seeds import BrushSeed
 from model.baselines.gaussian import Gaussian
 
-# implementation of GrabCut
-class GrabCut(SeedableScribe,Tunable):
-    def __init__(self, iters=1):
-        self.iters = iters
+# implementation of GrabCut with automatic brush mask given as seed
+class GrabCutAutoBrush(BrushScribe,Tunable):
+    def __init__(self, iters=1, d_bilateral=15, sigma=75, C=5, d_sure_fgd_gaussian=19, extra_d_sure_bgd_gaussian=21, d_sure_erosion=12):
+        self.iters = int(iters)
+        self.d_bilateral = int(d_bilateral)
+        self.sigma = int(sigma)
+        self.C = int(C)
+        self.d_sure_fgd_gaussian = int(d_sure_fgd_gaussian)
+        self.extra_d_sure_bgd_gaussian = int(extra_d_sure_bgd_gaussian)
+        self.d_sure_erosion = int(d_sure_erosion)
 
-    def segment(self, image: np.ndarray, brushseeds=None) -> BinaryMask:
+    def segment(self, image: np.ndarray, brushmask=None) -> BinaryMask:
         if len(image.shape) == 2:  # convert to bgr
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        mask = np.zeros(image.shape[:2],np.uint8)
-        
-        mask[True] = cv2.GC_PR_BGD # default is probable background
-        
-        if brushseeds:
-            for brush in brushseeds:
-                if len(brush.pixels) > 0:
-                    xs, ys = zip(*brush.pixels)
-                    mask[ys, xs] = brush.label
+
+        if brushmask is None:
+            brushmask = np.zeros(image.shape[:2], np.uint8)
 
         # 65 is the number of GMM components used internally by GrabCut, must be 65 for OpenCV's implementation
         bgdModel = np.zeros((1,65),np.float64)
         fgdModel = np.zeros((1,65),np.float64)
         
         try:
-            mask, bgdModel, fgdModel = cv2.grabCut(image,mask,None,bgdModel,fgdModel,self.iters,cv2.GC_INIT_WITH_MASK)
+            iters = int(self.iters)
+            brushmask, bgdModel, fgdModel = cv2.grabCut(image,brushmask,None,bgdModel,fgdModel,iters,cv2.GC_INIT_WITH_MASK)
+            # end result is union of sure foreground and probable foreground
+            is_fgd = (brushmask == cv2.GC_FGD) | (brushmask == cv2.GC_PR_FGD)
         except cv2.error: # if not fgd or bgd pixels provided
-           pass
+            is_fgd = np.zeros(image.shape[:2], dtype=bool)
 
-        # end result is union of sure foreground and probable foreground
-        is_fgd = (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD)
         return BinaryMask.from_bool(is_fgd)
     
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        d_bilateral = self.d_bilateral
-        sigma_color = self.sigma
-        sigma_space = self.sigma
+        d_bilateral = int(self.d_bilateral)
+        sigma_color = int(self.sigma)
+        sigma_space = int(self.sigma)
         return cv2.bilateralFilter(image, d=d_bilateral, sigmaColor=sigma_color, sigmaSpace=sigma_space)
+    
+    def autoseed(self, image: np.ndarray) -> list[BrushSeed]:
+        d_bilateral = int(self.d_bilateral)
+        sigma = int(self.sigma)
+        C = int(self.C)
+        d_sure_fgd_gaussian = int(self.d_sure_fgd_gaussian)
+        # constrain bgd gaussian to have bigger kernel size than fgd gaussian,
+        # to ensure that sure bgd thresh is more "sure" than sure fgd
+        # this will lead to bigger sure bgd regions and thus less prb bgd noise, 
+        # which seems to be beneficial for performance of GrabCut (see tuning-GC+brush-trials-prev.csv)
+        d_sure_bgd_gaussian = d_sure_fgd_gaussian + int(self.extra_d_sure_bgd_gaussian) 
+        d_sure_erosion = int(self.d_sure_erosion)
+
+        sure_fgd_thresh = Gaussian(
+            C=C,
+            d_gaussian=d_sure_fgd_gaussian,
+            d_bilateral=d_bilateral,
+            sigma=sigma
+            ).predict(image)
+        
+        sure_bgd_thresh = Gaussian(
+            C=C,
+            d_gaussian=d_sure_bgd_gaussian,
+            d_bilateral=d_bilateral,
+            sigma=sigma
+            ).predict(image).invert()
+
+        brush_mask = auto_brush(
+                                sure_bgd_thresh=sure_bgd_thresh,
+                                sure_fgd_thresh=sure_fgd_thresh,
+                                d_sure_erosion=d_sure_erosion)
+        return brush_mask
+
     
     @property
     def hyperparameters(self) -> dict:
         return {
-                "iters":self.iters,
-                "d_bilateral":self.d_bilateral,
-                "sigma":self.sigma
+                # GrabCut iters
+                "iters":int(self.iters),
+
+                # Bilateral filter hyperparameters
+                "d_bilateral":int(self.d_bilateral),
+                "sigma":int(self.sigma),
+
+                # General Gaussian hyperparameters
+                "C":int(self.C),
+                
+                # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
+                "extra_d_sure_bgd_gaussian":int(self.extra_d_sure_bgd_gaussian),
+                "d_sure_fgd_gaussian":int(self.d_sure_fgd_gaussian),
+                
+                # Erosion kernel size for erosion of fgd/bgd, used for determining size and placement of prb bgd regions
+                "d_sure_erosion":int(self.d_sure_erosion),
                 }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
         return {
+                # GrabCut iters
                 "iters":trial.suggest_int("iters", 1, 15),
-                "d_bilateral":trial.suggest_int("d_bilateral", 1, 15),
-                "sigma":trial.suggest_int("sigma", 0, 150)
+                
+                # Bilateral filter hyperparameters
+                "d_bilateral":trial.suggest_int("d_bilateral", 3, 15),
+                "sigma":trial.suggest_int("sigma", 0, 100),
+                
+                # General Gaussian hyperparameters
+                "C":trial.suggest_int("C", 0, 10),
+                
+                # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
+                "extra_d_sure_bgd_gaussian":trial.suggest_categorical("extra_d_sure_bgd_gaussian", [i * 2 for i in range(1,11)]), # even integers from 0 to 20
+                "d_sure_fgd_gaussian":trial.suggest_categorical("d_sure_fgd_gaussian", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
+                
+                # Erosion kernel size for erosion of fgd/bgd, used for determining size and placement of prb bgd regions
+                "d_sure_erosion":trial.suggest_categorical("d_sure_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
                 }
-
-# implementation of GrabCut with automatic brushes given as seeds
-class GrabCutAutoBrush(GrabCut):
-    def __init__(self, iters=10, d_bilateral=15, sigma=75, C=5, d_prb_gaussian=19, extra_d_sure_gaussian=15, d_sure_bgd_erosion=3, d_prb_fgd_erosion=3, d_sure_fgd_erosion=3):
-        super().__init__(iters)
-        self.d_bilateral = d_bilateral
-        self.sigma = sigma
-        self.C = C
-        self.d_prb_gaussian = d_prb_gaussian
-        self.extra_d_sure_gaussian = extra_d_sure_gaussian
-        self.d_sure_bgd_erosion = d_sure_bgd_erosion
-        self.d_prb_fgd_erosion = d_prb_fgd_erosion
-        self.d_sure_fgd_erosion = d_sure_fgd_erosion
-
-    def autoseed(self, image: np.ndarray) -> list[BrushSeed]:
-        d_bilateral = self.d_bilateral
-        sigma = self.sigma
-        C = self.C
-        d_prb_gaussian = self.d_prb_gaussian
-        d_sure_gaussian = self.extra_d_sure_gaussian + d_prb_gaussian
-        d_sure_bgd_erosion = self.d_sure_bgd_erosion
-        d_prb_fgd_erosion = self.d_prb_fgd_erosion
-        d_sure_fgd_erosion = self.d_sure_fgd_erosion
-
-        prb_fgd_thresh = Gaussian(C,d_prb_gaussian, d_bilateral,sigma).predict(image)
-        sure_fgd_thresh = Gaussian(C,d_sure_gaussian, d_bilateral,sigma).predict(image)
-        brushes = auto_brushes(prb_fgd_thresh,sure_fgd_thresh,d_sure_bgd_erosion,d_prb_fgd_erosion,d_sure_fgd_erosion)
-        return brushes
-
+    
     @property
     def name(self):
         return "GC+brush"
     
-    @property
-    def hyperparameters(self) -> dict:
-        return super().hyperparameters | {
-                # General Gaussian hyperparameters
-                "C":self.C,
-                # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
-                "extra_d_sure_gaussian":self.extra_d_sure_gaussian,
-                "d_prb_gaussian":self.d_prb_gaussian,
-
-                # Kernel sizes for erosion of different mask regions
-                "d_sure_bgd_erosion":self.d_sure_bgd_erosion,
-                "d_prb_fgd_erosion":self.d_prb_fgd_erosion,
-                "d_sure_fgd_erosion":self.d_sure_fgd_erosion
-                }
-    
-    def hyperparameter_ranges(self,trial: Trial) -> dict:
-        return super().hyperparameter_ranges(trial) | {
-                # General Gaussian hyperparameters
-                "C":trial.suggest_int("C", 0, 10),
-                # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
-                "extra_d_sure_gaussian":trial.suggest_categorical("extra_d_sure_gaussian", [i * 2 for i in range(1,11)]), # even integers from 0 to 20
-                "d_prb_gaussian":trial.suggest_categorical("d_prb_gaussian", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
-
-                # Kernel sizes for erosion of different mask regions
-                "d_sure_bgd_erosion":trial.suggest_categorical("d_sure_bgd_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
-                "d_prb_fgd_erosion":trial.suggest_categorical("d_prb_fgd_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
-                "d_sure_fgd_erosion":trial.suggest_categorical("d_sure_fgd_erosion", [i * 2 + 1 for i in range(1,11)]) # odd integers from 3 to 21
-                }

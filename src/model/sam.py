@@ -1,16 +1,16 @@
 import cv2
 from optuna import Trial
 from config import config
-from utils.auto_prompts import auto_points
-from model.scribe import SeedableScribe, Tunable
+from utils.auto_prompts import auto_points, auto_points_boundary
+from model.scribe import PointScribe, Tunable
 import numpy as np
 import torch 
-from utils.seeds import PointSeed, Seed, get_boxes, get_points_and_labels
+from utils.seeds import PointSeed, get_points_and_labels
 from utils.binary_mask import BinaryMask
 from model.baselines.gaussian import Gaussian
 # the SAM implementation class
 
-class SAM(SeedableScribe):
+class SAM(PointScribe):
     def __init__(self, sam_backend: str = config.SAM_BACKEND, sam_model_type: str = config.SAM_MODEL_TYPE, sam_checkpoint_path: str = config.SAM_CHECKPOINT_PATH):
         
         if sam_backend == "mobile":
@@ -27,48 +27,29 @@ class SAM(SeedableScribe):
         self.predictor = SamPredictor(sam)
 
     # generate the masks with seeds
-    def generate_masks(
+    def generate_mask(
         self,
         image: np.ndarray,
-        points: list[list[int]] = None,
+        points: list[PointSeed] = None,
         labels: list[int] = None,
-        boxes: list[int] | None = None,
     ) -> list[BinaryMask]:
         
         self.predictor.set_image(image)
-
-        masks = []
-        if boxes is not None and len(boxes) > 0:
-            for box in boxes:
-                mask, score, logit = self.predictor.predict(
-                    box = box,
-                    point_coords=points,
-                    point_labels=labels,
-                    multimask_output=False
-                )
-                masks.append(BinaryMask(np.squeeze(mask)))
-        else:
-            mask, score, logit = self.predictor.predict(
-                    point_coords=points,
-                    point_labels=labels,
-                    multimask_output=False
-                )
-            masks.append(BinaryMask(np.squeeze(mask)))
-        return masks
+        
+        mask, _score, _logit = self.predictor.predict(
+                point_coords=points,
+                point_labels=labels,
+                multimask_output=False
+            )
+        return BinaryMask(np.squeeze(mask))
     
-    def segment(self, image: np.ndarray, seeds: list[Seed] | None = None) -> BinaryMask:
+    def segment(self, image: np.ndarray, seeds: list[PointSeed] | None = None) -> BinaryMask:
         points, labels = get_points_and_labels(seeds) if seeds else (None, None)
-        boxes = get_boxes(seeds) if seeds else []
 
         # convert to rgb for sam
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
-        masks = self.generate_masks(image,points,labels,boxes)
-        if len(masks) > 1: # combine masks
-            # return intersection of all masks
-            mask = BinaryMask.from_intersection(*masks)
-        else:
-            mask = BinaryMask(masks[0])
+        mask = self.generate_mask(image,points,labels)
         
         return mask
     
@@ -101,30 +82,32 @@ class MobileSAMv2AutoBox(MobileSAMv2):
     
 class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
 
-    def __init__(self, d_bilateral=15, sigma=75, C=5, d_gaussian=19, n_fgd_points=1000, n_bgd_points=1000, d_fgd_erosion=3, d_bgd_erosion=3):
+    def __init__(self, d_bilateral=15, sigma=75, C=5, d_gaussian=19, n_fgd_points=1000, n_boundary_points=1000, n_sure_bgd_points=1000, d_gap_erosion=3,d_boundary_erosion=3):
         super().__init__()
         self.d_bilateral = d_bilateral
         self.sigma = sigma
         self.C = C
         self.d_gaussian = d_gaussian
         self.n_fgd_points = n_fgd_points
-        self.n_bgd_points = n_bgd_points
-        self.d_fgd_erosion = d_fgd_erosion
-        self.d_bgd_erosion = d_bgd_erosion
+        self.n_boundary_points = n_boundary_points
+        self.n_sure_bgd_points = n_sure_bgd_points
+        self.d_gap_erosion = d_gap_erosion
+        self.d_boundary_erosion = d_boundary_erosion
 
     def autoseed(self, image: np.ndarray) -> list[PointSeed]:
         
-        d_bilateral = self.d_bilateral
-        sigma = self.sigma
-        C = self.C
-        d_gaussian = self.d_gaussian
-        n_fgd_points = self.n_fgd_points
-        n_bgd_points = self.n_bgd_points
-        d_fgd_erosion = self.d_fgd_erosion
-        d_bgd_erosion = self.d_bgd_erosion
+        d_bilateral = int(self.d_bilateral)
+        sigma = int(self.sigma)
+        C = int(self.C)
+        d_gaussian = int(self.d_gaussian)
+        n_fgd_points = int(self.n_fgd_points)
+        n_boundary_points = int(self.n_boundary_points)
+        n_sure_bgd_points = int(self.n_sure_bgd_points)
+        d_gap_erosion = int(self.d_gap_erosion)
+        d_boundary_erosion = int(self.d_boundary_erosion)
 
         thresh = Gaussian(C,d_gaussian,d_bilateral,sigma).predict(image)
-        points = auto_points(thresh,n_fgd_points,n_bgd_points,d_fgd_erosion,d_bgd_erosion)
+        points = auto_points_boundary(thresh,n_fgd_points,n_boundary_points,n_sure_bgd_points,d_gap_erosion,d_boundary_erosion)
         return points
         
     @property
@@ -135,17 +118,18 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
     def hyperparameters(self) -> dict:
         return {
             # General bilateral filter hyperparameters for Gaussian preprocessing
-            "d_bilateral":self.d_bilateral,
-            "sigma":self.sigma,
+            "d_bilateral":int(self.d_bilateral),
+            "sigma":int(self.sigma),
             # General Gaussian hyperparameters
-            "C":self.C,
+            "C":int(self.C),
             # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
-            "d_gaussian":self.d_gaussian,
+            "d_gaussian":int(self.d_gaussian),
             # Seed generation hyperparameters
-            "n_fgd_points":self.n_fgd_points,
-            "n_bgd_points":self.n_bgd_points,
-            "d_fgd_erosion":self.d_fgd_erosion,
-            "d_bgd_erosion":self.d_bgd_erosion
+            "n_fgd_points":int(self.n_fgd_points),
+            "n_boundary_points":int(self.n_boundary_points),
+            "n_sure_bgd_points":int(self.n_sure_bgd_points),
+            "d_gap_erosion":int(self.d_gap_erosion),
+            "d_boundary_erosion":int(self.d_boundary_erosion)
         }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
@@ -155,7 +139,8 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
             "C":trial.suggest_int("C", 0, 10),
             "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
             "n_fgd_points":trial.suggest_int("n_fgd_points", 1, 2000),
-            "n_bgd_points":trial.suggest_int("n_bgd_points", 1, 2000),
-            "d_fgd_erosion":trial.suggest_categorical("d_fgd_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
-            "d_bgd_erosion":trial.suggest_categorical("d_bgd_erosion", [i * 2 + 1 for i in range(1,11)]) # odd integers from 3 to 21
+            "n_boundary_points":trial.suggest_int("n_boundary_points", 1, 2000),
+            "n_sure_bgd_points":trial.suggest_int("n_sure_bgd_points", 1, 2000),
+            "d_gap_erosion":trial.suggest_categorical("d_gap_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
+            "d_boundary_erosion":trial.suggest_categorical("d_boundary_erosion", [i * 2 + 1 for i in range(1,11)]) # odd integers from 3 to 21
         }

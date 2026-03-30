@@ -33,41 +33,59 @@ class Scribe(BaseScribe):
 class SeedableScribe(BaseScribe):
 
     # main method consisting of preprocessing followed by seed parsing and segmenation (returns a binary mask)
-    def predict(self, image: np.ndarray, seeds : list[Seed] | None = None, autoseed : bool = True) -> BinaryMask:
-        if seeds is None and autoseed: # if no seeds are provided but autoseeding is enabled, autoseeding happens
-            seeds = self.autoseed(image) # autoseeding is supposed to be done on the raw image, not the preprocessed one
+    def predict(self, image: np.ndarray, seed = None, autoseed : bool = True) -> BinaryMask:
+        if seed is None and autoseed: # if no seed is provided but autoseeding is enabled, autoseeding happens
+            seed = self.autoseed(image) # autoseeding is supposed to be done on the raw image, not the preprocessed one
         preprocessed = self.preprocess(image)
-        return self.segment(preprocessed, seeds)
-    
-    def draw_seeds(self, image: np.ndarray, seeds: list[Seed]) -> np.ndarray:
-        drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        for seed in seeds:
-            if isinstance(seed, BoxSeed): # green boxes for box seeds
-                cv2.rectangle(drawn, (seed.x1, seed.y1), (seed.x2, seed.y2), (0, 255, 0), 2)
-            elif isinstance(seed, PointSeed): # green circles for fgd points, red circles for bgd points
-                color = (0, 255, 0) if seed.label == 1 else (0, 0, 255)
-                cv2.circle(drawn, (seed.x, seed.y), 5, color, -1)
-            elif isinstance(seed, BrushSeed): # green pixels for fgd, red pixels for bgd
-                brush_alpha = 0.3
-                pixels = np.array(seed.pixels)
-                xs = pixels[:, 0]
-                ys = pixels[:, 1]
-                mask = (xs >= 0) & (ys >= 0) & (xs < drawn.shape[1]) & (ys < drawn.shape[0])
-                color = np.array((0, 255, 0) if seed.label == cv2.GC_FGD else (0, 0, 255), dtype=np.float32)
-                drawn[ys[mask], xs[mask]] = (
-                    (1 - brush_alpha) * drawn[ys[mask], xs[mask]] + brush_alpha * color
-                ).astype(np.uint8)
-        return drawn
+        return self.segment(preprocessed, seed)
     
     # method where the autoseeding happens
     def autoseed(self, image: np.ndarray) -> list[Seed] | None:
         return None
-
+    
+    @abstractmethod
+    def draw_seed(self, image: np.ndarray, seed) -> np.ndarray:
+        pass
+    
     # method where the segmentation happens (returns a binary mask)
     @abstractmethod
     def segment(self, image: np.ndarray, seeds: list[Seed] | None = None) -> BinaryMask:
         pass
 
+class PointScribe(SeedableScribe):
+    def draw_seed(self, image: np.ndarray, point_seeds: list[PointSeed]) -> np.ndarray:
+        drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        for seed in point_seeds:
+            # green circles for fgd points, red circles for bgd points
+            color = (0, 255, 0) if seed.label == 1 else (0, 0, 255)
+            cv2.circle(drawn, (seed.x, seed.y), 5, color, -1)
+        return drawn
+
+class BrushScribe(SeedableScribe):
+    def draw_seed(self, image: np.ndarray, brush_mask: np.ndarray) -> np.ndarray:
+        drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        brush_color_from_label = {
+            cv2.GC_BGD: (0, 0, 255), # red for sure background
+            cv2.GC_PR_BGD: (255, 255, 255), # white for probable background
+            cv2.GC_PR_FGD: (0, 0, 0), # black for probable foreground
+            cv2.GC_FGD: (0, 255, 0) # green for sure foreground
+        }
+        brush_alpha_from_label = {
+            cv2.GC_BGD: 0.4, # transparent overlay for sure background
+            cv2.GC_FGD: 0.4, # transparent overlay for sure foreground
+            cv2.GC_PR_BGD: 0.4, # transparent overlay for probable background
+            cv2.GC_PR_FGD: 0.4 # transparent overlay for probable foreground
+        }
+        for label in [cv2.GC_BGD, cv2.GC_FGD, cv2.GC_PR_BGD, cv2.GC_PR_FGD]:
+            label_mask = brush_mask == label
+            ys, xs = np.where(label_mask)
+            color = np.array(brush_color_from_label[label])
+            alpha = brush_alpha_from_label[label]
+            drawn[ys, xs] = (
+                (1 - alpha) * drawn[ys, xs] + alpha * color
+                ).astype(np.uint8)
+        return drawn
+    
 class Tunable(ABC):
 
     @property
@@ -85,10 +103,10 @@ class Tunable(ABC):
                 setattr(self, key, value)
 
 
-def predict(model: BaseScribe, image, seeds: Seed | None = None) -> BinaryMask:
+def predict(model: BaseScribe, image, seed = None) -> BinaryMask:
     if isinstance(model, SeedableScribe):
-        return model.predict(image,seeds=seeds)
+        return model.predict(image,seed=seed)
     return model.predict(image)
 
-def predict_batch(model: BaseScribe, images: list[np.ndarray], seeds=None) -> list[BinaryMask]:
-    return [predict(model,img,seeds) for img in images]
+def predict_batch(model: BaseScribe, images: list[np.ndarray], seed=None) -> list[BinaryMask]:
+    return [predict(model,img,seed) for img in images]

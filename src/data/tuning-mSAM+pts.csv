@@ -1,2 +1,2 @@
-Dice,d_bilateral,sigma,C,d_gaussian,n_fgd_points,n_bgd_points,d_fgd_erosion,d_bgd_erosion,n_trials
-0.15948916789885328,13,22,8,13,223,1646,3,5,100
+Dice,d_bilateral,sigma,C,d_gaussian,n_fgd_points,n_boundary_points,n_sure_bgd_points,d_gap_erosion,d_boundary_erosion,n_trials
+0.16148853931961696,19,20,10,17,191,873,845,19,17,100
