@@ -24,9 +24,6 @@ $$ (w \star I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~157]{DigitalImageProcessing}
 
 
-
-
-
 \subsection{Development environment and tools}
 
 \note{TODO: EXTEND THIS SECTION}
@@ -160,7 +157,7 @@ Green overlay represents sure foreground pixels, while red overlay represents su
 Raw image $\rightarrow$ Automatic prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
 
 \subsubsection{Segmentation (MobileSAMv2)}
-For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} will be used instead of the full \acs{SAM} model.
+For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the full \acs{SAM} model.
 This is a lightweight version of the original \acs{SAM} model, which is designed to run efficiently on mobile devices while still maintaining good segmentation performance.
 It is ... but trained on the same dataset as the original \acs{SAM}, and thus has the same one-shot segmentation capabilities, although with a slightly lower performance than the original.
 
@@ -176,16 +173,37 @@ Hence, they may not perform well on gray-scale images of clay tablets with Linea
 Thus, \acs{mSAM}  needed to be adapted through the use of prompts. 
 The model takes two types of prompts: 1. a single box prompt, and/or 2. point prompts labeled as either foreground or background.
 For the one-shot segmentation capability of the model, these prompts had to be automatically generated, rather than interactively placed by a user.
-However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used.
-Therefore, two versions of MobileSAMv2 were made for comparison: 
+However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used..
+Thus, two versions of MobileSAMv2 were made for comparison: 
 \begin{itemize}
     \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
     \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) were derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) were derived from thresholded masks of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
 This was done by randomly sampling a number of foreground and background pixels from the mask as seeds for \acs{mSAM+pts}.
-For the sake of simplicity, this number was kept equal for both point types to a 1000 points each, which is large enough to provide good coverage of the image, while still being computationally feasible for the model to process.
+More specifically, the foreground seeds were sampled from the foreground of one Gaussian thresholded mask, while the background seeds were sampled from the erosion of the inverse of a second Gaussian thresholded mask.
+The first erosion of the background was 
+This gave 9 hyperparameters (see \cref{fig:hyperparameters_mSAM}) that were tuned for optimal performance of \acs{mSAM+pts}:
+\begin{figure}
+\centering
+$\times$ 
+\vspace{0.5em}
+\begin{enumerate}
+    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial standard deviation of the Gaussian kernel used for adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $n_{fgd\_points}$: the number of foreground point seeds to be sampled from the foreground of the first Gaussian thresholded mask,
+    \item $n_{boundary\_points}$: the number of background point seeds to be sampled from the boundary region between foreground and sure background,
+    \item $n_{sure\_bgd\_points}$: the number of background point seeds to be sampled from the sure background region,
+    \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
+    \item $d_{boundary\_erosion}$: the kernel size for erosion used to determine the size of the boundary region.
+\end{enumerate}
+\caption{Hyperparameters for \acf{mSAM+pts}}
+\label{fig:hyperparameters_mSAM}
+\end{figure}
+
 
 \begin{figure}[htbp]
 \centering
@@ -194,6 +212,17 @@ For the sake of simplicity, this number was kept equal for both point types to a
 Green points represent foreground seeds, while red points represent background seeds.}
 \label{fig:autoseed_mSAM}
 \end{figure}
+
+\subsection{Hyperparameter optimization}
+To ensure a fair comparison between the models, all models with hyperparameters were tuned to their best performance on the dataset using Optuna, a hyperparameter optimization framework.
+The optimization itself was performed using the \acf{TPE} algorithm \parencite[see][]{TPEHyperparameterOptimization2013}\footcite[also see][]{TPEHyperparameterOptimization2011},
+which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
+Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
+
+It works by building two probabilistic models: one for the hyperparameter configurations that have resulted in good performance, and another for those that have resulted in poor performance.
+Then, it uses these models to select the next hyperparameter configuration to evaluate, by maximizing the expected improvement over the current best performance.
+This way, it can focus the search on promising regions of the space of possible hyperparameters without having to rely on chance or exhaustive search.
+
 
 
 \subsection{Evaluation protocol and performance metrics}
