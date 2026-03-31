@@ -159,7 +159,7 @@ Raw image $\rightarrow$ Automatic prompts $\rightarrow$ MobileSAMv2 $\rightarrow
 \subsubsection{Segmentation (MobileSAMv2)}
 For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the full \acs{SAM} model.
 This is a lightweight version of the original \acs{SAM} model, which is designed to run efficiently on mobile devices while still maintaining good segmentation performance.
-It is ... but trained on the same dataset as the original \acs{SAM}, and thus has the same one-shot segmentation capabilities, although with a slightly lower performance than the original.
+It is trained on a smaller sample of the same dataset as the original \acs{SAM}, and thus has roughly the same one-shot segmentation capabilities, although with a slightly lower performance than the original.
 
 Here is how it works:
 ViT encoder, prompt encoder, mask decoder, etc.
@@ -187,8 +187,7 @@ The first erosion of the background was
 This gave 9 hyperparameters (see \cref{fig:hyperparameters_mSAM}) that were tuned for optimal performance of \acs{mSAM+pts}:
 \begin{figure}
 \centering
-$\times$ 
-\vspace{0.5em}
+\figcross
 \begin{enumerate}
     \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
     \item $\sigma$: the spatial standard deviation of the Gaussian kernel used for adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
@@ -226,7 +225,7 @@ This way, it can focus the search on promising regions of the space of possible 
 
 
 \subsection{Evaluation protocol and performance metrics}
-For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests need to be defined to be able to determine whether one model performed significantly better than another.
+For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
 More specifically, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
 
 The following subsections will therefore document the choice of metrics and statistical tests for the evaluation, used to answer RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}.

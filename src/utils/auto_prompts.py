@@ -3,15 +3,17 @@ import numpy as np
 from utils.seeds import PointSeed
 
 # returns foreground pixels and background pixels as mask given a thresholded image, used for autoseeding of GrabCutAutoBrush
-def auto_brush(sure_bgd_thresh,sure_fgd_thresh,d_sure_erosion=3) -> np.ndarray:
-    sure_erosion_kernel = np.ones((d_sure_erosion,d_sure_erosion), np.uint8)
+def auto_brush(thresh,d_erosion=3) -> np.ndarray:
+    erosion_kernel = np.ones((d_erosion,d_erosion), np.uint8)
+
+    fgd_thresh, bgd_thresh = thresh, thresh.invert()
 
     # Erosion to separate sure foreground and sure background (gap is filled with probable background)
-    sure_bgd_brush = cv2.morphologyEx(sure_bgd_thresh, cv2.MORPH_ERODE, sure_erosion_kernel)
-    sure_fgd_brush = cv2.morphologyEx(sure_fgd_thresh, cv2.MORPH_ERODE, sure_erosion_kernel)
+    sure_bgd_brush = cv2.morphologyEx(bgd_thresh, cv2.MORPH_ERODE, erosion_kernel)
+    sure_fgd_brush = cv2.morphologyEx(fgd_thresh, cv2.MORPH_ERODE, erosion_kernel)
 
     # sure bgd => then sure fgd on top; rest is probable bgd
-    mask = np.full(sure_fgd_thresh.shape[:2], cv2.GC_PR_BGD, dtype=np.uint8)
+    mask = np.full(thresh.shape[:2], cv2.GC_PR_BGD, dtype=np.uint8)
     mask[sure_bgd_brush > 0] = cv2.GC_BGD
     mask[sure_fgd_brush > 0] = cv2.GC_FGD
     

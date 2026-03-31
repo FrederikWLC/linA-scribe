@@ -19,8 +19,8 @@ METRIC_NAME = list(METRIC.keys())[0]
 BASELINES = [
     #CannyFill(), 
     #Gaussian(), 
-    #GrabCutAutoBrush() 
-    MobileSAMv2AutoPoint()
+    GrabCutAutoBrush()
+    #MobileSAMv2AutoPoint()
     ]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")

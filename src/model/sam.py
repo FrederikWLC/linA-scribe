@@ -82,17 +82,15 @@ class MobileSAMv2AutoBox(MobileSAMv2):
     
 class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
 
-    def __init__(self, d_bilateral=15, sigma=75, C=5, d_gaussian=19, n_fgd_points=1000, n_boundary_points=1000, n_sure_bgd_points=1000, d_gap_erosion=3,d_boundary_erosion=3):
+    def __init__(self, d_bilateral=15, sigma=75, C=5, d_gaussian=19, n_fgd_points=1000, n_bgd_points=1000, d_gap_erosion=3):
         super().__init__()
         self.d_bilateral = d_bilateral
         self.sigma = sigma
         self.C = C
         self.d_gaussian = d_gaussian
         self.n_fgd_points = n_fgd_points
-        self.n_boundary_points = n_boundary_points
-        self.n_sure_bgd_points = n_sure_bgd_points
+        self.n_bgd_points = n_bgd_points
         self.d_gap_erosion = d_gap_erosion
-        self.d_boundary_erosion = d_boundary_erosion
 
     def autoseed(self, image: np.ndarray) -> list[PointSeed]:
         
@@ -101,19 +99,13 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
         C = int(self.C)
         d_gaussian = int(self.d_gaussian)
         n_fgd_points = int(self.n_fgd_points)
-        n_boundary_points = int(self.n_boundary_points)
-        n_sure_bgd_points = int(self.n_sure_bgd_points)
+        n_bgd_points = int(self.n_bgd_points)
         d_gap_erosion = int(self.d_gap_erosion)
-        d_boundary_erosion = int(self.d_boundary_erosion)
 
         thresh = Gaussian(C,d_gaussian,d_bilateral,sigma).predict(image)
-        points = auto_points_boundary(thresh,n_fgd_points,n_boundary_points,n_sure_bgd_points,d_gap_erosion,d_boundary_erosion)
+        points = auto_points(thresh,n_fgd_points,n_bgd_points,d_gap_erosion)
         return points
         
-    @property
-    def name(self):
-        return "mSAM+pts"
-    
     @property
     def hyperparameters(self) -> dict:
         return {
@@ -122,14 +114,11 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
             "sigma":int(self.sigma),
             # General Gaussian hyperparameters
             "C":int(self.C),
-            # Specific Gaussian hyperparameters for probable foreground and sure foreground (used for autoseeding of brushes)
             "d_gaussian":int(self.d_gaussian),
             # Seed generation hyperparameters
             "n_fgd_points":int(self.n_fgd_points),
-            "n_boundary_points":int(self.n_boundary_points),
-            "n_sure_bgd_points":int(self.n_sure_bgd_points),
+            "n_bgd_points":int(self.n_bgd_points),
             "d_gap_erosion":int(self.d_gap_erosion),
-            "d_boundary_erosion":int(self.d_boundary_erosion)
         }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
@@ -139,8 +128,10 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
             "C":trial.suggest_int("C", 0, 10),
             "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
             "n_fgd_points":trial.suggest_int("n_fgd_points", 1, 2000),
-            "n_boundary_points":trial.suggest_int("n_boundary_points", 1, 2000),
-            "n_sure_bgd_points":trial.suggest_int("n_sure_bgd_points", 1, 2000),
+            "n_bgd_points":trial.suggest_int("n_bgd_points", 1, 2000),
             "d_gap_erosion":trial.suggest_categorical("d_gap_erosion", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
-            "d_boundary_erosion":trial.suggest_categorical("d_boundary_erosion", [i * 2 + 1 for i in range(1,11)]) # odd integers from 3 to 21
         }
+    
+    @property
+    def name(self):
+        return "mSAM+pts"
