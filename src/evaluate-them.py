@@ -9,18 +9,19 @@ from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
+from model.sam import MobileSAMv2, MobileSAMv2AutoPoint, MobileSAMv2AutoBrush
 from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
 from utils.tuning import set_all_tuned_hyperparameters
 
 METRICS = {"Dice": BinaryDiceScore}
 BASELINES = [
-    Otsu(),
-    Gaussian(),
-    CannyFill(),
-    GrabCutAutoBrush(), 
-    MobileSAMv2(),
-    MobileSAMv2AutoPoint()
+    #Otsu(),
+    #Gaussian(),
+    #CannyFill(),
+    #GrabCutAutoBrush(), 
+    #MobileSAMv2(),
+    #MobileSAMv2AutoPoint(),
+    MobileSAMv2AutoBrush()
     ]
 
 DIFFICULTIES = ("easy", "medium", "hard")
@@ -406,9 +407,6 @@ def do_boxplots(csv_path: str = "data/evaluation.csv"):
 
 def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
     set_all_tuned_hyperparameters(BASELINES) # ensure all baselines have their tuned hyperparameters set before starting evaluation
-    do_boxplots(csv_path=csv_path) # ensure boxplots are up to date before starting evaluation
-    do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
-    do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation
     for difficulty in DIFFICULTIES:
         print(f"Evaluating on {difficulty} images...")
         raw_images, ground_truths, labels = _load_difficulty_set(difficulty)
@@ -424,9 +422,9 @@ def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
         do_statistical_tests(csv_path=csv_path)
 
     do_resume(csv_path=csv_path)
-    do_barplots(csv_path=csv_path)
-    do_boxplots(csv_path=csv_path)
-    do_statistical_tests(csv_path=csv_path)
+    do_boxplots(csv_path=csv_path) # ensure boxplots are up to date before starting evaluation
+    do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
+    do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation
 
 if __name__ == "__main__":
     print("Starting full evaluation...")

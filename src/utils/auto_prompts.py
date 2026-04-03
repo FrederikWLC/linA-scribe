@@ -3,17 +3,15 @@ import numpy as np
 from utils.seeds import PointSeed
 
 # returns foreground pixels and background pixels as mask given a thresholded image, used for autoseeding of GrabCutAutoBrush
-def auto_brush(thresh,d_erosion=3) -> np.ndarray:
-    erosion_kernel = np.ones((d_erosion,d_erosion), np.uint8)
-
-    fgd_thresh, bgd_thresh = thresh, thresh.invert()
+def auto_brush(sure_bgd_thresh,sure_fgd_thresh,d_sure_erosion=3) -> np.ndarray:
+    sure_erosion_kernel = np.ones((d_sure_erosion,d_sure_erosion), np.uint8)
 
     # Erosion to separate sure foreground and sure background (gap is filled with probable background)
-    sure_bgd_brush = cv2.morphologyEx(bgd_thresh, cv2.MORPH_ERODE, erosion_kernel)
-    sure_fgd_brush = cv2.morphologyEx(fgd_thresh, cv2.MORPH_ERODE, erosion_kernel)
+    sure_bgd_brush = cv2.morphologyEx(sure_bgd_thresh, cv2.MORPH_ERODE, sure_erosion_kernel)
+    sure_fgd_brush = cv2.morphologyEx(sure_fgd_thresh, cv2.MORPH_ERODE, sure_erosion_kernel)
 
     # sure bgd => then sure fgd on top; rest is probable bgd
-    mask = np.full(thresh.shape[:2], cv2.GC_PR_BGD, dtype=np.uint8)
+    mask = np.full(sure_fgd_thresh.shape[:2], cv2.GC_PR_BGD, dtype=np.uint8)
     mask[sure_bgd_brush > 0] = cv2.GC_BGD
     mask[sure_fgd_brush > 0] = cv2.GC_FGD
     
@@ -23,10 +21,11 @@ def auto_brush(thresh,d_erosion=3) -> np.ndarray:
 def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, d_bgd_erosion=3) -> list[PointSeed]:
     bgd_erosion_kernel = np.ones((d_bgd_erosion,d_bgd_erosion), np.uint8)
 
-    fgd_brush = thresh
-    bgd_brush = cv2.morphologyEx(thresh.invert(), cv2.MORPH_ERODE, bgd_erosion_kernel)
+    fgd_thresh, bgd_thresh = thresh, thresh.invert()
+    fgd_brush,bgd_brush = fgd_thresh, cv2.morphologyEx(bgd_thresh, cv2.MORPH_ERODE, bgd_erosion_kernel)
+    
     fgd_points = place_points(fgd_brush,num_points=num_fgd_points)
-    bgd_points = place_points(bgd_brush, num_points=num_bgd_points)
+    bgd_points = place_points(bgd_brush,num_points=num_bgd_points)
     return [
         PointSeed(x, y, 1) for x, y in fgd_points
     ] + [

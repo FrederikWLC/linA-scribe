@@ -1,13 +1,14 @@
 import cv2
 from optuna import Trial
 from config import config
-from utils.auto_prompts import auto_points, auto_points_boundary
+from utils.auto_prompts import auto_points
 from model.scribe import PointScribe, Tunable
 import numpy as np
 import torch 
-from utils.seeds import PointSeed, get_points_and_labels
+from utils.seeds import MaskSeed, PointSeed, get_points_and_labels, get_mask_prompt
 from utils.binary_mask import BinaryMask
 from model.baselines.gaussian import Gaussian
+from model.baselines.grabcut import GrabCutAutoBrush
 # the SAM implementation class
 
 class SAM(PointScribe):
@@ -34,8 +35,10 @@ class SAM(PointScribe):
         labels: list[int] = None,
     ) -> list[BinaryMask]:
         
+        # runs the ViT for the image and saves the image embedding
         self.predictor.set_image(image)
         
+        # runs the mask decoder
         mask, _score, _logit = self.predictor.predict(
                 point_coords=points,
                 point_labels=labels,
@@ -44,8 +47,7 @@ class SAM(PointScribe):
         return BinaryMask(np.squeeze(mask))
     
     def segment(self, image: np.ndarray, seeds: list[PointSeed] | None = None) -> BinaryMask:
-        points, labels = get_points_and_labels(seeds) if seeds else (None, None)
-
+        points, labels = get_points_and_labels(seeds) if (not seeds is None) else (None, None)
         # convert to rgb for sam
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 

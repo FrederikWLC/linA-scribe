@@ -12,7 +12,7 @@ baselines = [
     #CannyFill(),
     #Gaussian(),
     #Otsu()
-    GrabCutAutoBrush(),
+    #GrabCutAutoBrush(),
     #MobileSAMv2(),
     MobileSAMv2AutoPoint()
     ]

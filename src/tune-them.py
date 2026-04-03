@@ -12,15 +12,14 @@ from model.sam import MobileSAMv2AutoPoint
 from utils.evaluation import BinaryDiceScore, evaluate_model
 
 
-
 METRIC = {"Dice": BinaryDiceScore} # only choose one metric pls
 METRIC_NAME = list(METRIC.keys())[0]
 # the baselines that can be tuned
 BASELINES = [
     #CannyFill(), 
     #Gaussian(), 
-    GrabCutAutoBrush()
-    #MobileSAMv2AutoPoint()
+    #GrabCutAutoBrush()
+    MobileSAMv2AutoPoint()
     ]
 DIFFICULTIES = ("easy", "medium", "hard")
 RAW_ROOT = Path("data/raw")

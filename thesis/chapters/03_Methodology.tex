@@ -38,11 +38,11 @@ Python 3.10 was used for all code development (because it has such a big library
 Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
 \subsection{General evaluation metrics}
 
-\section{Segmentation quality} \label{Segmentation quality}
-To answer the question of RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}, the one-shot segmentation quality of a computationally efficient implementation of \acs{SAM} (\acl{mSAM}) was evaluated against a set of baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
+\section{Initial segmentation (no user interaction)} \label{Segmentation quality}
+To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of a computationally efficient implementation of \acs{SAM} (\acl{mSAM}) was evaluated against a set of baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
 All models were manually tuned to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
-The following subsections will therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol and performance metrics used to answer RQ1.
+The following subsections therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
 
 \subsection{Baseline model configuration}
 The baseline models against which the best \acs{SAM} implementation was evaluated (from simplest to most advanced) were:
@@ -102,6 +102,20 @@ Here, the spatial weight based on the distance between pixels $p$ and $q$, and t
 $$W_{\mathrm{space}}(p,q)=\exp(-\frac{\|p-q\|^2}{2\sigma_{\mathrm{space}}^2})$$
 $$W_{\mathrm{color}}(p,q)=\exp(-\frac{\|I(p)-I(q)\|^2}{2\sigma_{\mathrm{color}}^2})$$
 
+It was decided to use the same $\sigma$ value for both spatial and color weights, as this simplified the hyperparameter tuning (see \cref{subsubsec:hyperparameter_optimization}) without significantly compromising the filter's performance.
+This gave in total 4 hyperparameters for this baseline (see \cref{fig:hyperparameters_gaussian} for a list of these):
+\begin{figure}[htbp]
+\centering
+\figcross
+\begin{enumerate}
+    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+\end{enumerate}
+\caption{Hyperparameters for \acf{Gaussian}.}
+\label{fig:hyperparameters_gaussian}
+\end{figure}
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
 Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
@@ -116,6 +130,17 @@ Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessin
 This is at last followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
 
 In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
+This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} for a list of these).
+\begin{figure}[htbp]
+\centering
+\figcross
+\begin{enumerate}
+    \item $sigma$: the constant used to determine the thresholds $T_l$ and $T_h$ for the hysteresis thresholding, where $T_l = \sigma \cdot \min(M_s)$ and $T_h = \sigma \cdot \max(M_s)$,
+    \item $d_{closing}$: the diameter of the kernel window for the morphological closing of the edges
+\end{enumerate}
+\caption{Hyperparameters for \acf{CannyFill}.}
+\label{fig:hyperparameters_CannyFill}
+\end{figure}
 
 \subsubsection{Energy-based segmentation (GrabCut with brushseeds)}
 GrabCut \parencite{Rother2004GrabCut} is a classical interactive segmentation method, which makes for a good comparison to a deep learning interactive model like \acs{SAM}.
@@ -137,98 +162,135 @@ At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating b
 
 $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 
-The automatic brush seeds (see \cref{fig:autoseed_GC} for a visualization) given to GrabCut were derived from the thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-as it seems to be the best at extracting foreground from the Linear A tablets, albeit with a degree of noise.
-The erosion of the thresholded mask was given as sure foreground, while the erosion of the inverse of the thresholded mask was given as sure background, and the rest was given as probable background.
-In that way, the model was provided with a good amount of guidance, while still leaving room for the model to get rid of noise and fill in gaps within the engravings of the inscriptions.
-
-\begin{figure}[htbp]
+The automatic brush seeds given to GrabCut (see \cref{fig:autoseed_GC} for a visual example) were derived from two separate Gaussian thresholded masks only differing in kernel window size (see \cref{subsubsec:gaussian_baseline}): one for sure foreground, and one for sure background (which was inverted after thresholding).
+To reduce non-sure-background noise by ensuring a bigger background region, the kernel window size of the sure background threshold, $d_{gaussian\_sure\_bgd}$, was constrained to be larger than that of the sure foreground threshold, $d_{gaussian\_sure\_fgd}$ (this constraint was particularly convenient for the hyperparameter optimization described in \cref{subsubsec:hyperparameter_optimization}).
+These thresholds were then eroded equally, with probable background taking up the remaining space created therefrom.
+This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_GC+brush} for a list of these).
+\begin{figure}
+\centering
+\figcross
+\begin{enumerate}
+    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline})
+    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian\_sure\_fgd}$: the diameter of the kernel window for the sure foreground Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian\_sure\_bgd}$: the diameter of the kernel window for the sure background Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{erosion}$: the diameter of the kernel window for the erosion of the sure foreground and sure background masks, filled in by probable background,
+    \item $iters$: the number of iterations for GrabCut to run.
+\end{enumerate}
+\caption{Hyperparameters for \acf{GC+brush}.}
+\label{fig:hyperparameters_GC+brush}
+\end{figure}
+\begin{figure}
 \centering
     \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-GC+brush.jpg}}
-\caption{A visualization of seed distribution for \acf{GC+brush} on HT118. 
-Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and absence of overlay represents probable background pixels.}
+\caption{A visual example of seed distribution for \acf{GC+brush} on HT118. 
+Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and white overlay represents probable background pixels.}
 \label{fig:autoseed_GC}
 \end{figure}
 
+\clearpage
+
 \subsection{State-of-the-art model configuration}
+To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
+However, for the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
+It is a lightweight version, which was designed to run more efficiently on mobile devices with a similar segmentation capability.
+More specifically, it is trained on a smaller sample of the same dataset of natural images as the original \acs{SAM}; \acf{SA-1B}, and thus has roughly the same segmentation capabilities, although with a slightly lower performance.
+
+As gray-scale images of clay tablets with Linear A inscriptions were not part of that dataset, \acs{mSAM} had to be adapted to the specific characteristics of the domain.
+But as it could not be further tuned by training on the domain dataset (due to its small size), the only way to do so, was through the use of prompts.
+Specifically, automatic prompts, to make the non-interactive comparison to the baselines fair.
+
+The main pipeline of \acs{mSAM} thus ended up consisting of segmentation of the raw image by \acl{mSAM} into a binary mask, preceded by automatic prompt generation.
+What follows is therefore a brief description of the model architecture, and the automatic prompt generation method used to adapt it to the domain.
+
 \subsubsection{Model architecture}
+\begin{figure}
+\centering
+    \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
+\caption{Architecture of \acs{SAM}, from \textcite{mobile_sam}. }
+\label{fig:SAM_architecture}
+\end{figure}
 
+For both \acs{SAM} and \acl{mSAM}, the model architecture consists of an image encoder, and a prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
+The image encoder used is a \acf{ViT}\footnote{The reason that \acl{mSAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
+But instead of convolutional layers, a \acs{ViT} makes use of a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
+As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP}.
+These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weights the patches according to their relevance to eachother.\footcite[see][for the math behind \textit{attention}]{vaswani2023attentionneed}
 
-Raw image $\rightarrow$ Automatic prompts $\rightarrow$ MobileSAMv2 $\rightarrow$ Binary mask
+More specifically, given the input embedding $X$, self-attention computes the projections; quieries: $Q$, keys: $K$, and values: $V$, as products of $X$ with respective weight matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
+$$ Attention(Q,K,V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+Here, the $\mathrm{softmax}$ function normalizes the output to a probability distribution (putting each element on the interval $]0, 1[$, with their sum being 1), which is then multiplied by $V$ (again turned into logits / non-normalized probabilities).
 
-\subsubsection{Segmentation (MobileSAMv2)}
-For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the full \acs{SAM} model.
-This is a lightweight version of the original \acs{SAM} model, which is designed to run efficiently on mobile devices while still maintaining good segmentation performance.
-It is trained on a smaller sample of the same dataset as the original \acs{SAM}, and thus has roughly the same one-shot segmentation capabilities, although with a slightly lower performance than the original.
+Thanks to this attention mechanism, after a number of these series-layers, the \acs{ViT} finally outputs an image embedding containing the spatial context of the image.\footcite[see][for how \acsp{ViT} work in general]{imageworth16x16words}
+It is this image embedding, combined with embedded prompts from the prompt encoder (referred to as prompt tokens) that are fed to the mask decoder to generate the final segmentation mask.
+However, before this happens, the prompt encoder takes any given sparse prompts (i.e. box or point prompts) as embeddings by summing their positional encodings with learned type-specifc embeddings (one foreground/background embedding per point prompt, and two opposite corner embeddings per box prompt).
 
-Here is how it works:
-ViT encoder, prompt encoder, mask decoder, etc.
+These are then fed to the lightweight mask decoder (which is also transformer-based) along with the image-embedding from the \acs{ViT}, and 3 learnable output token embeddings (see \cref{fig:SAM_mask_decoder}).
+Self-attention is applied to the prompt and output tokens, and two-way cross-attention (same as self-attention but with one embedding as queries, and the other as keys and values, and vice-versa) is applied between the tokens and image embedding for them to influence and attend one another.
+To keep track of spatial coordinates and prompts, positional encodings and the original prompt embeddings are added as input at every attention layer.
 
-\note{STILL YET TO DOCUMENT HOW IT WORKS}
+At the end of this process, the image embedding is upsampled by convolution to the original image resolution.
+The three output tokens are then processed in parallel by two separate \acsp{MLP}:
+one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
+and another one that outputs a predicted IoU score for each mask.
+For single output masks, the chosen mask is the one with the highest of these associated scores.
 
-\subsubsection{Seed extraction}
-Even though the \acs{mSAM} implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as SAM.
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=\linewidth]{images/SAM-mask-decoder.jpg}
+\caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}. }
+\label{fig:SAM_mask_decoder}
+\end{figure}
+
+\subsubsection{Automatic prompting}
+Even though the \acl{mSAM} implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as \acs{SAM}.
 Those box prompts are generalized for and work best on natural images.
-Hence, they may not perform well on gray-scale images of clay tablets with Linear A inscriptions, as those were not part of the training data. 
 Thus, \acs{mSAM}  needed to be adapted through the use of prompts. 
-The model takes two types of prompts: 1. a single box prompt, and/or 2. point prompts labeled as either foreground or background.
-For the one-shot segmentation capability of the model, these prompts had to be automatically generated, rather than interactively placed by a user.
-However, as it is particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used..
-Thus, two versions of MobileSAMv2 were made for comparison: 
+As it was particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used.
+To perform a single ablation check, two versions of MobileSAMv2 were made for comparison: 
 \begin{itemize}
     \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
     \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for visualization) were derived from thresholded masks of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-This was done by randomly sampling a number of foreground and background pixels from the mask as seeds for \acs{mSAM+pts}.
-More specifically, the foreground seeds were sampled from the foreground of one Gaussian thresholded mask, while the background seeds were sampled from the erosion of the inverse of a second Gaussian thresholded mask.
-The first erosion of the background was 
-This gave 9 hyperparameters (see \cref{fig:hyperparameters_mSAM}) that were tuned for optimal performance of \acs{mSAM+pts}:
+\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from thresholded masks of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+This was done by randomly sampling a number of foreground and background pixels from the thresholded mask as seeds for \acs{mSAM+pts}.
+More specifically, the foreground seeds were sampled from the foreground of one Gaussian thresholded mask, while the background seeds were sampled from the erosion of the inverse of the thresholded mask.
+This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{mSAM+pts}.
 \begin{figure}
 \centering
 \figcross
 \begin{enumerate}
     \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $\sigma$: the spatial standard deviation of the Gaussian kernel used for adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
     \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
     \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
     \item $n_{fgd\_points}$: the number of foreground point seeds to be sampled from the foreground of the first Gaussian thresholded mask,
-    \item $n_{boundary\_points}$: the number of background point seeds to be sampled from the boundary region between foreground and sure background,
-    \item $n_{sure\_bgd\_points}$: the number of background point seeds to be sampled from the sure background region,
+    \item $n_{bgd\_points}$: the number of background point seeds to be sampled from the sure background region,
     \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
-    \item $d_{boundary\_erosion}$: the kernel size for erosion used to determine the size of the boundary region.
 \end{enumerate}
 \caption{Hyperparameters for \acf{mSAM+pts}}
 \label{fig:hyperparameters_mSAM}
 \end{figure}
 
 
-\begin{figure}[htbp]
+\begin{figure}
 \centering
     \fbox{\includegraphics[width=0.47\linewidth]{../src/data/autoseed_displays/HT118-mSAM+pts.jpg}}
-\caption{A visualization of seed distribution for \acf{mSAM+pts}, overlayed on \acs{HT}118.
-Green points represent foreground seeds, while red points represent background seeds.}
+\caption{A visual example of prompt distribution for \acf{mSAM+pts}, overlayed on \acs{HT}118.
+Green points represent foreground point prompts, while red points represent background point prompts.}
 \label{fig:autoseed_mSAM}
 \end{figure}
 
-\subsection{Hyperparameter optimization}
-To ensure a fair comparison between the models, all models with hyperparameters were tuned to their best performance on the dataset using Optuna, a hyperparameter optimization framework.
-The optimization itself was performed using the \acf{TPE} algorithm \parencite[see][]{TPEHyperparameterOptimization2013}\footcite[also see][]{TPEHyperparameterOptimization2011},
-which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
-Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
-
-It works by building two probabilistic models: one for the hyperparameter configurations that have resulted in good performance, and another for those that have resulted in poor performance.
-Then, it uses these models to select the next hyperparameter configuration to evaluate, by maximizing the expected improvement over the current best performance.
-This way, it can focus the search on promising regions of the space of possible hyperparameters without having to rely on chance or exhaustive search.
-
-
+\clearpage
 
 \subsection{Evaluation protocol and performance metrics}
-For an evaluation of one-shot segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
-More specifically, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
+For an evaluation of initial segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
+Furthermore, all models with hyperparameters needed to be optimized to their best performance on the dataset, to ensure a fair comparison.
+Naturally, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
 
-The following subsections will therefore document the choice of metrics and statistical tests for the evaluation, used to answer RQ1: \textit{How does the one-shot segmentation quality of SAM compare to that of classic segmentation methods?}.
+What follows is therefore a description of the choice of metrics, the optimization of model hyperparameters, and the statistical tests for the evaluation, used to answer RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}.
 
 \subsubsection{Choice of metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are: 1. the \acf{Dice} and 2. the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
@@ -239,16 +301,28 @@ $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|
 
 \noindent Thus, the raw metrics ended up consisting of the \acs{Dice} score for each image, and each model.
 
+\subsubsection{Hyperparameter optimization}
+\label{subsubsec:hyperparameter_optimization}
+To ensure a fair comparison between the models, all models with hyperparameters were tuned to their best performance on the dataset using Optuna, a hyperparameter optimization framework.
+The optimization itself was performed using the \acf{TPE} algorithm \parencite[see][]{TPEHyperparameterOptimization2013}\footcite[also see][]{TPEHyperparameterOptimization2011},
+which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
+Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
+
+It works by building two probabilistic models: one for the hyperparameter configurations that have resulted in good performance, and another for those that have resulted in poor performance.
+Then, it uses these models to select the next hyperparameter configuration to evaluate, by maximizing the expected improvement over the current best performance.
+This way, it can focus the search on promising regions of the space of possible hyperparameters without having to rely on chance or exhaustive search.
+
+
 \subsubsection{Statistical tests}
 To determine whether the observed differences in scores between models were statistically significant, paired t-tests were conducted.
 The paired t-test has two main assumptions: 1. independence of observations, and 2. normality of residuals.
 The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on results.
 Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
-In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
+And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
 
 \section{Interactive semi-automation}
-Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the one-shot results from Section \ref{Segmentation quality}.
+Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the initial segmentation results from Section \ref{Segmentation quality}.
 \noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
 \subsection{Interactive tool architecture}
