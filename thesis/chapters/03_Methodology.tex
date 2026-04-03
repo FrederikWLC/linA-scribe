@@ -1,7 +1,18 @@
 \chapter{Methodology}
 \section{Common methodology}
+\subsection{Development environment and tools}
 
-\subsection{Image processing theory}
+\note{TODO: EXTEND THIS SECTION}
+Python 3.10 was used for all code development (because it has such a big library of image processing functions and machine learning model implementations), with the following libraries:
+\begin{itemize}
+    \item OpenCV for image processing and computer vision tasks.
+    \item NumPy for numerical operations and array manipulations.
+    \item Matplotlib for data visualization.
+    \item \textit{Add more!}
+\end{itemize}
+
+Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
+\subsection{Common theory}
 
 \note{SHOULD THIS SECTION EXIST? IF SO, I SHOULD FINISH IT}
 
@@ -23,24 +34,9 @@ $$ B(x,y) = \begin{cases}
 $$ (w \star I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~157]{DigitalImageProcessing}
 
-
-\subsection{Development environment and tools}
-
-\note{TODO: EXTEND THIS SECTION}
-Python 3.10 was used for all code development (because it has such a big library of image processing functions and machine learning model implementations), with the following libraries:
-\begin{itemize}
-    \item OpenCV for image processing and computer vision tasks.
-    \item NumPy for numerical operations and array manipulations.
-    \item Matplotlib for data visualization.
-    \item \textit{Add more!}
-\end{itemize}
-
-Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
-\subsection{General evaluation metrics}
-
-\section{Initial segmentation (no user interaction)} \label{Segmentation quality}
+\section{Non-interactive segmentation ability} \label{Segmentation quality}
 To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of a computationally efficient implementation of \acs{SAM} (\acl{mSAM}) was evaluated against a set of baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
-All models were manually tuned to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
+All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
 The following subsections therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
 
@@ -53,7 +49,7 @@ The baseline models against which the best \acs{SAM} implementation was evaluate
     \item Energy-based segmentation (GrabCut with brushseeds)
 \end{itemize}
 Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
-What follows is a brief description of each of these methods, including their characteristics, how they work, and most importantly their implementation details.
+What follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
 
 \subsubsection{Global thresholding (Otsu's method)}
 Otsu's method is a global thresholding method that works on gray-level histograms, which was originally proposed by \textcite{Otsu1979}.
@@ -244,19 +240,19 @@ For single output masks, the chosen mask is the one with the highest of these as
 \end{figure}
 
 \subsubsection{Automatic prompting}
-Even though the \acl{mSAM} implementation already makes use of an automatic box prompt, it does so from a YOLO model trained on the same dataset as \acs{SAM}.
+Even though the \acl{mSAM} implementation already makes use of an automatic box prompt, it does so from a \acf{YOLO}\footcite{YOLO} model trained on a subset of the same dataset as \acs{SAM}, \acs{SA-1B}.\footcite{mobile_sam_v2}
 Those box prompts are generalized for and work best on natural images.
-Thus, \acs{mSAM}  needed to be adapted through the use of prompts. 
-As it was particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used.
-To perform a single ablation check, two versions of MobileSAMv2 were made for comparison: 
+Thus, \acs{mSAM}  needed to be adapted through the use of other automatic prompts. 
+But as it was particularly difficult to automatically create high quality box prompts without a trained object detection model, only point prompts were used for this adaptation.
+To perform a single ablation check of these automatic point prompts, two versions of MobileSAMv2 were then made for comparison: 
 \begin{itemize}
-    \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the YOLO model),
+    \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the \acs{YOLO}v8 model),
     \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from thresholded masks of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-This was done by randomly sampling a number of foreground and background pixels from the thresholded mask as seeds for \acs{mSAM+pts}.
-More specifically, the foreground seeds were sampled from the foreground of one Gaussian thresholded mask, while the background seeds were sampled from the erosion of the inverse of the thresholded mask.
+\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from a thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+This was done by randomly sampling a number of foreground and background pixels from the mask as prompts for \acs{mSAM+pts}.
+Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
 This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{mSAM+pts}.
 \begin{figure}
 \centering
@@ -266,8 +262,8 @@ This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \
     \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
     \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
     \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $n_{fgd\_points}$: the number of foreground point seeds to be sampled from the foreground of the first Gaussian thresholded mask,
-    \item $n_{bgd\_points}$: the number of background point seeds to be sampled from the sure background region,
+    \item $n_{fgd\_points}$: the number of foreground point prompts to be sampled from the foreground of the first Gaussian thresholded mask,
+    \item $n_{bgd\_points}$: the number of background point prompts to be sampled from the sure background region,
     \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
 \end{enumerate}
 \caption{Hyperparameters for \acf{mSAM+pts}}
@@ -321,7 +317,7 @@ However, the second assumption depends on results.
 Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
 And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
 
-\section{Interactive semi-automation}
+\section{Interactive segmentation ability}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the initial segmentation results from Section \ref{Segmentation quality}.
 \noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 
