@@ -4,9 +4,14 @@
 
 
 % Evaluation Results
+\pgfplotstableread[col sep=comma]{../src/data/evaluation-raw-pivot-Dice.csv}\rawpivot
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-resume.csv}\resumetable
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-shapiro-tests.csv}\shapirotable
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-paired-t-tests.csv}\ttable
+
+% Number of images
+\pgfplotstablegetelem{0}{Dice_n}\of\resumetable
+\edef\numberofimages{\pgfplotsretval}
 
 % Shapiro-Wilk test for normality of residuals of paired t-test between GC+brush and mSAM+pts
 \pgfplotstablegetelem{8}{p_value}\of\shapirotable
@@ -23,8 +28,26 @@
 \edef\GCbrushmean{\pgfplotsretval}
 \pgfplotstablegetelem{2}{Dice_mean}\of\resumetable
 \edef\Gaussianmean{\pgfplotsretval}
+\pgfplotstablegetelem{3}{Dice_mean}\of\resumetable
+\edef\Otsumean{\pgfplotsretval}
+\pgfplotstablegetelem{0}{Dice_mean}\of\resumetable
+\edef\CannyFillmean{\pgfplotsretval}
 \pgfplotstablegetelem{4}{Dice_mean}\of\resumetable
 \edef\mSAMmean{\pgfplotsretval}
 \pgfplotstablegetelem{5}{Dice_mean}\of\resumetable
 \edef\mSAMptsmean{\pgfplotsretval}
 \pgfmathsetmacro{\deltameanGCmSAM}{\GCbrushmean - \mSAMptsmean}
+
+% Dice Score of models on HT118 (easy) for visual comparison
+\pgfplotstablegetelem{1}{CannyFill}\of\rawpivot
+\edef\HTHundredEighteenCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{1}{Otsu}\of\rawpivot
+\edef\HTHundredEighteenOtsu{\pgfplotsretval}
+\pgfplotstablegetelem{1}{GC+brush}\of\rawpivot
+\edef\HTHundredEighteenGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{1}{Gaussian}\of\rawpivot
+\edef\HTHundredEighteenGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{1}{mSAM}\of\rawpivot
+\edef\HTHundredEighteenmSAM{\pgfplotsretval}
+\pgfplotstablegetelem{1}{mSAM+pts}\of\rawpivot
+\edef\HTHundredEighteenmSAMpts{\pgfplotsretval}

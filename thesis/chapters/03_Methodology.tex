@@ -139,6 +139,7 @@ This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} f
 \end{figure}
 
 \subsubsection{Energy-based segmentation (GrabCut with brushseeds)}
+\label{subsubsec:grabcut_baseline}
 GrabCut \parencite{Rother2004GrabCut} is a classical interactive segmentation method, which makes for a good comparison to a deep learning interactive model like \acs{SAM}.
 It is good at producing spatially coherent masks with little large-grained noise, which is ideal for the images to be segmented.
 
@@ -158,10 +159,10 @@ At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating b
 
 $$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
 
-The automatic brush seeds given to GrabCut (see \cref{fig:autoseed_GC} for a visual example) were derived from two separate Gaussian thresholded masks only differing in kernel window size (see \cref{subsubsec:gaussian_baseline}): one for sure foreground, and one for sure background (which was inverted after thresholding).
-To reduce non-sure-background noise by ensuring a bigger background region, the kernel window size of the sure background threshold, $d_{gaussian\_sure\_bgd}$, was constrained to be larger than that of the sure foreground threshold, $d_{gaussian\_sure\_fgd}$ (this constraint was particularly convenient for the hyperparameter optimization described in \cref{subsubsec:hyperparameter_optimization}).
-These thresholds were then eroded equally, with probable background taking up the remaining space created therefrom.
-This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_GC+brush} for a list of these).
+The automatic brush seeds given to GrabCut (see \cref{fig:autoseed_GC} for a visual example) were derived from a Gaussian thresholded mask with bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}).
+The foreground of the mask came to represent sure foreground pixels, while an eroded version of the background (the inverse of the mask) represented sure background pixels.
+A probable background region was then filled in taking up the remaining space created from the eroded background.
+This gave in total 6 hyperparameters (see \cref{fig:hyperparameters_GC+brush} for a list of these).
 \begin{figure}
 \centering
 \figcross
@@ -169,9 +170,8 @@ This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_GC+brush} fo
     \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
     \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline})
     \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian\_sure\_fgd}$: the diameter of the kernel window for the sure foreground Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian\_sure\_bgd}$: the diameter of the kernel window for the sure background Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{erosion}$: the diameter of the kernel window for the erosion of the sure foreground and sure background masks, filled in by probable background,
+    \item $d_{gaussian}$: the diameter of the kernel window for the Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{prb\_erosion}$: the diameter of the kernel window for the erosion of the sure background, filled in by probable background,
     \item $iters$: the number of iterations for GrabCut to run.
 \end{enumerate}
 \caption{Hyperparameters for \acf{GC+brush}.}
@@ -189,7 +189,7 @@ Green overlay represents sure foreground pixels, while red overlay represents su
 
 \subsection{State-of-the-art model configuration}
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
-However, for the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
+For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
 It is a lightweight version, which was designed to run more efficiently on mobile devices with a similar segmentation capability.
 More specifically, it is trained on a smaller sample of the same dataset of natural images as the original \acs{SAM}; \acf{SA-1B}, and thus has roughly the same segmentation capabilities, although with a slightly lower performance.
 
@@ -316,6 +316,7 @@ The first assumption is already satisfied a priori, since the segmentation perfo
 However, the second assumption depends on results.
 Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
 And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
+
 
 \section{Interactive segmentation ability}
 Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the initial segmentation results from Section \ref{Segmentation quality}.
