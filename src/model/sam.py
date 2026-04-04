@@ -5,10 +5,9 @@ from utils.auto_prompts import auto_points
 from model.scribe import PointScribe, Tunable
 import numpy as np
 import torch 
-from utils.seeds import MaskSeed, PointSeed, get_points_and_labels, get_mask_prompt
+from utils.seeds import PointSeed, get_points_and_labels
 from utils.binary_mask import BinaryMask
 from model.baselines.gaussian import Gaussian
-from model.baselines.grabcut import GrabCutAutoBrush
 # the SAM implementation class
 
 class SAM(PointScribe):
@@ -125,7 +124,7 @@ class MobileSAMv2AutoPoint(MobileSAMv2,Tunable):
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
         return {
-            "d_bilateral":trial.suggest_categorical("d_bilateral", [i * 2 + 1 for i in range(1,11)]), # odd integers from 3 to 21
+            "d_bilateral":trial.suggest_categorical("d_bilateral", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
             "sigma":trial.suggest_int("sigma", 0, 150),
             "C":trial.suggest_int("C", 0, 10),
             "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31

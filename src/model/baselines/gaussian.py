@@ -53,7 +53,7 @@ class Gaussian(Scribe,Tunable):
     def hyperparameter_ranges(self,trial: Trial) -> dict:
         return {
             "C":trial.suggest_int("C", 0, 10),
-            "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
-            "d_bilateral":trial.suggest_categorical("d_bilateral", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
+            "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,21)]), # odd integers from 3 to 41
+            "d_bilateral":trial.suggest_int("d_bilateral", 3, 31), # integers from 3 to 31
             "sigma":trial.suggest_int("sigma", 0, 150)
         }

@@ -9,19 +9,18 @@ from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import MobileSAMv2, MobileSAMv2AutoPoint, MobileSAMv2AutoBrush
+from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
 from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
 from utils.tuning import set_all_tuned_hyperparameters
 
 METRICS = {"Dice": BinaryDiceScore}
 BASELINES = [
-    #Otsu(),
-    #Gaussian(),
-    #CannyFill(),
-    #GrabCutAutoBrush(), 
-    #MobileSAMv2(),
-    #MobileSAMv2AutoPoint(),
-    MobileSAMv2AutoBrush()
+    Otsu(),
+    Gaussian(),
+    CannyFill(),
+    GrabCutAutoBrush(), 
+    MobileSAMv2(),
+    MobileSAMv2AutoPoint()
     ]
 
 DIFFICULTIES = ("easy", "medium", "hard")
