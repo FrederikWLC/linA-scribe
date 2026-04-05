@@ -128,7 +128,7 @@ However, for comparison between models, the relative differences in \acs{Dice} s
 \subsubsection{Model implementation}
 In the case of the fairness of the \acs{SAM} implementation chosen, the experiment only evaluates the performance of an untuned version.
 This implementation had most likely never seen Linear A tablet images during training, as it was pretrained by default on the large and diverse dataset of natural images \acs{SA-1B}.
-Meanwhile, studies like \cite{Wang2025OBIFloSAM} have shown that the performance of \acs{SAM} can be significantly improved by fine-tuning the model on a dataset that is more similar to the target domain.
+Meanwhile, studies like \cite{OBIFloSAM} have shown that the performance of \acs{SAM} can be significantly improved by fine-tuning the model on a dataset that is more similar to the target domain.
 Furthermore, the model implementation used makes use of \acl{mSAM} with its small \acs{ViT} image encoder TinyVit \parencite{TinyViT}, which can compromise on segmentation quality.
 Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison to the classical baselines.
 These are unlike \acs{SAM} not restricted to natural images, and can therefore arguably be more easily adapted to the domain of Linear A tablets, when deep learning fine-tuning of \acs{SAM}'s weights is not an option.

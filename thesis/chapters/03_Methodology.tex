@@ -2,14 +2,12 @@
 \section{Common methodology}
 \subsection{Development environment and tools}
 
-\note{TODO: EXTEND THIS SECTION}
-Python 3.10 was used for all code development (because it has such a big library of image processing functions and machine learning model implementations), with the following libraries:
-\begin{itemize}
-    \item OpenCV for image processing and computer vision tasks.
-    \item NumPy for numerical operations and array manipulations.
-    \item Matplotlib for data visualization.
-    \item \textit{Add more!}
-\end{itemize}
+Python 3.13 was used for all code development.
+The choice of this programming language was made due to its big community and library support for nearly everything; be it plotting (Matplotlib), statistics (SciPy), matrix math (NumPy), image processing (OpenCV), or GUI development (PyQt), etc.
+For the \acs{ML} model implementation library needed (\acl{mSAM}), Python was also the language of choice, and thus it was the most convenient for development.
+Python's package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
+The particular version was chosen, as it was the second latest stable release at the time of development, with Python 3.14 still not having full support by all libraries.
+
 
 Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
 \subsection{Common theory}
@@ -191,7 +189,7 @@ Green overlay represents sure foreground pixels, while red overlay represents su
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
 For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
 It is a lightweight version, which was designed to run more efficiently on mobile devices with a similar segmentation capability.
-More specifically, it is trained on a smaller sample of the same dataset of natural images as the original \acs{SAM}; \acf{SA-1B}, and thus has roughly the same segmentation capabilities, although with a slightly lower performance.
+More specifically, it is trained on a smaller sample of the same dataset of natural images as the original \acs{SAM}; \acs{SA-1B}, and thus has roughly the same segmentation capabilities, although with a slightly lower performance.
 
 As gray-scale images of clay tablets with Linear A inscriptions were not part of that dataset, \acs{mSAM} had to be adapted to the specific characteristics of the domain.
 But as it could not be further tuned by training on the domain dataset (due to its small size), the only way to do so, was through the use of prompts.
