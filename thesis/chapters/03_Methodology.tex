@@ -4,15 +4,14 @@
 
 Python 3.13 was used for all code development.
 The choice of this programming language was made due to its big community and library support for nearly everything; be it plotting (Matplotlib), statistics (SciPy), matrix math (NumPy), image processing (OpenCV), or GUI development (PyQt), etc.
-For the \acs{ML} model implementation library needed (\acl{mSAM}), Python was also the language of choice, and thus it was the most convenient for development.
 Python's package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
-The particular version was chosen, as it was the second latest stable release at the time of development, with Python 3.14 still not having full support by all libraries.
+For the \acs{ML} model implementation library needed (\acl{mSAM}), Python was also the language of choice, and thus it was the most convenient for development.
+The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
 
-
-Krita was used for manual image registration, making sure the raw image ground truth pairs were properly aligned.
 \subsection{Common theory}
 
-\note{SHOULD THIS SECTION EXIST? IF SO, I SHOULD FINISH IT}
+\note{THIS SECTION WILL BE FINISHED LATER, AS IT APPLIES TO ALL RQs. 
+Thinking of ideas for good ways to structure it...}
 
 The basics of spatial filtering can be described by the following equation:
 $$ g(x,y) = T[f(x,y)] $$
@@ -111,6 +110,8 @@ This gave in total 4 hyperparameters for this baseline (see \cref{fig:hyperparam
 \label{fig:hyperparameters_gaussian}
 \end{figure}
 
+\clearpage
+
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
 Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
 Here is how it works:
@@ -121,7 +122,14 @@ Then, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the ori
 $$M_s(x,y) = \|\ \nabla I_{s}(x,y) \|\ = \sqrt{\left(\frac{\partial I_{s}}{\partial x}\right)^2 + \left(\frac{\partial I_{s}}{\partial y}\right)^2}$$ 
 $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}/\partial x} \right)$$
 Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
-This is at last followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
+At last, this is followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
+
+Inspired by \parencite{autocanny}, these thresholds were automatically determined by setting
+$$
+T_l = \max\bigl(0, (1 - \sigma)\, v\bigr), \quad
+T_h = \min\bigl(255, (1 + \sigma)\, v\bigr)
+$$
+turning $\sigma$ into a hyperparameter that together with the grayscale median of the given image $v$ controlled the sensitivity of the edge detection.
 
 In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
 This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} for a list of these).
@@ -129,7 +137,7 @@ This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} f
 \centering
 \figcross
 \begin{enumerate}
-    \item $sigma$: the constant used to determine the thresholds $T_l$ and $T_h$ for the hysteresis thresholding, where $T_l = \sigma \cdot \min(M_s)$ and $T_h = \sigma \cdot \max(M_s)$,
+    \item $\sigma$: the constant used to determine the thresholds $T_l$ and $T_h$ for the hysteresis thresholding,
     \item $d_{closing}$: the diameter of the kernel window for the morphological closing of the edges
 \end{enumerate}
 \caption{Hyperparameters for \acf{CannyFill}.}
@@ -228,7 +236,7 @@ At the end of this process, the image embedding is upsampled by convolution to t
 The three output tokens are then processed in parallel by two separate \acsp{MLP}:
 one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
 and another one that outputs a predicted IoU score for each mask.
-For single output masks, the chosen mask is the one with the highest of these associated scores.
+For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
 
 \begin{figure}[htbp]
 \centering
@@ -282,7 +290,7 @@ Green points represent foreground point prompts, while red points represent back
 \subsection{Evaluation protocol and performance metrics}
 For an evaluation of initial segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
 Furthermore, all models with hyperparameters needed to be optimized to their best performance on the dataset, to ensure a fair comparison.
-Naturally, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
+Naturally, due to the nature of \acs{RQ}1, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{mSAM}.
 
 What follows is therefore a description of the choice of metrics, the optimization of model hyperparameters, and the statistical tests for the evaluation, used to answer RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}.
 

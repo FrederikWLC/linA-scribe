@@ -8,9 +8,10 @@
 \label{fig:dice_comparison}
 \end{figure}
 
-After running the non-interactive segmentation evaluation of the models on the dataset, it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
-The \acs{mSAM} model with the in-built \acs{YOLO} box prompts performed particularly poorly, being the worst of all with a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMmean}.
-At the same time, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
+After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
+The \acs{mSAM} model with the in-built \acs{YOLO} box prompts performed the worst of all with a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMmean}.
+
+Meanwhile, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
 With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baselines, \acs{Gaussian} and \acs{GC+brush} that each yielded \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean} and \pgfmathprintnumber[fixed,precision=3]{\GCbrushmean}, respectively.
 
 The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{mSAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
@@ -19,19 +20,20 @@ The following subsections go into a bit more detail on the explanation of these 
 \subsection{Model comparison}
 Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pays to look at a visual example to see what is going on behind the scenes.
 Looking at \cref{fig:model_comparison} of the output masks per model from segmentation on the easy-difficulty \acs{HT}118, it is clear that the \acs{Gaussian} baseline manages to capture the information of this tablet the best\footnote{That tablet (\acs{HT}118) is coincidentally also one of the instances, where \acs{Gaussian} performs best of all.}, although with some noise.
+
 In this instance, \acs{GC+brush} performs decently as well, but oversegments in a way that makes strokes a bit thicker than they should be.
 It compensates for this, however, by reducing noise.
-This is due to a combination of its probable background regions, which risk dilating the segmentation a bit, and its smoothness term (see \cref{subsubsec:grabcut_baseline}), which simultaneously encourages spatially coherent masks.
+These phenomena are due to a combination of its smoothness term, and its probable background regions, which encourage spatially coherent masks while risking small-scale dilation of the mask (see \cref{subsubsec:grabcut_baseline}).
 
 The \acs{Otsu} and \acs{CannyFill} baselines perform a bit worse, although they capture almost all signs.
 \acs{Otsu} also segments dark background regions as foreground, as they count as such according to its global threshold, turning a lot of its mask into noise.
 \acs{CannyFill} also oversegments, due to its large kernel window size for morphological closing, which was necessary to fill in the gaps between edges, but gives a blocky look, and merges all nearby edges together.
 
-The unprompted \acs{mSAM} segments only background noise, producing nothing of value.
-However, the prompted \acs{mSAM+pts} does produce a somewhat coherent mask, capturing almost every sign with less oversegmented areas than \acs{Otsu} and \acs{CannyFill}.
+The unprompted \acs{mSAM} segments only background noise here, producing nothing of value.
+But the prompted \acs{mSAM+pts} does produce a somewhat coherent mask, capturing almost every sign with less oversegmented areas than both \acs{Otsu} and \acs{CannyFill}.
 Still, it oversegments many signs (especially those with background-space supposed to be inside of them), fades out signs where they are supposed to continue (due to loss of attention, as segmenting many separated signs at once is not what its attention weights have been trained for), and is not able to capture the outline of the tablet.
 But the signs that it does capture well, are captured with a good level of spatial coherence.
-And there is way less noise between them compared to the masks of the baselines, which is arguably a positive sign for the potential of \acs{SAM} to perform well on this task once properly fine-tuned.
+And there is way less noise between them compared to the masks of the baselines, which is arguably a positive sign for the potential of \acs{SAM} to perform well on this task once properly fine-tuned prompts, or points are placed through human supervision.
 
 \begin{figure}
 \centering
@@ -92,19 +94,19 @@ And there is way less noise between them compared to the masks of the baselines,
 
 \subsection{Statistical significance}
 As it was clear from the results, \acs{mSAM+pts} did not perform better than the best performing classical baseline.
-To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} were approximately normally distributed.
+To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
 What follows is the documentation of that normality test, the paired t-test, and the results of both.
 
- \subsubsection{Normality of residuals}
-
-As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} appear to be approximately normally distributed.
-Furthermore, the Shapiro-Wilk test for normality on these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.
-Thus, the normality assumption for the paired t-test is satisfied, and its results can be considered valid.
+\subsubsection{Normality of residuals}
+\label{subsubsec:normality_residuals}
+As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} appeared to be approximately normally distributed.
+Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
+Thus, the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GC+brush_vs_mSAM+pts}
     \caption{QQplot of the residuals of the paired t-test comparing \acs{GC+brush} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
-    Furthermore, the Shapiro-Wilk test for normality on these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that we fail to reject the null hypothesis of normality.}
+    Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
     \label{fig:qqplot}
 \end{figure}
 
@@ -126,13 +128,14 @@ Therefore, \acs{Dice} scores obtained from the evaluation were unreasonably low,
 However, for comparison between models, the relative differences in \acs{Dice} scores were still meaningful, as all models were evaluated on the same imperfectly aligned dataset.
 
 \subsubsection{Model implementation}
-In the case of the fairness of the \acs{SAM} implementation chosen, the experiment only evaluates the performance of an untuned version.
-This implementation had most likely never seen Linear A tablet images during training, as it was pretrained by default on the large and diverse dataset of natural images \acs{SA-1B}.
-Meanwhile, studies like \cite{OBIFloSAM} have shown that the performance of \acs{SAM} can be significantly improved by fine-tuning the model on a dataset that is more similar to the target domain.
+In the case of the fairness of the \acs{SAM} implementation chosen, the experiment obviously only evaluates the performance of an untuned version.
+This implementation had most certainly never seen Linear A tablet images during training, as it was pretrained by default on the large and diverse dataset of natural images \acs{SA-1B}.
 Furthermore, the model implementation used makes use of \acl{mSAM} with its small \acs{ViT} image encoder TinyVit \parencite{TinyViT}, which can compromise on segmentation quality.
+Lastly, \acs{SAM} was restricted by the automatic nature of this experiment, as its intended use is interactive segmentation.
 Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison to the classical baselines.
-These are unlike \acs{SAM} not restricted to natural images, and can therefore arguably be more easily adapted to the domain of Linear A tablets, when deep learning fine-tuning of \acs{SAM}'s weights is not an option.
-The results therefore suggest a need for a computationally efficient SAM implementation to be tuned to this domain, as the default model is not sufficient enough to prove its potential capabilities there.
+The results therefore suggest a need for human intervention for the optimal placement of prompts to provide the best conditions for \acs{SAM}, as it otherwise underperforms.
 
 \section{Interactive segmentation performance}
+...The results therefore suggest a need for a generalized and computationally efficient SAM implementation to be tuned to the greater domain of inscriptions, as the default model is not sufficient enough to prove its potential capabilities there.
+For this potential tuning to be possible, there is a need of a sufficiently sized one-class-labeled dataset of general inscription segmentations.
 \section{Workflow impact}

@@ -46,27 +46,30 @@ Nevertheless, these methods all depend on deep learning, making them inconvenien
 \subsection{SAM and its applications}
 Ever since its release in 2023, \acs{SAM} has been extensively evaluated across a wide range of \acs{CV} tasks to investigate whether it can really "segment anything".
 Papers have evaluated its performance within niche domains, such as medical images \parencite{MedSAM}, camouflaged objects \parencite{CamSAM}, transparent objects \parencite{TransparentSAM}, hierarchical texts \parencite{HiSAM}, and even oracle bone inscriptions \parencite{OBIFloSAM}. 
-Most of these papers found that \acs{SAM} still tends to struggle with niche domains, despite its impressive zero-shot\footnote{The term \textit{zeroshot} refers to model performance on hitherto unseen data.} generalization.
+Most of these papers found that \acs{SAM} still tends to struggle with such domains, despite its impressive zero-shot\footnote{The term \textit{zeroshot} refers to model performance on hitherto unseen data.} generalization.
 Meanwhile, some of them also found that this performance can be significantly improved through architectural extensions and domain-specific fine-tuning, which unfortunately requires deep learning and a lot of data.
-However, it has fortunately also been shown that the performance of \acs{SAM} can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
+However, fortunately, it has equally been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
 
 \section{Problem statement}
-As previously stated, the aim of this project was to investigate whether parts of the process of creating annotated drawings for SigLA can be automated.
+As previously stated, the aim of this project is to investigate whether parts of the process of creating annotated drawings for SigLA can be automated.
 More specifically, whether some kind of semi-automatic segmentation tool using interactive and generalized \acs{CV} - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database.
 But what would be the relative segmentation quality of such a tool? How automatic would it be exactly? And by how much could it improve the efficiency of the workflow?
-To concretize the research, the problem statement was therefore decomposed into three research questions - each accompanied by their respective operationalization (see the following subsection for details).
+To concretize the research, the problem statement was therefore decomposed into three \acfp{RQ} - each accompanied by their respective operationalization (see the following subsection for details).
 
 \subsection{Research questions}
 \begin{enumerate}
-\item \textbf{Segmentation performance}: 
-How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?
-\note{Operationalization: \acs{SAM}-based masks will be compared to classical image-processing baselines using overlap metrics (e.g. \acs{IoU}/\acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files for a minimum of 25 documents.}
-\item \textbf{Degree of automation}: 
-To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?
-\note{Operationalization: The number of user interactions (e.g. clicks) required to achieve a certain level of segmentation quality (e.g. \acs{IoU}/\acs{Dice}) will be measured against ground truth (SigLA's Krita files) for a minimum of 25 documents.}
-\item \textbf{Workflow efficiency}: 
-How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?
-\note{Operationalization: The time it takes Ester Salgarella to annotate manually compared to being assisted by the proposed segmentation tool will be measured for a minimum of 5 documents.}
+\item \textbf{\acs{RQ}1 (Segmentation performance)}: 
+\textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?}
+
+\textbf{Operationalization}: \acs{SAM}-based masks will be compared to classical image-processing baselines using overlap metrics (e.g. \acs{IoU}/\acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files for a minimum of 25 documents.
+\item \textbf{\acs{RQ}2 (Degree of automation)}: 
+\textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}
+
+\textbf{Operationalization}: The number of user interactions (e.g. clicks) required to achieve a certain level of segmentation quality (e.g. \acs{IoU}/\acs{Dice}) will be measured against ground truth (SigLA's Krita files) for a minimum of 25 documents.
+\item \textbf{\acs{RQ}3 (Workflow efficiency)}: 
+\textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}
+
+\textbf{Operationalization}: The time it takes Ester Salgarella to annotate manually compared to being assisted by the proposed segmentation tool will be measured for a minimum of 5 documents.
 \end{enumerate}
 
 \section{Impact -- innovation and application}

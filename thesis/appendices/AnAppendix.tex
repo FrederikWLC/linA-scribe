@@ -1,7 +1,76 @@
 %!TEX root = ../Thesis.tex
 \chapter{An Appendix}
 
-\section{Data from the non-interactive segmentation evaluation}
+\section{Non-interactive segmentation results}
+\subsection{Hyperparameter optimization}
+\label{appendix:hyperparam_optimization}
+
+\begin{table}[ht]
+\centering
+\caption{Best \acs{TPE} hyperparameter optimization results for \acs{CannyFill} after $\hyperparamNTrialsCannyFill$ trials.}
+\begin{tabular}{cc}
+\toprule
+Hyperparameter & Obtained value \\
+\midrule
+$\sigma$ & \pgfmathprintnumber[fixed,sci=3]{\hyperparamSigmaCannyFill} \\
+$d_{closing}$ & \hyperparamDCannyFill \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Best \acs{TPE} hyperparameter optimization results for \acs{Gaussian} after $\hyperparamNTrialsGaussian$ trials.}
+\begin{tabular}{cc}
+\toprule
+Hyperparameter & Obtained value \\
+\midrule
+$C$ & \hyperparamCGaussian \\
+$d_{gaussian}$ & \hyperparamDGaussian \\
+$d_{bilateral}$ & \hyperparamDBilateralGaussian \\
+$\sigma$ & \hyperparamSigmaGaussian \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Best \acs{TPE} hyperparameter optimization results for \acs{mSAM+pts} after $\hyperparamNTrialsmSAMpts$ trials.}
+\begin{tabular}{cc}
+\toprule
+Hyperparameter & Obtained value \\
+\midrule
+$C$ & \hyperparamCmSAMpts \\
+$d_{gaussian}$ & \hyperparamDmSAMpts \\
+$d_{bilateral}$ & \hyperparamDBilateralmSAMpts \\
+$\sigma$ & \hyperparamSigmamSAMpts \\
+$n_{fgd\_pts}$ & \hyperparamNfgdmSAMpts \\
+$n_{bgd\_pts}$ & \hyperparamNbgdmSAMpts \\
+$d_{gap\_erosion}$ & \hyperparamDGapErosionmSAMpts \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Best \acs{TPE} hyperparameter optimization results for \acs{GC+brush} after $\hyperparamNTrialsGCbrush$ trials.}
+\begin{tabular}{cc}
+\toprule
+Hyperparameter & Obtained value \\
+\midrule
+$C$ & \hyperparamCGCbrush \\
+$d_{gaussian}$ & \hyperparamDGCbrush \\
+$d_{bilateral}$ & \hyperparamDBilateralGCbrush \\
+$\sigma$ & \hyperparamSigmaGCbrush \\
+$d_{prb\_erosion}$ & \hyperparamDPrbErosionGCbrush \\
+$iters$ & \hyperparamItersGCbrush \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\subsection{Raw evaluation data}
 \label{appendix:non-interactive-evaluation-data}
 
 \pgfplotstableset{
@@ -10,7 +79,6 @@
     columns/Gaussian/.style={column name=Gaussian},
     columns/Otsu/.style={column name=Otsu},
     columns/mSAM/.style={column name=mSAM},
-    columns/mSAM+box/.style={column name=mSAM+box},
     columns/mSAM+pts/.style={column name=mSAM+pts},
 }
 
@@ -95,6 +163,10 @@ Label column represents the name of the document segmented, while all other colu
     every last row/.style={after row=\bottomrule}
 ]{\rawpivot}
 \end{table}
+
+\clearpage
+
+\subsection{Summary statistics}
 
 \begin{table}[ht]
 \centering

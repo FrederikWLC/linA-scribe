@@ -2,6 +2,68 @@
 
 % This information is used in Results and Discussion chapter for evaluation results and statistical tests.
 
+% Hyperparameter optimization results
+\pgfplotstableread[col sep=comma]{../src/data/tuning-CannyFill.csv}\hyperparamtableCannyFill
+\pgfplotstablegetelem{0}{Dice}\of\hyperparamtableCannyFill
+\edef\hyperparamDiceCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableCannyFill
+\edef\hyperparamSigmaCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d}\of\hyperparamtableCannyFill
+\edef\hyperparamDCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableCannyFill
+\edef\hyperparamNTrialsCannyFill{\pgfplotsretval}
+
+\pgfplotstableread[col sep=comma]{../src/data/tuning-Gaussian.csv}\hyperparamtableGaussian
+\pgfplotstablegetelem{0}{Dice}\of\hyperparamtableGaussian
+\edef\hyperparamDiceGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtableGaussian
+\edef\hyperparamCGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableGaussian
+\edef\hyperparamSigmaGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGaussian
+\edef\hyperparamDGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableGaussian
+\edef\hyperparamDBilateralGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGaussian
+\edef\hyperparamNTrialsGaussian{\pgfplotsretval}
+
+\pgfplotstableread[col sep=comma]{../src/data/tuning-GC+brush.csv}\hyperparamtableGCbrush
+\pgfplotstablegetelem{0}{Dice}\of\hyperparamtableGCbrush
+\edef\hyperparamDiceGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtableGCbrush
+\edef\hyperparamCGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableGCbrush
+\edef\hyperparamSigmaGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGCbrush
+\edef\hyperparamDGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableGCbrush
+\edef\hyperparamDBilateralGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{iters}\of\hyperparamtableGCbrush
+\edef\hyperparamItersGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_prb_erosion}\of\hyperparamtableGCbrush
+\edef\hyperparamDPrbErosionGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGCbrush
+\edef\hyperparamNTrialsGCbrush{\pgfplotsretval}
+
+\pgfplotstableread[col sep=comma]{../src/data/tuning-mSAM+pts.csv}\hyperparamtablemSAMpts
+\pgfplotstablegetelem{0}{Dice}\of\hyperparamtablemSAMpts
+\edef\hyperparamDicemSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtablemSAMpts
+\edef\hyperparamCmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma}\of\hyperparamtablemSAMpts
+\edef\hyperparamSigmamSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtablemSAMpts
+\edef\hyperparamDmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtablemSAMpts
+\edef\hyperparamDBilateralmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_fgd_points}\of\hyperparamtablemSAMpts
+\edef\hyperparamNfgdmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_bgd_points}\of\hyperparamtablemSAMpts
+\edef\hyperparamNbgdmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gap_erosion}\of\hyperparamtablemSAMpts
+\edef\hyperparamDGapErosionmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtablemSAMpts
+\edef\hyperparamNTrialsmSAMpts{\pgfplotsretval}
 
 % Evaluation Results
 \pgfplotstableread[col sep=comma]{../src/data/evaluation-raw-pivot-Dice.csv}\rawpivot
