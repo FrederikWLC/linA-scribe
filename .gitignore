@@ -1,3 +1,5 @@
+.tmp_fate_sam
+
 # No main.py for now
 main.py
 
@@ -16,13 +18,24 @@ sam_vit_h_4b839.pth
 sam_vit_l_0b3195.pth
 sam_vit_b_01ec64.pth
 sam
+!src/checkpoints/download_sam2_checkpoints.py
 
-#Data
+#Data is ALLOWED, as the dataset is so small.... FREE THE DATA!
+# more practical for everyone (the repo is atm private anyway)
 src/data/*
+!src/data/raw/
+!src/data/raw/**
+
+src/data/ground_truth/*
+src/data/ground_truth/registered/*
+!src/data/ground_truth/
+!src/data/ground_truth/registered/
+!src/data/ground_truth/registered/*.jpg
 !src/data/plots/*
 !src/data/qqplots/*
 !src/data/*.csv
 !src/data/split.py
+
 
 #Python
 __pycache__
