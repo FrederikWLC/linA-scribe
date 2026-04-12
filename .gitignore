@@ -6,6 +6,8 @@ main.py
 
 # Virtual Environment
 .venv/
+.venv*/
+.venvtool/
 
 # Checkpoints
 src/checkpoints/*
@@ -20,6 +22,7 @@ src/data/*
 !src/data/plots/*
 !src/data/qqplots/*
 !src/data/*.csv
+!src/data/split.py
 
 #Python
 __pycache__
@@ -40,3 +43,4 @@ src/__pycache__
 *.lof
 *.lot
 *.toc
+.fake

@@ -1,2 +1,2 @@
-Dice,iters,d_bilateral,sigma,C,d_gaussian,d_prb_erosion,n_trials
-0.17810315858200784,14,22,42,10,29,7,100
+Dice,d_bilateral,sigma_bilateral,iters,C,d_gaussian,d_prb_erosion,n_trials
+0.17689202502602172,25,31,7,10,31,5,100

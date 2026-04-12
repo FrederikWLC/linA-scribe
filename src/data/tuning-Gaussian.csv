@@ -1,2 +1,2 @@
-Dice,C,d_gaussian,d_bilateral,sigma,n_trials
-0.1762222093643703,7,31,25,42,100
+Dice,d_bilateral,sigma_bilateral,C,d_gaussian,n_trials
+0.17744317942211837,25,53,7,31,100

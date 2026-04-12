@@ -1,2 +1,2 @@
-Dice,d,sigma,n_trials
-0.10457392288496971,17,0.0012683483319009259,100
+Dice,d_bilateral,sigma_bilateral,d_closing,sigma_canny,n_trials
+0.1337895641532349,22,21,15,0.9417916604037854,100

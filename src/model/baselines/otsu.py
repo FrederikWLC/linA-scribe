@@ -1,11 +1,12 @@
 import cv2
+from optuna import Trial
 
-from model.scribe import Scribe
+from model.scribe import BilateralTunable, Scribe
 from utils.binary_mask import BinaryMask
 
-class Otsu(Scribe):
-    def __init__(self):
-        pass
+class Otsu(BilateralTunable,Scribe):
+    def __init__(self, d_bilateral=15, sigma_bilateral=75):
+        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
 
     def segment(self, image):
         

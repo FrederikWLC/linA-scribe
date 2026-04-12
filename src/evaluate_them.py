@@ -1,31 +1,38 @@
 from pathlib import Path
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, probplot, shapiro, ttest_rel, wilcoxon
+from data.split import DIFFICULTIES, get_evaluation_data
 from model.baselines.canny_fill import CannyFill
 from model.baselines.gaussian import Gaussian
 from model.baselines.grabcut import GrabCutAutoBrush
 from model.baselines.otsu import Otsu
-from model.sam import MobileSAMv2, MobileSAMv2AutoPoint
-from utils.evaluation import BinaryDiceScore, evaluate_model, summarize_results
+from model.baselines.sam import BestMobileSAMv2Implementation
+from model.scribe_sam import ScribeSAM
+from utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
 from utils.tuning import set_all_tuned_hyperparameters
+from data.split import get_training_data, get_evaluation_data
+
+
+# Get evaluation data, from data split module
+training_images, training_ground_truths, training_labels = get_training_data(seed=42)
+evaluation_data = get_evaluation_data(seed=42)
 
 METRICS = {"Dice": BinaryDiceScore}
-BASELINES = [
+
+MODELS = [
     Otsu(),
     Gaussian(),
     CannyFill(),
     GrabCutAutoBrush(), 
-    MobileSAMv2(),
-    MobileSAMv2AutoPoint()
-    ]
-
-DIFFICULTIES = ("easy", "medium", "hard")
-RAW_ROOT = Path("data/raw")
-GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")
+    BestMobileSAMv2Implementation(),
+    ScribeSAM(
+        support_images=training_images,
+        support_labels=training_ground_truths
+    )
+]
 
 BASE_COLUMNS = ["difficulty","model"]
 RESUME_COLUMNS = BASE_COLUMNS + [
@@ -40,22 +47,20 @@ def _variant_path(csv_path: str, suffix: str) -> Path:
     return Path(f"{csv_path[:-4]}-{suffix}.csv")
 
 
+def _csv_plot_tag(csv_path: str) -> str:
+    stem_path = Path(csv_path).with_suffix("")
+    try:
+        relative = stem_path.relative_to("data")
+    except ValueError:
+        relative = stem_path
+    return "-".join(relative.parts)
+
+
 def _safe_read_csv(path: Path, columns: list[str]) -> pd.DataFrame:
     if path.exists():
         if path.stat().st_size > 0:
             return pd.read_csv(path)
     return pd.DataFrame(columns=columns)
-
-
-def _load_difficulty_set(difficulty: str):
-    image_paths = sorted((RAW_ROOT / difficulty).glob("*.jpg"))
-    images = [cv2.imread(path.as_posix(), cv2.IMREAD_GRAYSCALE) for path in image_paths]
-    ground_truths = [
-        cv2.imread((GROUND_TRUTH_ROOT / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
-        for path in image_paths
-    ]
-    labels = [path.stem for path in image_paths]
-    return images, ground_truths, labels
 
 
 def _build_raw_pivots(df_raw: pd.DataFrame, csv_path: str) -> None:
@@ -71,16 +76,16 @@ def _build_raw_pivots(df_raw: pd.DataFrame, csv_path: str) -> None:
 def perform_evaluation(
     raw_images,
     ground_truths,
-    baselines,
+    models,
     difficulty,
     labels,
     csv_path: str = "data/evaluation.csv",
 ):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
 
-    for baseline in baselines:
-        model_name = baseline.name
-        results, resume = evaluate_model(baseline, raw_images, ground_truths, metrics=METRICS)
+    for model in models:
+        model_name = model.name
+        results, resume = evaluate_model(model, raw_images, ground_truths, metrics=METRICS)
         print(f"{model_name} resume: {resume}")
 
         raw_sub_dataframe = pd.DataFrame(results)
@@ -96,14 +101,14 @@ def perform_evaluation(
     _build_raw_pivots(df_raw, csv_path)
 
 
-def do_resume(csv_path: str = "data/evaluation.csv"):
+def do_resume(csv_path: str = "data/evaluation.csv", models=MODELS):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
     if df_raw.empty:
         return
 
     rows = []
-    for baseline in BASELINES:
-        model_name = baseline.name
+    for model in models:
+        model_name = model.name
         model_df = df_raw[df_raw["model"] == model_name]
 
         for difficulty in [*DIFFICULTIES, "all"]:
@@ -122,7 +127,7 @@ def do_resume(csv_path: str = "data/evaluation.csv"):
     df_resume.to_csv(_variant_path(csv_path, "resume"), index=False)
 
 
-def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0.05):
+def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0.05, models=MODELS):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
     if df_raw.empty:
         return
@@ -139,9 +144,10 @@ def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0
     metric_names = [col for col in df_raw.columns if col not in ["model", "difficulty", "label"]]
 
     for metric in metric_names:
-        models = df_raw["model"].unique().tolist()
+        model_names = [model.name for model in models]
 
-        groups = [df_raw[df_raw["model"] == model][metric].dropna().to_numpy() for model in models]
+        groups = [df_raw[df_raw["model"] == model][metric].to_numpy() for model in model_names]
+        
         friedman_statistic, friedman_p_value = friedmanchisquare(*groups)
         friedman_significant = bool(friedman_p_value < alpha) if not np.isnan(friedman_p_value) else False
 
@@ -165,7 +171,7 @@ def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0
 
         for i in range(len(models)):
             for j in range(i + 1, len(models)):
-                model1, model2 = models[i], models[j]
+                model1, model2 = model_names[i], model_names[j]
                 data1 = df_raw[df_raw["model"] == model1][metric].dropna().to_numpy()
                 data2 = df_raw[df_raw["model"] == model2][metric].dropna().to_numpy()
 
@@ -173,7 +179,7 @@ def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0
                 wilcoxon_significant = bool(wilcoxon_p_value < alpha)
 
                 residuals = data1 - data2
-                do_qqplot(residuals, metric, model1, model2)
+                do_qqplot(residuals, metric, model1, model2, csv_path=csv_path)
 
                 shapiro_statistic, shapiro_p_value = shapiro(residuals)
                 shapiro_significant = bool(shapiro_p_value < alpha)
@@ -249,7 +255,7 @@ def do_statistical_tests(csv_path: str = "data/evaluation.csv", alpha: float = 0
     df_shapiro_tests.to_csv(_variant_path(csv_path, "shapiro-tests"), index=False)
 
 
-def do_qqplot(residuals, metric, model1, model2):
+def do_qqplot(residuals, metric, model1, model2, csv_path: str = "data/evaluation.csv"):
     Path("data/qqplots").mkdir(parents=True, exist_ok=True)
     plt.figure(figsize=(6, 6))
     probplot(residuals, dist="norm", plot=plt)
@@ -258,7 +264,8 @@ def do_qqplot(residuals, metric, model1, model2):
     plt.ylabel("Ordered Residuals")
     plt.grid()
     plt.tight_layout()
-    plt.savefig(f"data/qqplots/{metric}_{model1}_vs_{model2}.png")
+    plot_tag = _csv_plot_tag(csv_path)
+    plt.savefig(f"data/qqplots/{plot_tag}-{metric}_{model1}_vs_{model2}.png")
     plt.close()
 
 
@@ -268,12 +275,15 @@ def _series_by_model(df_resume: pd.DataFrame, difficulty: str, metric_field: str
     return np.array([values_by_model.get(model, 0.0) for model in model_names])
 
 
-def do_barplots(csv_path: str = "data/evaluation.csv"):
+def do_barplots(csv_path: str = "data/evaluation.csv", models=MODELS):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
-    
-    model_names = np.array([baseline.name for baseline in BASELINES])
+
+    plot_tag = _csv_plot_tag(csv_path)
+
+    model_names = np.array([model.name for model in models])
+    model_display_names = np.array([model.short_name for model in models])
 
     for metric in METRICS.keys():
 
@@ -289,7 +299,7 @@ def do_barplots(csv_path: str = "data/evaluation.csv"):
 
         order = np.argsort(-metric_mean)
 
-        model_names = model_names[order]
+        model_display_names = model_display_names[order]
         easy_mean = easy_mean[order]
         medium_mean = medium_mean[order]
         hard_mean = hard_mean[order]
@@ -339,7 +349,7 @@ def do_barplots(csv_path: str = "data/evaluation.csv"):
             ))
 
         ax.set_xticks(x)
-        ax.set_xticklabels(model_names)
+        ax.set_xticklabels(model_display_names)
         ax.set_ylabel(metric.capitalize())
         ax.set_title(f"{metric.capitalize()} Score per Model with Difficulty Breakdown")
         ax.set_ylim(0, 1)
@@ -349,15 +359,17 @@ def do_barplots(csv_path: str = "data/evaluation.csv"):
 
         Path("data/plots").mkdir(parents=True, exist_ok=True)
         plt.tight_layout()
-        plt.savefig(f"data/plots/{metric}_score_comparison.png")
+        plt.savefig(f"data/plots/{plot_tag}-{metric}_score_comparison.png")
         plt.close()
 
-def do_boxplots(csv_path: str = "data/evaluation.csv"):
+def do_boxplots(csv_path: str = "data/evaluation.csv", models=MODELS):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
+
+    plot_tag = _csv_plot_tag(csv_path)
     
-    base_model_names = np.array([baseline.name for baseline in BASELINES])
+    base_model_names = np.array([model.name for model in models])
 
     for metric in METRICS.keys():
 
@@ -400,31 +412,42 @@ def do_boxplots(csv_path: str = "data/evaluation.csv"):
 
         Path("data/plots").mkdir(parents=True, exist_ok=True)
         plt.tight_layout()
-        plt.savefig(f"data/plots/{metric}_boxplot.png")
+        plt.savefig(f"data/plots/{plot_tag}-{metric}_boxplot.png")
         plt.close()
 
+def do_preview(csv_path: str = "data/evaluation.csv", models=MODELS):
+    do_resume(csv_path=csv_path, models=models)
+    do_boxplots(csv_path=csv_path, models=models) # ensure boxplots are up to date
+    do_barplots(csv_path=csv_path, models=models) # ensure barplots are up to date
+    do_statistical_tests(csv_path=csv_path, models=models) # ensure statistical tests are up to date
 
-def run_full_evaluation(csv_path: str = "data/evaluation.csv"):
-    set_all_tuned_hyperparameters(BASELINES) # ensure all baselines have their tuned hyperparameters set before starting evaluation
+
+def run_full_evaluation(evaluation_data, csv_path: str = "data/evaluation.csv", models=None):
+    if models is None:
+        models = MODELS
+    #do_preview(csv_path=csv_path, models=models) # ensure preview is up to date before starting evaluation
+    set_all_tuned_hyperparameters(models) # ensure all models have their tuned hyperparameters set before starting evaluation
     for difficulty in DIFFICULTIES:
+        if difficulty not in evaluation_data:
+            continue
+
+        dataset = evaluation_data[difficulty]
         print(f"Evaluating on {difficulty} images...")
-        raw_images, ground_truths, labels = _load_difficulty_set(difficulty)
+        raw_images = dataset["images"]
+        ground_truths = dataset["ground_truths"]
+        labels = dataset["labels"]
         perform_evaluation(
             raw_images,
             ground_truths,
-            BASELINES,
+            models,
             difficulty=difficulty,
             labels=labels,
             csv_path=csv_path,
         )
-        do_resume(csv_path=csv_path)
-        do_statistical_tests(csv_path=csv_path)
-
-    do_resume(csv_path=csv_path)
-    do_boxplots(csv_path=csv_path) # ensure boxplots are up to date before starting evaluation
-    do_barplots(csv_path=csv_path) # ensure barplots are up to date before starting evaluation
-    do_statistical_tests(csv_path=csv_path) # ensure statistical tests are up to date before starting evaluation
+        #do_preview(csv_path=csv_path, models=models) # intermediate preview after each difficulty evaluation to monitor progress and catch any issues early
+    do_preview(csv_path=csv_path, models=models) # final preview after all evaluations and statistical tests are done
 
 if __name__ == "__main__":
-    print("Starting full evaluation...")
-    run_full_evaluation()
+    print("Starting full evaluation...")    
+    # Run the evaluation per difficulty level on provided MODELS
+    run_full_evaluation(evaluation_data=evaluation_data, models=MODELS)

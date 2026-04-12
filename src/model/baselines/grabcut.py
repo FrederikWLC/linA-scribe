@@ -1,21 +1,21 @@
 import cv2
 import numpy as np
 from optuna import Trial
-from model.scribe import BrushScribe, Tunable
+from model.scribe import BilateralTunable, BrushScribe
 from utils.auto_prompts import auto_brush
 from utils.binary_mask import BinaryMask
-from utils.seeds import BrushSeed
+from utils.prompts import BrushPrompt
 from model.baselines.gaussian import Gaussian
 
-# implementation of GrabCut with automatic brush mask given as seed
-class GrabCutAutoBrush(BrushScribe,Tunable):
-    def __init__(self, iters=1, d_bilateral=15, sigma=75, C=5, d_gaussian=21, d_prb_erosion=12):
+# implementation of GrabCut with automatic brush mask given as prompt
+class GrabCutAutoBrush(BrushScribe, BilateralTunable):
+    def __init__(self, iters=1, d_bilateral=15, sigma_bilateral=75, C=5, d_gaussian=21, d_prb_erosion=12):
         self.iters = int(iters)
-        self.d_bilateral = int(d_bilateral)
-        self.sigma = int(sigma)
         self.C = int(C)
         self.d_gaussian = int(d_gaussian)
         self.d_prb_erosion = int(d_prb_erosion)
+
+        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
 
     def segment(self, image: np.ndarray, brushmask=None) -> BinaryMask:
         if len(image.shape) == 2:  # convert to bgr
@@ -38,15 +38,9 @@ class GrabCutAutoBrush(BrushScribe,Tunable):
 
         return BinaryMask.from_bool(is_fgd)
     
-    def preprocess(self, image: np.ndarray) -> np.ndarray:
+    def autoprompt(self, image: np.ndarray) -> list[BrushPrompt]:
         d_bilateral = int(self.d_bilateral)
-        sigma_color = int(self.sigma)
-        sigma_space = int(self.sigma)
-        return cv2.bilateralFilter(image, d=d_bilateral, sigmaColor=sigma_color, sigmaSpace=sigma_space)
-    
-    def autoseed(self, image: np.ndarray) -> list[BrushSeed]:
-        d_bilateral = int(self.d_bilateral)
-        sigma = int(self.sigma)
+        sigma_bilateral = int(self.sigma_bilateral)
         C = int(self.C)
         d_gaussian = int(self.d_gaussian)
         # constrain bgd gaussian to have bigger kernel size than fgd gaussian,
@@ -59,7 +53,7 @@ class GrabCutAutoBrush(BrushScribe,Tunable):
             C=C,
             d_gaussian=d_gaussian,
             d_bilateral=d_bilateral,
-            sigma=sigma
+            sigma_bilateral=sigma_bilateral
         ).predict(image)
 
         brush_mask = auto_brush(
@@ -70,13 +64,9 @@ class GrabCutAutoBrush(BrushScribe,Tunable):
     
     @property
     def hyperparameters(self) -> dict:
-        return {
+        return super().hyperparameters | {
                 # GrabCut iters
                 "iters":int(self.iters),
-
-                # Bilateral filter hyperparameters
-                "d_bilateral":int(self.d_bilateral),
-                "sigma":int(self.sigma),
 
                 # General Gaussian hyperparameters
                 "C":int(self.C),
@@ -89,14 +79,10 @@ class GrabCutAutoBrush(BrushScribe,Tunable):
                 }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
-        return {
+        return super().hyperparameter_ranges(trial) | {
                 # GrabCut iters
                 "iters":trial.suggest_int("iters", 1, 15),
-                
-                # Bilateral filter hyperparameters
-                "d_bilateral":trial.suggest_int("d_bilateral", 3, 31), # integers from 3 to 31
-                "sigma":trial.suggest_int("sigma", 0, 100),
-                
+                                
                 # General Gaussian hyperparameters
                 "C":trial.suggest_int("C", 0, 10),
                 

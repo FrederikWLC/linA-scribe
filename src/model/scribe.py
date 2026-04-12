@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import cv2
 import numpy as np
-from utils.seeds import BoxSeed, BrushSeed, PointSeed, Seed
+from utils.prompts import PointPrompt, Prompt
 from utils.binary_mask import BinaryMask
 from optuna import Trial
 
@@ -16,6 +16,10 @@ class BaseScribe(ABC):
     def name(self) -> str:
         return type(self).__name__
     
+    @property
+    def short_name(self) -> str:
+        return self.name
+    
 # the abstract base class for all "scribe" models.
 class Scribe(BaseScribe):
 
@@ -29,40 +33,40 @@ class Scribe(BaseScribe):
     def segment(self, image: np.ndarray) -> BinaryMask: # raw segmentation
         pass
 
-# the abstract base class for scribe models that can take seeds (i.e. prompts, e.g. points or boxes)
+# the abstract base class for scribe models that can take prompts (e.g. points or boxes)
 class SeedableScribe(BaseScribe):
 
-    # main method consisting of preprocessing followed by seed parsing and segmenation (returns a binary mask)
-    def predict(self, image: np.ndarray, seed = None, autoseed : bool = True) -> BinaryMask:
-        if seed is None and autoseed: # if no seed is provided but autoseeding is enabled, autoseeding happens
-            seed = self.autoseed(image) # autoseeding is supposed to be done on the raw image, not the preprocessed one
-        preprocessed = self.preprocess(image)
-        return self.segment(preprocessed, seed)
+    # main method consisting of preprocessing followed by prompt parsing and segmenation (returns a binary mask)
+    def predict(self, image: np.ndarray = None, prompts = None, autoprompt : bool = True) -> BinaryMask:
+        if prompts is None and autoprompt: # if no prompt is provided but autoprompting is enabled, autoprompting happens
+            prompts = self.autoprompt(image) # autoprompting is supposed to be done on the raw image, not the preprocessed one
+        preprocessed = self.preprocess(image) if image is not None else None
+        return self.segment(preprocessed, prompts)
     
-    # method where the autoseeding happens
-    def autoseed(self, image: np.ndarray) -> list[Seed] | None:
+    # method where the autoprompting happens
+    def autoprompt(self, image: np.ndarray) -> list[Prompt] | None:
         return None
-    
+
     @abstractmethod
-    def draw_seed(self, image: np.ndarray, seed) -> np.ndarray:
+    def draw_prompt(self, image: np.ndarray, prompt) -> np.ndarray:
         pass
     
     # method where the segmentation happens (returns a binary mask)
     @abstractmethod
-    def segment(self, image: np.ndarray, seeds: list[Seed] | None = None) -> BinaryMask:
+    def segment(self, image: np.ndarray, prompts: list[Prompt] | None = None) -> BinaryMask:
         pass
 
 class PointScribe(SeedableScribe):
-    def draw_seed(self, image: np.ndarray, point_seeds: list[PointSeed]) -> np.ndarray:
+    def draw_prompt(self, image: np.ndarray, point_prompts: list[PointPrompt]) -> np.ndarray:
         drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        for seed in point_seeds:
+        for prompt in point_prompts:
             # green circles for fgd points, red circles for bgd points
-            color = (0, 255, 0) if seed.label == 1 else (0, 0, 255)
-            cv2.circle(drawn, (seed.x, seed.y), 5, color, -1)
+            color = (0, 255, 0) if prompt.label == 1 else (0, 0, 255)
+            cv2.circle(drawn, (prompt.x, prompt.y), 5, color, -1)
         return drawn
 
 class BrushScribe(SeedableScribe):
-    def draw_seed(self, image: np.ndarray, brush_mask: np.ndarray) -> np.ndarray:
+    def draw_prompt(self, image: np.ndarray, brush_mask: np.ndarray) -> np.ndarray:
         drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         brush_color_from_label = {
             cv2.GC_BGD: (0, 0, 255), # red for sure background
@@ -89,13 +93,11 @@ class BrushScribe(SeedableScribe):
 class Tunable(ABC):
 
     @property
-    @abstractmethod
     def hyperparameters(self) -> dict:
-        pass
+        return {}
     
-    @abstractmethod
     def hyperparameter_ranges(self,trial: Trial) -> dict:
-        pass
+        return {}
     
     def set_hyperparameters(self, **kwargs):
         for key, value in kwargs.items():
@@ -103,10 +105,36 @@ class Tunable(ABC):
                 setattr(self, key, value)
 
 
-def predict(model: BaseScribe, image, seed = None) -> BinaryMask:
+class BilateralTunable(BaseScribe, Tunable, ABC):
+
+    def __init__(self, d_bilateral: int = 15, sigma_bilateral: int = 75, **kwargs):
+        self.d_bilateral = int(d_bilateral)
+        self.sigma_bilateral = int(sigma_bilateral)
+        super().__init__(**kwargs)
+
+    def preprocess(self, image: np.ndarray) -> np.ndarray:
+        d = int(self.d_bilateral)
+        sigma_color = int(self.sigma_bilateral)
+        sigma_space = int(self.sigma_bilateral)
+        return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
+
+    @property
+    def hyperparameters(self) -> dict:
+        return super().hyperparameters | {
+            "d_bilateral": int(self.d_bilateral),
+            "sigma_bilateral": int(self.sigma_bilateral),
+        }
+
+    def hyperparameter_ranges(self, trial: Trial, sigma_max: int = 150) -> dict:
+        return super().hyperparameter_ranges(trial) | {
+            "d_bilateral": trial.suggest_int("d_bilateral", 3, 31),
+            "sigma_bilateral": trial.suggest_int("sigma_bilateral", 0, sigma_max),
+        }
+
+def predict(model: BaseScribe, image, prompt = None) -> BinaryMask:
     if isinstance(model, SeedableScribe):
-        return model.predict(image,seed=seed)
+        return model.predict(image, prompts=prompt)
     return model.predict(image)
 
-def predict_batch(model: BaseScribe, images: list[np.ndarray], seed=None) -> list[BinaryMask]:
-    return [predict(model,img,seed) for img in images]
+def predict_batch(model: BaseScribe, images: list[np.ndarray], prompt=None) -> list[BinaryMask]:
+    return [predict(model, img, prompt=prompt) for img in images]

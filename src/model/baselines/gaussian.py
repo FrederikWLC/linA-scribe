@@ -1,16 +1,15 @@
-from model.scribe import Scribe, Tunable
+from model.scribe import BilateralTunable, Scribe
 import numpy as np
 import cv2
 from utils.binary_mask import BinaryMask
 from optuna import Trial
 
 # implementation of the Gaussian threshold
-class Gaussian(Scribe,Tunable):
-    def __init__(self, C=5, d_gaussian=19, d_bilateral=15, sigma=75):
-        self.d_bilateral = d_bilateral
-        self.sigma = sigma
-        self.d_gaussian = d_gaussian
-        self.C = C
+class Gaussian(Scribe, BilateralTunable):
+    def __init__(self, C=5, d_gaussian=19, d_bilateral=15, sigma_bilateral=75):
+        self.d_gaussian = int(d_gaussian)
+        self.C = int(C)
+        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
 
     def segment(self, image: np.ndarray) -> BinaryMask:
         kernel_size = int(self.d_gaussian) # size of kernel (neighborhood)
@@ -29,31 +28,15 @@ class Gaussian(Scribe,Tunable):
         # having 1 as foreground (ink), and 0 as background
         return BinaryMask.from_image(thresholded)
 
-    def preprocess(self, image: np.ndarray) -> np.ndarray:
-        # preprocess with bilateral filter
-        d = int(self.d_bilateral) # kernel size
-
-        # spatial standard deviation : intensity-similarity smoothing index
-        sigma_color = int(self.sigma) #   (the bigger the difference the smaller the value, the bigger the value the more smoothing of contrasting pixels)
-        
-        # intensity/range standard deviation : distance-based smoothing index
-        # the further away a pixel is from kernel center the less influence, the bigger the value the more uniform weighting of pixels)
-        sigma_space = int(self.sigma)
-        return cv2.bilateralFilter(image, d, sigma_color, sigma_space)
-        
     @property
     def hyperparameters(self):
-        return {
+        return super().hyperparameters | {
             "C":int(self.C),
             "d_gaussian":int(self.d_gaussian),
-            "d_bilateral":int(self.d_bilateral),
-            "sigma":int(self.sigma),
         }
     
     def hyperparameter_ranges(self,trial: Trial) -> dict:
-        return {
+        return super().hyperparameter_ranges(trial) | {
             "C":trial.suggest_int("C", 0, 10),
             "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,21)]), # odd integers from 3 to 41
-            "d_bilateral":trial.suggest_int("d_bilateral", 3, 31), # integers from 3 to 31
-            "sigma":trial.suggest_int("sigma", 0, 150)
         }
