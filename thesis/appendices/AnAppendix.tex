@@ -12,8 +12,10 @@
 \toprule
 Hyperparameter & Obtained value \\
 \midrule
-$\sigma$ & \pgfmathprintnumber[fixed,sci=3]{\hyperparamSigmaCannyFill} \\
+$d_{bilateral}$ & \hyperparamDBilateralCannyFill \\
+$\sigma_{bilateral}$ & \hyperparamSigmaBilateralCannyFill \\
 $d_{closing}$ & \hyperparamDCannyFill \\
+$\sigma_{canny}$ & \pgfmathprintnumber[fixed,sci=3]{\hyperparamSigmaCannyFill} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -25,10 +27,10 @@ $d_{closing}$ & \hyperparamDCannyFill \\
 \toprule
 Hyperparameter & Obtained value \\
 \midrule
+$d_{bilateral}$ & \hyperparamDBilateralGaussian \\
+$\sigma_{bilateral}$ & \hyperparamSigmaBilateralGaussian \\
 $C$ & \hyperparamCGaussian \\
 $d_{gaussian}$ & \hyperparamDGaussian \\
-$d_{bilateral}$ & \hyperparamDBilateralGaussian \\
-$\sigma$ & \hyperparamSigmaGaussian \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -40,10 +42,10 @@ $\sigma$ & \hyperparamSigmaGaussian \\
 \toprule
 Hyperparameter & Obtained value \\
 \midrule
-$C$ & \hyperparamCmSAMpts \\
-$d_{gaussian}$ & \hyperparamDmSAMpts \\
 $d_{bilateral}$ & \hyperparamDBilateralmSAMpts \\
 $\sigma$ & \hyperparamSigmamSAMpts \\
+$C$ & \hyperparamCmSAMpts \\
+$d_{gaussian}$ & \hyperparamDmSAMpts \\
 $n_{fgd\_pts}$ & \hyperparamNfgdmSAMpts \\
 $n_{bgd\_pts}$ & \hyperparamNbgdmSAMpts \\
 $d_{gap\_erosion}$ & \hyperparamDGapErosionmSAMpts \\
@@ -58,10 +60,10 @@ $d_{gap\_erosion}$ & \hyperparamDGapErosionmSAMpts \\
 \toprule
 Hyperparameter & Obtained value \\
 \midrule
+$d_{bilateral}$ & \hyperparamDBilateralGCbrush \\
+$\sigma_{bilateral}$ & \hyperparamSigmaBilateralGCbrush \\
 $C$ & \hyperparamCGCbrush \\
 $d_{gaussian}$ & \hyperparamDGCbrush \\
-$d_{bilateral}$ & \hyperparamDBilateralGCbrush \\
-$\sigma$ & \hyperparamSigmaGCbrush \\
 $d_{prb\_erosion}$ & \hyperparamDPrbErosionGCbrush \\
 $iters$ & \hyperparamItersGCbrush \\
 \bottomrule

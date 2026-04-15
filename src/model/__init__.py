@@ -1,1 +1,0 @@
-from model.scribe import Scribe

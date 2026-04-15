@@ -3,41 +3,45 @@
 % This information is used in Results and Discussion chapter for evaluation results and statistical tests.
 
 % Hyperparameter optimization results
-\pgfplotstableread[col sep=comma]{../src/data/tuning-CannyFill.csv}\hyperparamtableCannyFill
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/CannyFill/best.csv}\hyperparamtableCannyFill
 \pgfplotstablegetelem{0}{Dice}\of\hyperparamtableCannyFill
 \edef\hyperparamDiceCannyFill{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableCannyFill
+\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableCannyFill
+\edef\hyperparamDBilateralCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtableCannyFill
+\edef\hyperparamSigmaBilateralCannyFill{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma_canny}\of\hyperparamtableCannyFill
 \edef\hyperparamSigmaCannyFill{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d}\of\hyperparamtableCannyFill
+\pgfplotstablegetelem{0}{d_closing}\of\hyperparamtableCannyFill
 \edef\hyperparamDCannyFill{\pgfplotsretval}
 \pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableCannyFill
 \edef\hyperparamNTrialsCannyFill{\pgfplotsretval}
 
-\pgfplotstableread[col sep=comma]{../src/data/tuning-Gaussian.csv}\hyperparamtableGaussian
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/Gaussian/best.csv}\hyperparamtableGaussian
 \pgfplotstablegetelem{0}{Dice}\of\hyperparamtableGaussian
 \edef\hyperparamDiceGaussian{\pgfplotsretval}
-\pgfplotstablegetelem{0}{C}\of\hyperparamtableGaussian
-\edef\hyperparamCGaussian{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableGaussian
-\edef\hyperparamSigmaGaussian{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGaussian
-\edef\hyperparamDGaussian{\pgfplotsretval}
 \pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableGaussian
 \edef\hyperparamDBilateralGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtableGaussian
+\edef\hyperparamSigmaBilateralGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtableGaussian
+\edef\hyperparamCGaussian{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGaussian
+\edef\hyperparamDGaussian{\pgfplotsretval}
 \pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGaussian
 \edef\hyperparamNTrialsGaussian{\pgfplotsretval}
 
-\pgfplotstableread[col sep=comma]{../src/data/tuning-GC+brush.csv}\hyperparamtableGCbrush
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/GC+brush/best.csv}\hyperparamtableGCbrush
 \pgfplotstablegetelem{0}{Dice}\of\hyperparamtableGCbrush
 \edef\hyperparamDiceGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{C}\of\hyperparamtableGCbrush
-\edef\hyperparamCGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma}\of\hyperparamtableGCbrush
-\edef\hyperparamSigmaGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGCbrush
-\edef\hyperparamDGCbrush{\pgfplotsretval}
 \pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableGCbrush
 \edef\hyperparamDBilateralGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtableGCbrush
+\edef\hyperparamSigmaBilateralGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtableGCbrush
+\edef\hyperparamCGCbrush{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGCbrush
+\edef\hyperparamDGCbrush{\pgfplotsretval}
 \pgfplotstablegetelem{0}{iters}\of\hyperparamtableGCbrush
 \edef\hyperparamItersGCbrush{\pgfplotsretval}
 \pgfplotstablegetelem{0}{d_prb_erosion}\of\hyperparamtableGCbrush
@@ -45,17 +49,17 @@
 \pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGCbrush
 \edef\hyperparamNTrialsGCbrush{\pgfplotsretval}
 
-\pgfplotstableread[col sep=comma]{../src/data/tuning-mSAM+pts.csv}\hyperparamtablemSAMpts
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/mSAM+pts/best.csv}\hyperparamtablemSAMpts
 \pgfplotstablegetelem{0}{Dice}\of\hyperparamtablemSAMpts
 \edef\hyperparamDicemSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{C}\of\hyperparamtablemSAMpts
-\edef\hyperparamCmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma}\of\hyperparamtablemSAMpts
-\edef\hyperparamSigmamSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtablemSAMpts
-\edef\hyperparamDmSAMpts{\pgfplotsretval}
 \pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtablemSAMpts
 \edef\hyperparamDBilateralmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma}\of\hyperparamtablemSAMpts
+\edef\hyperparamSigmamSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtablemSAMpts
+\edef\hyperparamCmSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtablemSAMpts
+\edef\hyperparamDmSAMpts{\pgfplotsretval}
 \pgfplotstablegetelem{0}{n_fgd_points}\of\hyperparamtablemSAMpts
 \edef\hyperparamNfgdmSAMpts{\pgfplotsretval}
 \pgfplotstablegetelem{0}{n_bgd_points}\of\hyperparamtablemSAMpts
@@ -66,10 +70,30 @@
 \edef\hyperparamNTrialsmSAMpts{\pgfplotsretval}
 
 % Evaluation Results
-\pgfplotstableread[col sep=comma]{../src/data/evaluation-raw-pivot-Dice.csv}\rawpivot
-\pgfplotstableread[col sep=comma]{../src/data/evaluation-resume.csv}\resumetable
-\pgfplotstableread[col sep=comma]{../src/data/evaluation-shapiro-tests.csv}\shapirotable
-\pgfplotstableread[col sep=comma]{../src/data/evaluation-paired-t-tests.csv}\ttable
+\pgfplotstableread[col sep=comma]{../src/data/results/evaluation/raw-pivot-Dice.csv}\rawpivot
+\pgfplotstableread[col sep=comma]{../src/data/results/evaluation/resume.csv}\resumetable
+\pgfplotstableread[col sep=comma]{../src/data/results/evaluation/shapiro-tests.csv}\shapirotable
+\pgfplotstableread[col sep=comma]{../src/data/results/evaluation/paired-t-tests.csv}\ttable
+
+% Single source of truth for the example tablet used in the thesis figures.
+% Edit this one line to switch all example-image references and scores.
+\newcommand{\exampleTabletName}{HT6b}
+\newcommand{\displayexampleTabletName}{\acs{HT}6b}
+
+\newcommand{\exampleTabletRow}{}
+\newcommand{\setExampleTabletRow}{%
+\ifstrequal{\exampleTabletName}{HT10a}{\def\exampleTabletRow{0}}{%
+\ifstrequal{\exampleTabletName}{HT118}{\def\exampleTabletRow{1}}{%
+\ifstrequal{\exampleTabletName}{HT12}{\def\exampleTabletRow{2}}{%
+\ifstrequal{\exampleTabletName}{HT17}{\def\exampleTabletRow{3}}{%
+\ifstrequal{\exampleTabletName}{HT22}{\def\exampleTabletRow{4}}{%
+\ifstrequal{\exampleTabletName}{HT26a}{\def\exampleTabletRow{5}}{%
+\ifstrequal{\exampleTabletName}{HT7a}{\def\exampleTabletRow{6}}{%
+\ifstrequal{\exampleTabletName}{HT7b}{\def\exampleTabletRow{7}}{%
+\ifstrequal{\exampleTabletName}{KHWc2104}{\def\exampleTabletRow{8}}{%
+\ifstrequal{\exampleTabletName}{PH2}{\def\exampleTabletRow{9}}{\def\exampleTabletRow{5}}}}}}}}}}}
+}
+\setExampleTabletRow
 
 % Number of images
 \pgfplotstablegetelem{0}{Dice_n}\of\resumetable
@@ -100,16 +124,14 @@
 \edef\mSAMptsmean{\pgfplotsretval}
 \pgfmathsetmacro{\deltameanGCmSAM}{\GCbrushmean - \mSAMptsmean}
 
-% Dice Score of models on HT118 (easy) for visual comparison
-\pgfplotstablegetelem{1}{CannyFill}\of\rawpivot
-\edef\HTHundredEighteenCannyFill{\pgfplotsretval}
-\pgfplotstablegetelem{1}{Otsu}\of\rawpivot
-\edef\HTHundredEighteenOtsu{\pgfplotsretval}
-\pgfplotstablegetelem{1}{GC+brush}\of\rawpivot
-\edef\HTHundredEighteenGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{1}{Gaussian}\of\rawpivot
-\edef\HTHundredEighteenGaussian{\pgfplotsretval}
-\pgfplotstablegetelem{1}{mSAM}\of\rawpivot
-\edef\HTHundredEighteenmSAM{\pgfplotsretval}
-\pgfplotstablegetelem{1}{mSAM+pts}\of\rawpivot
-\edef\HTHundredEighteenmSAMpts{\pgfplotsretval}
+% Dice score of the selected example tablet for visual comparison.
+\pgfplotstablegetelem{\exampleTabletRow}{CannyFill}\of\rawpivot
+\edef\exampleCannyFillScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{Otsu}\of\rawpivot
+\edef\exampleOtsuScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{GC+brush}\of\rawpivot
+\edef\exampleGCbrushScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{Gaussian}\of\rawpivot
+\edef\exampleGaussianScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{mSAM+pts-bilateral-filter-single}\of\rawpivot
+\edef\examplemSAMptsSingleScore{\pgfplotsretval}

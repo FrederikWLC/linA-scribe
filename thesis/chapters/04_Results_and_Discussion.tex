@@ -1,32 +1,38 @@
 \chapter{Results and Discussion}
 \section{Non-interactive segmentation performance}
 
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{../src/data/plots/dice_score_comparison}
-\caption{Dice Score performance per model. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
-\label{fig:dice_comparison}
-\end{figure}
-
 After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
-The \acs{mSAM} model with the in-built \acs{YOLO} box prompts performed the worst of all with a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMmean}.
 
 Meanwhile, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
 With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baselines, \acs{Gaussian} and \acs{GC+brush} that each yielded \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean} and \pgfmathprintnumber[fixed,precision=3]{\GCbrushmean}, respectively.
 
 The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{mSAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
+\subsection{SAM ablation}
 
+The results of the ablation study of different SAM variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was the one with automatic point prompts and bilateral filter, making use of the single output token per image instead of best of three.
+This was also the one used for the main evaluation.
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{../src/data/results/ablation_sam/plots/Dice_score_comparison}
+\caption{Dice Score performance per SAM variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
+\label{fig:dice_sam_ablation}
+\end{figure}
 
 \subsection{Model comparison}
-Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pays to look at a visual example to see what is going on behind the scenes.
-Looking at \cref{fig:model_comparison} of the output masks per model from segmentation on the easy-difficulty \acs{HT}118, it is clear that the \acs{Gaussian} baseline manages to capture the information of this tablet the best\footnote{That tablet (\acs{HT}118) is coincidentally also one of the instances, where \acs{Gaussian} performs best of all.}, although with some noise.
 
+\begin{figure}
+\centering
+    \includegraphics[width=\linewidth]{../src/data/results/evaluation/plots/Dice_score_comparison.png}
+    \caption{Dice score comparison of all models on the evaluation dataset.}
+\label{fig:dice_comparison}
+\end{figure}
+
+Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pays to look at a visual example to see what is going on behind the scenes.
 In this instance, \acs{GC+brush} performs decently as well, but oversegments in a way that makes strokes a bit thicker than they should be.
 It compensates for this, however, by reducing noise.
 These phenomena are due to a combination of its smoothness term, and its probable background regions, which encourage spatially coherent masks while risking small-scale dilation of the mask (see \cref{subsubsec:grabcut_baseline}).
 
-The \acs{Otsu} and \acs{CannyFill} baselines perform a bit worse, although they capture almost all signs.
-\acs{Otsu} also segments dark background regions as foreground, as they count as such according to its global threshold, turning a lot of its mask into noise.
 \acs{CannyFill} also oversegments, due to its large kernel window size for morphological closing, which was necessary to fill in the gaps between edges, but gives a blocky look, and merges all nearby edges together.
 
 The unprompted \acs{mSAM} segments only background noise here, producing nothing of value.
@@ -37,55 +43,49 @@ And there is way less noise between them compared to the masks of the baselines,
 
 \begin{figure}
 \centering
-\begin{subfigure}{0.3\textwidth}
+\begin{subfigure}{0.29\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT118.jpg}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/medium/\exampleTabletName.jpg}}
     \caption{Raw Image}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.3\textwidth}
+\begin{subfigure}{0.29\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT118.jpg}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/\exampleTabletName.jpg}}
     \caption{Ground Truth}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.3\textwidth}
+\begin{subfigure}{0.29\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Otsu.jpg}}
-    \caption{Otsu \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenOtsu}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-Otsu.jpg}}
+    \caption{Otsu \pgfmathprintnumber[fixed,precision=3]{\exampleOtsuScore}}
+\end{subfigure}
+\vspace{0.5em}
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-Gaussian.jpg}}
+    \caption{Gaussian \pgfmathprintnumber[fixed,precision=3]{\exampleGaussianScore}}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-CannyFill.jpg}}
+    \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{\exampleCannyFillScore}}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-GC+brush.jpg}}
+    \caption{GCbrush \pgfmathprintnumber[fixed,precision=3]{\exampleGCbrushScore}}
 \end{subfigure}
 \vspace{0.5em}
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-Gaussian.jpg}}
-    \caption{Gaussian \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenGaussian}}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-CannyFill.jpg}}
-    \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenCannyFill}}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-GC+brush.jpg}}
-    \caption{GCbrush \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenGCbrush}}
-\end{subfigure}
-\vspace{0.5em}
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM.jpg}}
-    \caption{mSAM \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenmSAM}}
-\end{subfigure}
-\hspace{1em}
-\begin{subfigure}{0.3\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/scribed/HT118-mSAM+pts.jpg}}
-    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\HTHundredEighteenmSAMpts}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-mSAM+pts-bilateral-filter-single.jpg}}
+    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\examplemSAMptsSingleScore}}
 \end{subfigure}
 
-\caption{Visual comparison of output masks per model from segmentation on \acs{HT}118 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
+\caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (medium), shown with \acs{Dice} scores next to the raw image and ground truth.}
 \label{fig:model_comparison}
 
 \end{figure}
@@ -104,7 +104,7 @@ Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-
 Thus, the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{../src/data/qqplots/Dice_GC+brush_vs_mSAM+pts}
+    \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_GC+brush_vs_mSAM+pts}
     \caption{QQplot of the residuals of the paired t-test comparing \acs{GC+brush} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
     Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
     \label{fig:qqplot}
