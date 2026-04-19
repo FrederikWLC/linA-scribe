@@ -31,9 +31,9 @@ src/data/ground_truth/registered/*
 !src/data/results/**
 !src/data/split.py
 
-# ignor GF SAM for now
-src/gf_sam/*
-
+# ignore GF SAM data
+src/gf_sam_api/vendor/gf_sam/matcher/data/*
+src/gf_sam_api/vendor/gf_sam/dinov2/data/*
 
 #Python
 __pycache__
