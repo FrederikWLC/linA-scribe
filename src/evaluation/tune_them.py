@@ -1,8 +1,8 @@
-﻿from pathlib import Path
+from pathlib import Path
 import optuna
 from optuna.samplers import TPESampler
 import pandas as pd
-from data.split import DIFFICULTIES, get_evaluation_data
+from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from evaluation.baselines.canny_fill import CannyFill
 from evaluation.baselines.gaussian import Gaussian
 from evaluation.baselines.grabcut import GrabCutAutoBrush
@@ -38,7 +38,7 @@ MODELS = [
 ]
 
 def _load_dataset(seed: int = 42):
-    evaluation_data = get_evaluation_data(seed=seed)
+    evaluation_data = get_test_data_by_difficulty(seed=seed)
     images = []
     ground_truths = []
     labels = []

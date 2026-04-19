@@ -1,37 +1,48 @@
-from contextlib import contextmanager
 from pathlib import Path
 import random
-import shutil
-import tempfile
 
 import cv2
 
 DIFFICULTIES = ("easy", "medium", "hard")
-RAW_ROOT = Path("data/raw")
-GROUND_TRUTH_ROOT = Path("data/ground_truth/registered")
+DATA_ROOT = Path("data")
+get_raw_root = lambda data_root: data_root / "raw"
+get_ground_truth_root = lambda data_root: data_root / "ground_truth" / "registered"
 
 
-def get_difficulty_image_paths(difficulty: str) -> list[Path]:
-	return sorted((RAW_ROOT / difficulty).glob("*.jpg"))
+def get_difficulty_paths(difficulty: str, data_root: Path = DATA_ROOT) -> list[Path]:
+	return sorted((get_raw_root(data_root) / difficulty).glob("*.jpg"))
 
 
-def iter_difficulty_image_paths():
+def iter_difficulty_image_paths(data_root: Path = DATA_ROOT):
 	for difficulty in DIFFICULTIES:
-		yield difficulty, get_difficulty_image_paths(difficulty)
+		yield difficulty, get_difficulty_paths(difficulty, data_root=data_root)
 
 
-def load_difficulty_set(difficulty: str):
-	image_paths = get_difficulty_image_paths(difficulty)
-	return load_paths(image_paths)
+def get_evaluation_paths(seed: int = 42, data_root: Path = DATA_ROOT):
+	"""Get test paths organized by difficulty without loading images."""
+	_, test_paths = get_train_test_paths(seed=seed, data_root=data_root)
+	evaluation_paths = {difficulty: [] for difficulty in DIFFICULTIES}
+	
+	for difficulty in DIFFICULTIES:
+		difficulty_paths = [path for path in test_paths if path.parent.name == difficulty]
+		evaluation_paths[difficulty] = difficulty_paths
+	
+	return evaluation_paths
 
 
-def get_evaluation_data(seed: int = 42):
-	_, test_paths = get_train_test_paths(seed=seed)
+def load_difficulty_set(difficulty: str, data_root: Path = DATA_ROOT):
+	image_paths = get_difficulty_paths(difficulty, data_root=data_root)
+	images, ground_truths, labels = load_paths(image_paths, data_root=data_root)
+	return images, ground_truths, labels
+
+
+def get_test_data_by_difficulty(seed: int = 42, data_root: Path = DATA_ROOT):
+	_, test_paths = get_train_test_paths(seed=seed, data_root=data_root)
 	evaluation_data = {difficulty: {"images": [], "ground_truths": [], "labels": [], "paths": []} for difficulty in DIFFICULTIES}
 
 	for difficulty in DIFFICULTIES:
 		difficulty_paths = [path for path in test_paths if path.parent.name == difficulty]
-		images, ground_truths, labels = load_paths(difficulty_paths)
+		images, ground_truths, labels = load_paths(difficulty_paths, data_root=data_root)
 		evaluation_data[difficulty] = {
 			"images": images,
 			"ground_truths": ground_truths,
@@ -42,17 +53,17 @@ def get_evaluation_data(seed: int = 42):
 	return evaluation_data
 
 
-def load_paths(image_paths: list[Path]):
+def load_paths(image_paths: list[Path], data_root: Path = DATA_ROOT):
 	images = [cv2.imread(path.as_posix(), cv2.IMREAD_GRAYSCALE) for path in image_paths]
 	ground_truths = [
-		cv2.imread((GROUND_TRUTH_ROOT / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
+		cv2.imread((get_ground_truth_root(data_root) / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
 		for path in image_paths
 	]
 	labels = [path.stem for path in image_paths]
 	return images, ground_truths, labels
 
 
-def get_train_test_paths(seed: int = 42):
+def get_train_test_paths(seed: int = 42, data_root: Path = DATA_ROOT):
 	rng = random.Random(seed)
 
 	train_paths = []
@@ -61,7 +72,7 @@ def get_train_test_paths(seed: int = 42):
 	test_present = set()
 
 	for difficulty in DIFFICULTIES:
-		paths = get_difficulty_image_paths(difficulty)
+		paths = get_difficulty_paths(difficulty, data_root=data_root)
 		if not paths:
 			continue
 
@@ -87,22 +98,28 @@ def get_train_test_paths(seed: int = 42):
 	return train_paths, test_paths
 
 
-def get_training_data(seed: int = 42):
-	train_paths, _ = get_train_test_paths(seed=seed)
-	images, ground_truths, labels = load_paths(train_paths)
+def get_training_paths(seed: int = 42, data_root: Path = DATA_ROOT):
+	train_paths, _ = get_train_test_paths(seed=seed, data_root=data_root)
+	label_paths = [get_ground_truth_root(data_root) / path.name for path in train_paths]
+	return train_paths, label_paths
+
+
+def get_training_data(seed: int = 42, data_root: Path = DATA_ROOT):
+	train_paths, _ = get_train_test_paths(seed=seed, data_root=data_root)
+	images, ground_truths, labels = load_paths(train_paths, data_root=data_root)
 	return images, ground_truths, labels
 
 
-def get_test_data(seed: int = 42):
-	_, test_paths = get_train_test_paths(seed=seed)
-	images, ground_truths, labels = load_paths(test_paths)
+def get_test_data(seed: int = 42, data_root: Path = DATA_ROOT):
+	_, test_paths = get_train_test_paths(seed=seed, data_root=data_root)
+	images, ground_truths, labels = load_paths(test_paths, data_root=data_root)
 	return images, ground_truths, labels
 
 
-def get_train_test_data(seed: int = 42):
-	train_paths, test_paths = get_train_test_paths(seed=seed)
-	train_images, train_ground_truths, train_labels = load_paths(train_paths)
-	test_images, test_ground_truths, test_labels = load_paths(test_paths)
+def get_train_test_data(seed: int = 42, data_root: Path = DATA_ROOT):
+	train_paths, test_paths = get_train_test_paths(seed=seed, data_root=data_root)
+	train_images, train_ground_truths, train_labels = load_paths(train_paths, data_root=data_root)
+	test_images, test_ground_truths, test_labels = load_paths(test_paths, data_root=data_root)
 
 	return {
 		"train": {
@@ -120,33 +137,3 @@ def get_train_test_data(seed: int = 42):
 	}
 
 
-def materialize_split_folders(seed: int = 42, output_root: Path | None = None):
-	split_paths = get_train_test_data(seed=seed)
-	base_dir = Path(output_root) if output_root is not None else Path(tempfile.mkdtemp(prefix="split_data_"))
-
-	for subset_name in ("train", "test"):
-		image_dir = base_dir / subset_name / "images"
-		label_dir = base_dir / subset_name / "labels"
-		image_dir.mkdir(parents=True, exist_ok=True)
-		label_dir.mkdir(parents=True, exist_ok=True)
-
-		for image_path in split_paths[subset_name]["paths"]:
-			shutil.copy2(image_path, image_dir / image_path.name)
-			shutil.copy2(GROUND_TRUTH_ROOT / image_path.name, label_dir / image_path.name)
-
-	return {
-		"root": base_dir,
-		"train_images": base_dir / "train" / "images",
-		"train_labels": base_dir / "train" / "labels",
-		"test_images": base_dir / "test" / "images",
-		"test_labels": base_dir / "test" / "labels",
-	}
-
-
-@contextmanager
-def temporary_split_folders(seed: int = 42):
-	split_dirs = materialize_split_folders(seed=seed)
-	try:
-		yield split_dirs
-	finally:
-		shutil.rmtree(split_dirs["root"], ignore_errors=True)

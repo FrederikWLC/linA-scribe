@@ -1,10 +1,10 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, probail, shapiro, ttest_rel, wilcoxon
-from data.split import DIFFICULTIES, get_evaluation_data
+from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from evaluation.baselines.canny_fill import CannyFill
 from evaluation.baselines.gaussian import Gaussian
 from evaluation.baselines.grabcut import GrabCutAutoBrush
@@ -12,11 +12,10 @@ from evaluation.baselines.otsu import Otsu
 from evaluation.baselines.sam import BestMobileSAMv2Implementation
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
-from data.split import get_evaluation_data
 
 
 # Get evaluation data, from data split module
-evaluation_data = get_evaluation_data(seed=42)
+evaluation_data = get_test_data_by_difficulty(seed=42)
 
 METRICS = {"Dice": BinaryDiceScore}
 

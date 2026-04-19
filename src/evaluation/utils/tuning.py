@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 from scribe.base import Tunable
 
 def set_tuned_hyperparameters(model: Tunable):

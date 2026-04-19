@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -13,7 +13,7 @@ from hydra.core.global_hydra import GlobalHydra
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
-from src.config import config
+from config import config
 
 
 def _ensure_hydra_initialized():
@@ -64,7 +64,7 @@ def build_sam2_video_predictor(
 ):
     _ensure_hydra_initialized()
     hydra_overrides = [
-        "++model._target_=src.model.scribe_sam.sam2.sam2_video_predictor.SAM2VideoPredictor",
+        "++model._target_=fatesam_api.model.sam2.sam2_video_predictor.SAM2VideoPredictor",
     ]
     if apply_postprocessing:
         hydra_overrides_extra = hydra_overrides_extra.copy()
@@ -152,7 +152,7 @@ def build_sam2_video_predictor_fate(
 ):
     _ensure_hydra_initialized()
     hydra_overrides = [
-        "++model._target_=src.model.scribe_sam.sam2.sam2_video_predictor_FATE.SAM2VideoPredictorFATE",
+        "++model._target_=fatesam_api.model.sam2.sam2_video_predictor_FATE.SAM2VideoPredictorFATE",
     ]
     if apply_postprocessing:
         hydra_overrides_extra = hydra_overrides_extra.copy()

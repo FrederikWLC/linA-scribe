@@ -27,10 +27,14 @@ class BrushPrompt(Prompt):
 
 
 def get_point_prompts_and_labels(promptlist):
+    if not promptlist:
+        return None, None
     points = []
     labels = []
     for prompt in promptlist:
-        if isinstance(prompt, PointPrompt):
+        if isinstance(prompt, PointPrompt) or (
+            hasattr(prompt, "x") and hasattr(prompt, "y") and hasattr(prompt, "label")
+        ):
             points.append([prompt.x, prompt.y])
             labels.append(prompt.label)
     return (np.array(points), np.array(labels)) if points else (None, None)

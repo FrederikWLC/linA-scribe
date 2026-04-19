@@ -48,7 +48,12 @@ class SAM2VideoPredictorFATE(SAM2VideoPredictor):
 
         for frame_idx in tqdm(processing_order, desc="Propagate in video"):
             # Add new supporting masks
-            if support_masks and ((frame_idx != start_frame_idx and reverse) or (not reverse)):
+            if (
+                support_masks
+                and frame_idx < len(support_masks)
+                and support_masks[frame_idx]
+                and ((frame_idx != start_frame_idx and reverse) or (not reverse))
+            ):
                 inference_state = self._add_support_masks(inference_state, support_masks[frame_idx])
                 self.propagate_in_video_preflight(inference_state)
                 output_dict = inference_state["output_dict"]

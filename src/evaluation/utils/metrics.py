@@ -1,4 +1,4 @@
-﻿import math
+import math
 import statistics as stats
 from scribe.binary_mask import BinaryMask
 from scribe.base import predict_batch

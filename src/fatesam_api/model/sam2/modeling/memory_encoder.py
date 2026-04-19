@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.model.scribe_sam.sam2.modeling.sam2_utils import DropPath, get_clones, LayerNorm2d
+from fatesam_api.model.sam2.modeling.sam2_utils import DropPath, get_clones, LayerNorm2d
 
 
 class MaskDownSampler(nn.Module):

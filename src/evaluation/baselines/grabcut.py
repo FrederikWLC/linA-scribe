@@ -1,4 +1,4 @@
-﻿import cv2
+import cv2
 import numpy as np
 from optuna import Trial
 from scribe.base import BilateralTunable, BrushScribe

@@ -1,8 +1,14 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+#
+# Adaptation note (linA-scribe):
+# We keep the original path-based init_state(video_path) and add
+# init_state_from_images(...) so higher-level code can
+# initialize the predictor from in-memory frames
+# without requiring temporary query folders.
 
 import warnings
 from collections import OrderedDict
@@ -11,8 +17,8 @@ import torch
 
 from tqdm import tqdm
 
-from src.model.scribe_sam.sam2.modeling.sam2_base import NO_OBJ_SCORE, SAM2Base
-from src.model.scribe_sam.sam2.utils.misc import concat_points, fill_holes_in_mask_scores, load_video_frames
+from fatesam_api.model.sam2.modeling.sam2_base import NO_OBJ_SCORE, SAM2Base
+from fatesam_api.model.sam2.utils.misc import concat_points, fill_holes_in_mask_scores, load_video_frames
 
 
 class SAM2VideoPredictor(SAM2Base):
@@ -53,6 +59,68 @@ class SAM2VideoPredictor(SAM2Base):
             async_loading_frames=async_loading_frames,
             compute_device=compute_device,
         )
+        return self._build_inference_state(
+            images=images,
+            video_height=video_height,
+            video_width=video_width,
+            offload_video_to_cpu=offload_video_to_cpu,
+            offload_state_to_cpu=offload_state_to_cpu,
+        )
+
+    @torch.inference_mode()
+    def init_state_from_images(
+        self,
+        images,
+        video_height,
+        video_width,
+        offload_video_to_cpu=False,
+        offload_state_to_cpu=False,
+    ):
+        """Initialize an inference state from in-memory frames.
+
+        Expected image layout is (T, C, H, W), where T is the number of frames.
+        """
+
+        return self._build_inference_state(
+            images=images,
+            video_height=video_height,
+            video_width=video_width,
+            offload_video_to_cpu=offload_video_to_cpu,
+            offload_state_to_cpu=offload_state_to_cpu,
+        )
+
+    @torch.inference_mode()
+    def init_state_from_image(
+        self,
+        image,
+        video_height,
+        video_width,
+        offload_video_to_cpu=False,
+        offload_state_to_cpu=False,
+    ):
+        """Initialize an inference state from one in-memory image.
+
+        This is a thin wrapper around `init_state_from_images(...)` that adds the
+        leading batch dimension expected by the multi-frame initializer.
+        """
+
+        return self.init_state_from_images(
+            images=[image],
+            video_height=video_height,
+            video_width=video_width,
+            offload_video_to_cpu=offload_video_to_cpu,
+            offload_state_to_cpu=offload_state_to_cpu,
+        )
+
+    def _build_inference_state(
+        self,
+        images,
+        video_height,
+        video_width,
+        offload_video_to_cpu=False,
+        offload_state_to_cpu=False,
+    ):
+        compute_device = self.device
         inference_state = {}
         inference_state["images"] = images
         inference_state["num_frames"] = len(images)
@@ -118,7 +186,7 @@ class SAM2VideoPredictor(SAM2Base):
         Returns:
           (SAM2VideoPredictor): The loaded model.
         """
-        from src.model.scribe_sam.build_sam import build_sam2_video_predictor_hf
+        from fatesam_api.model.sam2.build_sam import build_sam2_video_predictor_hf
 
         sam_model = build_sam2_video_predictor_hf(model_id, **kwargs)
         return sam_model

@@ -1,6 +1,6 @@
-﻿import cv2
+import cv2
 from optuna import Trial
-from evaluation.config import config
+from config import config
 from evaluation.utils.auto_prompts import auto_points
 from scribe.base import BilateralTunable, PointScribe
 import numpy as np
@@ -12,7 +12,6 @@ from evaluation.baselines.gaussian import Gaussian
 
 class SAM(PointScribe):
     def __init__(self, sam_backend: str = config.SAM_BACKEND, sam_model_type: str = config.SAM_MODEL_TYPE, sam_checkpoint_path: str = config.SAM_CHECKPOINT_PATH, use_best_of_three: bool = False, **kwargs):
-        
         if sam_backend == "mobile":
             from mobile_sam import sam_model_registry, SamPredictor
         else:

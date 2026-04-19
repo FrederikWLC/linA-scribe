@@ -1,4 +1,4 @@
-﻿from optuna import Trial
+from optuna import Trial
 from scribe.base import BilateralTunable, Scribe
 import cv2
 import numpy as np

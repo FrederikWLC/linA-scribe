@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -12,9 +12,9 @@ import numpy as np
 import torch
 from PIL.Image import Image
 
-from src.model.scribe_sam.sam2.modeling.sam2_base import SAM2Base
+from fatesam_api.model.sam2.modeling.sam2_base import SAM2Base
 
-from src.model.scribe_sam.sam2.utils.transforms import SAM2Transforms
+from fatesam_api.model.sam2.utils.transforms import SAM2Transforms
 
 
 class SAM2ImagePredictor:
@@ -77,7 +77,7 @@ class SAM2ImagePredictor:
         Returns:
           (SAM2ImagePredictor): The loaded model.
         """
-        from src.model.scribe_sam.build_sam import build_sam2_hf
+        from fatesam_api.model.sam2.build_sam import build_sam2_hf
 
         sam_model = build_sam2_hf(model_id, **kwargs)
         return cls(sam_model, **kwargs)

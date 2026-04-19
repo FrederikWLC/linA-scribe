@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -9,9 +9,9 @@ from typing import Optional
 import torch
 from torch import nn, Tensor
 
-from src.model.scribe_sam.sam2.modeling.sam.transformer import RoPEAttention
+from fatesam_api.model.sam2.modeling.sam.transformer import RoPEAttention
 
-from src.model.scribe_sam.sam2.modeling.sam2_utils import get_activation_fn, get_clones
+from fatesam_api.model.sam2.modeling.sam2_utils import get_activation_fn, get_clones
 
 
 class MemoryAttentionLayer(nn.Module):

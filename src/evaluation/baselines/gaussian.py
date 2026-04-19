@@ -1,4 +1,4 @@
-﻿from scribe.base import BilateralTunable, Scribe
+from scribe.base import BilateralTunable, Scribe
 import numpy as np
 import cv2
 from scribe.binary_mask import BinaryMask

@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -10,10 +10,10 @@ import torch.nn.functional as F
 
 from torch.nn.init import trunc_normal_
 
-from src.model.scribe_sam.sam2.modeling.sam.mask_decoder import MaskDecoder
-from src.model.scribe_sam.sam2.modeling.sam.prompt_encoder import PromptEncoder
-from src.model.scribe_sam.sam2.modeling.sam.transformer import TwoWayTransformer
-from src.model.scribe_sam.sam2.modeling.sam2_utils import get_1d_sine_pe, MLP, select_closest_cond_frames
+from fatesam_api.model.sam2.modeling.sam.mask_decoder import MaskDecoder
+from fatesam_api.model.sam2.modeling.sam.prompt_encoder import PromptEncoder
+from fatesam_api.model.sam2.modeling.sam.transformer import TwoWayTransformer
+from fatesam_api.model.sam2.modeling.sam2_utils import get_1d_sine_pe, MLP, select_closest_cond_frames
 
 # a large negative value as a placeholder score for missing objects
 NO_OBJ_SCORE = -1024.0

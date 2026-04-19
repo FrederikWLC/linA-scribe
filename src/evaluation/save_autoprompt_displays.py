@@ -1,5 +1,5 @@
-﻿import cv2
-from data.split import DIFFICULTIES, get_evaluation_data
+import cv2
+from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from evaluation.baselines.sam import MobileSAMv2AutoPoint
 from evaluation.baselines.grabcut import GrabCutAutoBrush
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
@@ -31,7 +31,7 @@ def perform_comparison(images, labels, baselines):
 
 def run_autoprompt_export():
     output_folder.mkdir(parents=True, exist_ok=True)
-    evaluation_data = get_evaluation_data(seed=42)
+    evaluation_data = get_test_data_by_difficulty(seed=42)
 
     for difficulty in DIFFICULTIES:
         if difficulty not in evaluation_data:

@@ -1,4 +1,4 @@
-﻿# Copyright (c) Meta Platforms, Inc. and affiliates.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 
 # This source code is licensed under the license found in the
@@ -77,7 +77,7 @@ class SAM2Transforms(nn.Module):
         """
         Perform PostProcessing on output masks.
         """
-        from src.model.scribe_sam.sam2.utils.misc import get_connected_components
+        from fatesam_api.model.sam2.utils.misc import get_connected_components
 
         masks = masks.float()
         input_masks = masks

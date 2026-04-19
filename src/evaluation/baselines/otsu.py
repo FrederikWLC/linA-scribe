@@ -1,4 +1,4 @@
-﻿import cv2
+import cv2
 from scribe.base import BilateralTunable, Scribe
 from scribe.binary_mask import BinaryMask
 

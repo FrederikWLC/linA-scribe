@@ -9,14 +9,12 @@
 .venvtool/
 
 # Checkpoints
-src/evaluation/checkpoints/*
-src/fatesam-api/src/checkpoints/*
+src/checkpoints/*
 *.pth
 sam_vit_h_4b839.pth
 sam_vit_l_0b3195.pth
 sam_vit_b_01ec64.pth
-sam
-!src/fatesam-api/scripts/download_sam2_checkpoints.sh
+sam2.1_hiera_tiny.pt
 
 #Data is ALLOWED, as the dataset is so small.... FREE THE DATA!
 # more practical for everyone (the repo is atm private anyway)
@@ -32,6 +30,9 @@ src/data/ground_truth/registered/*
 !src/data/results/
 !src/data/results/**
 !src/data/split.py
+
+# ignor GF SAM for now
+src/gf_sam/*
 
 
 #Python

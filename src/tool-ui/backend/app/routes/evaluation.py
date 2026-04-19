@@ -10,10 +10,10 @@ router = APIRouter()
 # scribed masks
 
 def get_evaluation_files() -> list[dict[str, str]]:
-    return [{ "name": "Evaluation File 1" }, { "name": "Evaluation File 2" }]
+    return [{"name": "Evaluation File 1"}, {"name": "Evaluation File 2"}]
 
 def get_scribing_files() -> list[dict[str, str]]:
-    return [{ "name": "Scribing File 1" }, { "name": "Scribing File 2" }]
+    return [{"name": "Scribing File 1"}, {"name": "Scribing File 2"}]
 
 @router.get("/evaluation/evaluation/files")
 def evaluation_eval_files(session: dict[str, str] = Depends(require_master)) -> dict[str, object]:
