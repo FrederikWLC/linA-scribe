@@ -16,7 +16,7 @@ class ScribeSAM(PointScribe):
         self,
         support_images,
         support_labels,
-        top_n_supports=5
+        top_n_supports=1
         ):
         self.support_images = images_to_tensor(support_images, image_size=1024)
         self.support_labels = labels_to_tensor(support_labels, image_size=1024)

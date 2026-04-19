@@ -69,6 +69,7 @@ def find_top_similar_images_embed(support_images, support_features, support_labe
     """
     Identify the top-N most similar support images for each query feature using Manhattan distance.
     """
+
     all_results = []
     for i, feat_query in tqdm(enumerate(query_features), desc="Finding Similar Images"):
         similarities = []
@@ -117,6 +118,21 @@ def prepare_inference_state(
     # allow caller to provide a predictor and/or cached support_features
     predictor = sam2_predictor()
 
+    inference_state = predictor.init_state_from_images(
+        images=query_image,
+        video_height=video_height,
+        video_width=video_width,
+        offload_video_to_cpu=True,
+        offload_state_to_cpu=True,
+    )
+    logger.info("prepare_inference_state: created inference_state with keys: %s", list(inference_state.keys()))
+
+    logger.info("prepare_inference_state: before to(), images tensor shape %s", tuple(inference_state["images"].shape))
+    inference_state["images"] = inference_state["images"].to(inference_state["device"])
+    logger.info("prepare_inference_state: video_height=%s video_width=%s", video_height, video_width)
+
+    # FIND AND ADD SUPPORT IMAGES
+    # ==============
     logger.info("prepare_inference_state: computing support features for %d support images", len(support_images))
     support_features = compute_features(
         images=support_images,
@@ -141,20 +157,6 @@ def prepare_inference_state(
     # Log the full similarity results for debugging
     logger.debug("prepare_inference_state: full similarity_results: %s", similarity_results)
 
-    inference_state = predictor.init_state_from_images(
-        images=query_image,
-        video_height=video_height,
-        video_width=video_width,
-        offload_video_to_cpu=True,
-        offload_state_to_cpu=True,
-    )
-
-    logger.info("prepare_inference_state: created inference_state with keys: %s", list(inference_state.keys()))
-
-    logger.info("prepare_inference_state: before to(), images tensor shape %s", tuple(inference_state["images"].shape))
-    inference_state["images"] = inference_state["images"].to(inference_state["device"])
-    logger.info("prepare_inference_state: video_height=%s video_width=%s", video_height, video_width)
-
     # Add support images
     inference_state["images"] = add_support_image(
         inference_state["images"],
@@ -166,8 +168,8 @@ def prepare_inference_state(
     inference_state["num_frames"] += top_n  # assuming top_n support images are added;
     predictor.reset_state(inference_state)
     logger.info("prepare_inference_state: reset predictor state after adding supports")
+    # =============
 
-    logger.info("prepare_inference_state: finished preparing inference_state")
     return inference_state, similarity_results
 
 @torch.inference_mode()
