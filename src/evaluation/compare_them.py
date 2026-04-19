@@ -6,14 +6,13 @@ from evaluation.baselines.canny_fill import CannyFill
 from evaluation.baselines.gaussian import Gaussian
 from evaluation.baselines.otsu import Otsu
 from evaluation.baselines.grabcut import GrabCutAutoBrush
-from fatesam_api.model.modal_scribe_sam import ModalScribeSAM
-from fatesam_api.model.scribe_sam import ScribeSAM
+from fatesam_api.model.scribe_sam import FATESAM2D
 from scribe.base import predict
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
 
 output_folder = Path("data/results/scribed")
-#support_images, support_labels, _ = get_training_data(seed=42)
+support_images, support_labels, _ = get_training_data(seed=42)
 
 MODELS = [
     #CannyFill(),
@@ -21,7 +20,7 @@ MODELS = [
     #Otsu(),
     #GrabCutAutoBrush(),
     #BestMobileSAMv2Implementation(),
-    ModalScribeSAM()
+    FATESAM2D(support_images=support_images, support_labels=support_labels)
 ]
 
 def perform_comparison(raw_images, labels, MODELS):

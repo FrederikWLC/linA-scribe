@@ -10,9 +10,6 @@ import modal
 import numpy as np
 from config import config
 from scribe.base import Named
-from scribe.binary_mask import BinaryMask
-from fatesam_api.model.scribe_sam import ScribeSAM
-from data.split import get_training_data
 
 _modal_app_started = False
 _modal_app_thread: threading.Thread | None = None
@@ -60,7 +57,7 @@ def _ensure_modal_app_started() -> None:
 
     _modal_app_started = True
 
-APP_NAME = os.getenv("MODAL_APP_NAME", "ScribeSAM")
+APP_NAME = os.getenv("MODAL_APP_NAME", "FATESAM2D")
 CHECKPOINT_DIR = Path("/root/checkpoints")
 CHECKPOINT_FILE = config.SAM2_CHECKPOINT
 CHECKPOINT_URL = "https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_tiny.pt"
@@ -121,23 +118,21 @@ def _setup_runtime_env() -> None:
 
 
 @app.cls(image=image, gpu="T4", timeout=30 * 60)
-class ScribeSAMInterface:
-    def __init__(
-        self
-    ):
-        self.model: ScribeSAM | None = None
-
+class FATESAM2DInterface:
     @modal.enter()
     def setup(self) -> None:
+        from data.split import get_training_data
+        from fatesam_api.model.scribe_sam import FATESAM2D
+
         _ensure_checkpoint_file()
         _setup_runtime_env()
         support_images, support_labels, _ = get_training_data(seed=42, data_root=DATA_REMOTE_ROOT)
-        self.model = ScribeSAM(
+        self.model = FATESAM2D(
             support_images=support_images,
             support_labels=support_labels,
         )
-    def _get_model(self) -> ScribeSAM:
-        if self.model is None:
+    def _get_model(self):
+        if getattr(self, "model", None) is None:
             self.setup()
         return self.model
 
@@ -147,12 +142,12 @@ class ScribeSAMInterface:
 
     @modal.method()
     def smoke(self) -> dict[str, str]:
-        from fatesam_api.model.scribe_sam import ScribeSAM
-        _ = ScribeSAM(
+        from fatesam_api.model.scribe_sam import FATESAM2D
+        _ = FATESAM2D(
             support_images=[],
             support_labels=[]
         )
-        return {"status": "ok", "message": "ScribeSAM predictor loaded on Modal GPU"}
+        return {"status": "ok", "message": "FATESAM2D predictor loaded on Modal GPU"}
 
     @modal.method()
     def setImage(self, image) -> dict[str, object]:
@@ -164,26 +159,44 @@ class ScribeSAMInterface:
         }
 
     @modal.method()
-    def decode_mask(self, prompts=None) -> BinaryMask:
+    def decode_mask(self, prompts=None):
         model = self._get_model()
         return model.decode_mask(prompts=prompts)
 
     @modal.method()
-    def predict(self, image, prompts=None) -> BinaryMask:
+    def decode_mask_image(self, prompts=None):
+        model = self._get_model()
+        return model.decode_mask(prompts=prompts).to_image()
+
+    @modal.method()
+    def predict(self, image, prompts=None):
         model = self._get_model()
         return model.segment(np.asarray(image), prompts=prompts)
 
-    def segment(self, image, prompts=None) -> BinaryMask:
+    def segment(self, image, prompts=None):
         model = self._get_model()
         return model.segment(np.asarray(image), prompts=prompts)
 
-class ModalScribeSAM(Named):
+class ModalFATESAM2D(Named):
     def __init__(
         self
     ):
         _ensure_modal_app_started()
-        self.interface = ScribeSAMInterface()
+        self.interface = FATESAM2DInterface()
 
-    def predict(self, image, prompts=None) -> BinaryMask:
+    def predict(self, image, prompts=None):
         return self.interface.predict.remote(image=image, prompts=prompts)
+
+    def setImage(self, image) -> dict[str, object]:
+        return self.interface.setImage.remote(image=image)
+
+    def decode_mask(self, prompts=None):
+        return self.interface.decode_mask.remote(prompts=prompts)
+
+    def decode_mask_image(self, prompts=None):
+        return self.interface.decode_mask_image.remote(prompts=prompts)
+
+
+ScribeSAMInterface = FATESAM2DInterface
+ModalScribeSAM = ModalFATESAM2D
 

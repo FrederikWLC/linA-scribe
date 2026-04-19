@@ -177,6 +177,7 @@ def run_from_inference_state(
     inference_state,
     similarity_results,
     prompts=None,
+    prompt_input_hw=None,
     num_classes=0
 ):
     """Run propagation on a prepared inference_state, optionally adding point prompts.
@@ -189,6 +190,14 @@ def run_from_inference_state(
     predictor = sam2_predictor_fate()
     points, labels = get_point_prompts_and_labels(prompts)
     if points is not None and labels is not None:
+        if prompt_input_hw is not None:
+            input_h, input_w = prompt_input_hw
+            video_h = inference_state["video_height"]
+            video_w = inference_state["video_width"]
+            points = points.astype(np.float32, copy=True)
+            points[:, 0] *= video_w / input_w
+            points[:, 1] *= video_h / input_h
+
         logger.info("run_from_inference_state: adding point prompts to inference_state")
         predictor.add_new_points_or_box(
             inference_state=inference_state,
@@ -254,6 +263,7 @@ def run_single_image_inference(
         inference_state=inference_state,
         similarity_results=similarity_results,
         prompts=prompts,
+        prompt_input_hw=np.asarray(query_image).shape[:2],
     )
 
     return query_frame_prediction

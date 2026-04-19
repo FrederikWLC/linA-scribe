@@ -2,7 +2,8 @@ import cv2
 from optuna import Trial
 from config import config
 from evaluation.utils.auto_prompts import auto_points
-from scribe.base import BilateralTunable, PointScribe
+from scribe.base import PointScribe
+from scribe.tunable import BilateralTunable
 import numpy as np
 import torch 
 from scribe.prompts import PointPrompt, get_point_prompts_and_labels

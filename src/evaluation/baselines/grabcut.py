@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from optuna import Trial
-from scribe.base import BilateralTunable, BrushScribe
+from scribe.base import BrushScribe
+from scribe.tunable import BilateralTunable
 from evaluation.utils.auto_prompts import auto_brush
 from scribe.binary_mask import BinaryMask
 from scribe.prompts import BrushPrompt

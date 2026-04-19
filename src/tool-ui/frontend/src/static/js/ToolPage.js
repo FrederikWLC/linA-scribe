@@ -20,11 +20,29 @@ export function createToolPageController() {
   const imageUrl = writable('');
   const imageName = writable('');
   const imageSize = writable(0);
+  const segmentationImageUrl = writable('');
+  const activeImageMode = writable('raw');
   const imageBounds = writable(emptyBounds);
   const pointMode = writable('foreground');
   const points = writable([]);
   const runMessage = writable('');
   const importMessage = writable('Paste, drop, or import an image to begin.');
+  const isImageSet = writable(false);
+  const isSettingImage = writable(false);
+  const canRunPredict = derived(
+    [imageUrl, isImageSet, isSettingImage],
+    ([$imageUrl, $isImageSet, $isSettingImage]) => Boolean($imageUrl) && $isImageSet && !$isSettingImage
+  );
+  const displayedImageUrl = derived(
+    [imageUrl, segmentationImageUrl, activeImageMode],
+    ([$imageUrl, $segmentationImageUrl, $activeImageMode]) =>
+      $activeImageMode === 'segmentation' && $segmentationImageUrl ? $segmentationImageUrl : $imageUrl
+  );
+  const isSegmentationActive = derived(
+    [segmentationImageUrl, activeImageMode],
+    ([$segmentationImageUrl, $activeImageMode]) =>
+      $activeImageMode === 'segmentation' && Boolean($segmentationImageUrl)
+  );
   const foregroundCount = derived(points, ($points) =>
     $points.filter((point) => point.kind === 'foreground').length
   );
@@ -32,7 +50,29 @@ export function createToolPageController() {
     $points.filter((point) => point.kind === 'background').length
   );
 
-  function loadImageFile(file) {
+  function revokeSegmentationImageUrl() {
+    const previousSegmentationImageUrl = get(segmentationImageUrl);
+    if (previousSegmentationImageUrl && previousSegmentationImageUrl !== get(imageUrl)) {
+      URL.revokeObjectURL(previousSegmentationImageUrl);
+    }
+  }
+
+  async function setBackendImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/scribe/set-image', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.detail || 'Failed to set image');
+    }
+    return data;
+  }
+
+  async function loadImageFile(file) {
     if (!file || !file.type.startsWith('image/')) {
       importMessage.set('Please choose an image file.');
       return;
@@ -42,16 +82,31 @@ export function createToolPageController() {
     if (previousImageUrl) {
       URL.revokeObjectURL(previousImageUrl);
     }
+    revokeSegmentationImageUrl();
 
     const nextImageUrl = URL.createObjectURL(file);
     const nextImageName = file.name || 'Pasted image';
     imageUrl.set(nextImageUrl);
     imageName.set(nextImageName);
     imageSize.set(file.size || 0);
+    segmentationImageUrl.set('');
+    activeImageMode.set('raw');
     imageBounds.set(emptyBounds);
     points.set([]);
+    isImageSet.set(false);
+    isSettingImage.set(true);
     runMessage.set('');
-    importMessage.set(`${nextImageName} loaded.`);
+    importMessage.set(`${nextImageName} loaded. Setting model image...`);
+
+    try {
+      await setBackendImage(file);
+      isImageSet.set(true);
+      importMessage.set(`${nextImageName} loaded.`);
+    } catch (err) {
+      importMessage.set(err instanceof Error ? err.message : String(err));
+    } finally {
+      isSettingImage.set(false);
+    }
   }
 
   function updateImageBounds(event) {
@@ -78,16 +133,16 @@ export function createToolPageController() {
     fileInput?.click();
   }
 
-  function importFromFiles(event) {
+  async function importFromFiles(event) {
     const [file] = event.currentTarget.files || [];
-    loadImageFile(file);
+    await loadImageFile(file);
     event.currentTarget.value = '';
   }
 
-  function handleDrop(event) {
+  async function handleDrop(event) {
     event.preventDefault();
     const [file] = event.dataTransfer.files || [];
-    loadImageFile(file);
+    await loadImageFile(file);
   }
 
   function keepDropActive(event) {
@@ -96,6 +151,10 @@ export function createToolPageController() {
 
   function placePoint(event) {
     if (!get(imageUrl)) {
+      return;
+    }
+
+    if (get(activeImageMode) !== 'raw') {
       return;
     }
 
@@ -132,9 +191,25 @@ export function createToolPageController() {
     runMessage.set('');
   }
 
-  function runPrompt() {
-    if (!get(imageUrl)) {
+  function showRawImage() {
+    activeImageMode.set('raw');
+  }
+
+  function showSegmentationImage() {
+    if (get(segmentationImageUrl)) {
+      activeImageMode.set('segmentation');
+    }
+  }
+
+  async function runPrompt() {
+    const rawImageUrl = get(imageUrl);
+    if (!rawImageUrl) {
       runMessage.set('Import an image before running.');
+      return;
+    }
+
+    if (!get(canRunPredict)) {
+      runMessage.set(get(isSettingImage) ? 'Image is still being set.' : 'Set the image before running.');
       return;
     }
 
@@ -148,9 +223,38 @@ export function createToolPageController() {
     };
 
     console.log('Segmentation prompt payload', payload);
-    runMessage.set(
-      `Ready to run with ${get(foregroundCount)} foreground and ${get(backgroundCount)} background point(s).`
-    );
+    runMessage.set('Running segmentation...');
+
+    const params = new URLSearchParams({ coordinate_space: 'percent' });
+    for (const point of get(points)) {
+      params.append('x', String(point.x));
+      params.append('y', String(point.y));
+      params.append('labels', point.kind === 'foreground' ? '1' : '0');
+    }
+
+    try {
+      const response = await fetch(`/api/scribe/predict?${params.toString()}`);
+      if (!response.ok) {
+        let message = 'Segmentation failed';
+        try {
+          const data = await response.json();
+          message = data.detail || message;
+        } catch {
+          message = await response.text();
+        }
+        throw new Error(message);
+      }
+
+      const maskBlob = await response.blob();
+      revokeSegmentationImageUrl();
+      segmentationImageUrl.set(URL.createObjectURL(maskBlob));
+      activeImageMode.set('segmentation');
+      runMessage.set(
+        `Segmentation ready with ${get(foregroundCount)} foreground and ${get(backgroundCount)} background point(s).`
+      );
+    } catch (err) {
+      runMessage.set(err instanceof Error ? err.message : String(err));
+    }
   }
 
   function bindToolPageShortcuts() {
@@ -187,17 +291,25 @@ export function createToolPageController() {
       if (currentImageUrl) {
         URL.revokeObjectURL(currentImageUrl);
       }
+      revokeSegmentationImageUrl();
     };
   }
 
   return {
     imageUrl,
     imageName,
+    segmentationImageUrl,
+    activeImageMode,
+    displayedImageUrl,
+    isSegmentationActive,
     imageBounds,
     pointMode,
     points,
     runMessage,
     importMessage,
+    isImageSet,
+    isSettingImage,
+    canRunPredict,
     foregroundCount,
     backgroundCount,
     imagePointStyle,
@@ -209,6 +321,8 @@ export function createToolPageController() {
     placePoint,
     undoPoint,
     clearPoints,
+    showRawImage,
+    showSegmentationImage,
     runPrompt,
     bindToolPageShortcuts
   };

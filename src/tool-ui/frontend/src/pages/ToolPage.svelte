@@ -13,11 +13,18 @@
   const {
     imageUrl,
     imageName,
+    segmentationImageUrl,
+    activeImageMode,
+    displayedImageUrl,
+    isSegmentationActive,
     imageBounds,
     pointMode,
     points,
     runMessage,
     importMessage,
+    isImageSet,
+    isSettingImage,
+    canRunPredict,
     foregroundCount,
     backgroundCount
   } = toolPage;
@@ -45,7 +52,9 @@
         <h2 id="annotator-title">Point Prompt Draft</h2>
         <p>Import an image, then click to place foreground or background guidance points.</p>
       </div>
-      <button type="button" class="run-button" on:click={toolPage.runPrompt} disabled={!$imageUrl}>Run</button>
+      <button type="button" class="run-button" on:click={toolPage.runPrompt} disabled={!$canRunPredict}>
+        {$isSettingImage ? 'Setting image...' : 'Run'}
+      </button>
     </div>
 
     <div class="toolbar" aria-label="Point controls">
@@ -57,6 +66,22 @@
         on:change={toolPage.importFromFiles}
       />
       <button type="button" on:click={() => toolPage.openFilePicker(fileInput)}>Import image</button>
+      <button
+        type="button"
+        class:active={$activeImageMode === 'raw'}
+        on:click={toolPage.showRawImage}
+        disabled={!$imageUrl}
+      >
+        Raw image
+      </button>
+      <button
+        type="button"
+        class:active={$activeImageMode === 'segmentation'}
+        on:click={toolPage.showSegmentationImage}
+        disabled={!$segmentationImageUrl}
+      >
+        Segmentation
+      </button>
       <button
         type="button"
         class:active={$pointMode === 'foreground'}
@@ -75,31 +100,35 @@
       <button type="button" on:click={toolPage.clearPoints} disabled={$points.length === 0}>Clear</button>
     </div>
 
-    {#if $imageUrl}
+    {#if $displayedImageUrl}
       <button
         type="button"
         class="image-stage"
+        class:segmentation-active={$isSegmentationActive}
         on:click={toolPage.placePoint}
         on:drop={toolPage.handleDrop}
         on:dragover={toolPage.keepDropActive}
         aria-label="Place point on image"
       >
         <img
-          src={$imageUrl}
+          class:segmentation-image={$isSegmentationActive}
+          src={$displayedImageUrl}
           alt={$imageName || 'Imported point prompting target'}
           on:load={toolPage.updateImageBounds}
         />
-        {#each $points as point, index (point.id)}
-          <span
-            class:foreground={point.kind === 'foreground'}
-            class:background={point.kind === 'background'}
-            class="point"
-            style={toolPage.imagePointStyle(point, $imageBounds)}
-            title={`${point.kind} point ${index + 1}`}
-          >
-            {index + 1}
-          </span>
-        {/each}
+        {#if $activeImageMode === 'raw'}
+          {#each $points as point, index (point.id)}
+            <span
+              class:foreground={point.kind === 'foreground'}
+              class:background={point.kind === 'background'}
+              class="point"
+              style={toolPage.imagePointStyle(point, $imageBounds)}
+              title={`${point.kind} point ${index + 1}`}
+            >
+              {index + 1}
+            </span>
+          {/each}
+        {/if}
       </button>
     {:else}
       <button
@@ -116,7 +145,10 @@
 
     <div class="status-row">
       <p><strong>{$foregroundCount}</strong> foreground / <strong>{$backgroundCount}</strong> background</p>
-      <p>{$importMessage} Undo shortcut: Ctrl/Cmd+Z</p>
+      <p>
+        {$importMessage} View: {$activeImageMode === 'segmentation' ? 'segmentation' : 'raw image'}. Undo shortcut:
+        Ctrl/Cmd+Z
+      </p>
     </div>
 
     {#if $runMessage}

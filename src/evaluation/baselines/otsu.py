@@ -1,5 +1,6 @@
 import cv2
-from scribe.base import BilateralTunable, Scribe
+from scribe.base import Scribe
+from scribe.tunable import BilateralTunable
 from scribe.binary_mask import BinaryMask
 
 class Otsu(BilateralTunable,Scribe):

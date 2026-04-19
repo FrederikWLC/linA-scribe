@@ -10,10 +10,10 @@ for path in (API_ROOT, WORKSPACE_SRC_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from fatesam_api.model.modal_scribe_sam import ModalScribeSAM, app
+from fatesam_api.model.modal_scribe_sam import ModalFATESAM2D, app
 
 
 @app.local_entrypoint()
 def main() -> None:
-    model = ModalScribeSAM()
+    model = ModalFATESAM2D()
     print(model.interface.smoke.remote())

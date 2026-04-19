@@ -1,5 +1,5 @@
 import pandas as pd
-from scribe.base import Tunable
+from scribe.tunable import Tunable
 
 def set_tuned_hyperparameters(model: Tunable):
     df = pd.read_csv(f"data/results/tuning/{model.name}/best.csv")

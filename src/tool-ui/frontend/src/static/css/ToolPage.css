@@ -108,6 +108,11 @@ body {
   line-height: 0;
 }
 
+.tool-page .image-stage.segmentation-active {
+  border-color: #e68a35;
+  background: #fff1d8;
+}
+
 .tool-page .drop-zone {
   display: grid;
   place-content: center;

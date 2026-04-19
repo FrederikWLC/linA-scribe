@@ -1,6 +1,8 @@
 # Source: custom wrapper for this repository.
 # Purpose: provide in-program FATE-SAM usage with a Scribe-style interface.
 
+import copy
+
 import cv2
 import numpy as np
 from fatesam_api.model.dataset_loader import images_to_tensor, labels_to_tensor
@@ -11,12 +13,12 @@ from fatesam_api.model.predictor import (
 from scribe.base import PointScribe
 from scribe.binary_mask import BinaryMask
 
-class ScribeSAM(PointScribe):
+class FATESAM2D(PointScribe):
     def __init__(
         self,
         support_images,
         support_labels,
-        top_n_supports=1
+        top_n_supports=3
         ):
         self.support_images = images_to_tensor(support_images, image_size=1024)
         self.support_labels = labels_to_tensor(support_labels, image_size=1024)
@@ -42,9 +44,10 @@ class ScribeSAM(PointScribe):
             raise RuntimeError("No image is set. Call setImage(image) before decode_mask(...).")
         
         frame_pred = run_from_inference_state(
-            self.inference_state,
-            self.similarity_results,
-            prompts=prompts
+            copy.deepcopy(self.inference_state),
+            copy.deepcopy(self.similarity_results),
+            prompts=prompts,
+            prompt_input_hw=self._output_hw,
         )
 
         if not frame_pred:

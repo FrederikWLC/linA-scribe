@@ -1,5 +1,6 @@
 from optuna import Trial
-from scribe.base import BilateralTunable, Scribe
+from scribe.base import Scribe
+from scribe.tunable import BilateralTunable
 import cv2
 import numpy as np
 from scribe.binary_mask import BinaryMask
