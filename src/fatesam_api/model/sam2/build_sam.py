@@ -129,15 +129,15 @@ def build_sam2_video_predictor_hf(model_id, **kwargs):
     )
 
 
-def _load_checkpoint(model, ckpt_path):
+def _load_checkpoint(model, ckpt_path, strict=True):
     if ckpt_path is not None:
         sd = torch.load(ckpt_path, map_location="cpu")["model"]
-        missing_keys, unexpected_keys = model.load_state_dict(sd)
+        missing_keys, unexpected_keys = model.load_state_dict(sd, strict=strict)
         if missing_keys:
-            logging.error(missing_keys)
-            raise RuntimeError()
+            logging.warning("Missing keys in loaded checkpoint: %s", missing_keys)
         if unexpected_keys:
-            logging.error(unexpected_keys)
+            logging.warning("Unexpected keys in loaded checkpoint: %s", unexpected_keys)
+        if strict and (missing_keys or unexpected_keys):
             raise RuntimeError()
         logging.info("Loaded checkpoint sucessfully")
 
@@ -166,13 +166,21 @@ def build_sam2_video_predictor_fate(
             # fill small holes in the low-res masks up to `fill_hole_area` (before resizing them to the original video resolution)
             "++model.fill_hole_area=8",
         ]
+    # FATE support image propagation does not need tracker-only object pointer logic.
+    # Disable the encoder object-pointer path and the object-score head that depends on it.
+    hydra_overrides_extra += [
+        "++model.use_obj_ptrs_in_encoder=false",
+        "++model.pred_obj_scores=false",
+        "++model.pred_obj_scores_mlp=false",
+        "++model.fixed_no_obj_ptr=false",
+    ]
     hydra_overrides.extend(hydra_overrides_extra)
 
     # Read config and init model
     cfg = compose(config_name=config_file, overrides=hydra_overrides)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
-    _load_checkpoint(model, ckpt_path)
+    _load_checkpoint(model, ckpt_path, strict=False)
     model = model.to(device)
     if mode == "eval":
         model.eval()

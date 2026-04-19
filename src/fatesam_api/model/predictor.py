@@ -65,7 +65,7 @@ def compute_features(images, predictor, video_height, video_width, batch_size=1)
     return features
 
 
-def find_top_similar_images_embed(support_images, support_features, support_labels, query_features, top_n=3):
+def find_top_similar_images_embed(support_images, support_features, support_labels, query_features, top_n=5):
     """
     Identify the top-N most similar support images for each query feature using Manhattan distance.
     """
@@ -107,6 +107,7 @@ def prepare_inference_state(
     query_image,
     support_images,
     support_labels,
+    top_n=5
 ):
     """Prepare inference_state by adding support images and label masks.
     """
@@ -133,7 +134,8 @@ def prepare_inference_state(
     )
 
     similarity_results = find_top_similar_images_embed(
-        support_images, support_features, support_labels, query_feature
+        support_images, support_features, support_labels, query_feature,
+        top_n=top_n
     )
     logger.info("prepare_inference_state: similarity_results for query: %s", similarity_results[0].keys())
     # Log the full similarity results for debugging
@@ -161,7 +163,7 @@ def prepare_inference_state(
     )
     logger.info("prepare_inference_state: after add_support_image, images tensor shape %s", tuple(inference_state["images"].shape))
     logger.info("prepare_inference_state: added %d support images to inference_state", len(similarity_results[0]))
-    inference_state["num_frames"] += 3  # assuming top_n=3 support images are added; adjust if different
+    inference_state["num_frames"] += top_n  # assuming top_n support images are added;
     predictor.reset_state(inference_state)
     logger.info("prepare_inference_state: reset predictor state after adding supports")
 

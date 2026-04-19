@@ -9,6 +9,7 @@ from pathlib import Path
 import modal
 import numpy as np
 from config import config
+from scribe.base import Named
 from scribe.binary_mask import BinaryMask
 from fatesam_api.model.scribe_sam import ScribeSAM
 from data.split import get_training_data
@@ -176,14 +177,13 @@ class ScribeSAMInterface:
         model = self._get_model()
         return model.segment(np.asarray(image), prompts=prompts)
 
-class ModalScribeSAM:
+class ModalScribeSAM(Named):
     def __init__(
         self
     ):
         _ensure_modal_app_started()
-        self.name = "ModalScribeSAM"
         self.interface = ScribeSAMInterface()
 
     def predict(self, image, prompts=None) -> BinaryMask:
-        return self.interface.predict.remote(image=image, prompts=prompts).get()
+        return self.interface.predict.remote(image=image, prompts=prompts)
 

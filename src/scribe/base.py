@@ -6,12 +6,7 @@ from optuna import Trial
 from scribe.binary_mask import BinaryMask
 from scribe.prompts import PointPrompt, Prompt
 
-
-class BaseScribe(ABC):
-
-    # method where the preprocessing happens (returns an image, not a binary mask)
-    def preprocess(self, image: np.ndarray) -> np.ndarray:  # must be implemented by subclass, default is no preprocessing
-        return image
+class Named:
 
     # name of the model, used for display and evaluation purposes
     @property
@@ -21,6 +16,13 @@ class BaseScribe(ABC):
     @property
     def short_name(self) -> str:
         return self.name
+
+class BaseScribe(ABC, Named):
+
+    # method where the preprocessing happens (returns an image, not a binary mask)
+    def preprocess(self, image: np.ndarray) -> np.ndarray:  # must be implemented by subclass, default is no preprocessing
+        return image
+
 
 
 # the abstract base class for all "scribe" models.

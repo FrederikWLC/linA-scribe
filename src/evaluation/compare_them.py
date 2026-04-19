@@ -16,11 +16,11 @@ output_folder = Path("data/results/scribed")
 #support_images, support_labels, _ = get_training_data(seed=42)
 
 MODELS = [
-    CannyFill(),
-    Gaussian(),
-    Otsu(),
-    GrabCutAutoBrush(),
-    BestMobileSAMv2Implementation(),
+    #CannyFill(),
+    #Gaussian(),
+    #Otsu(),
+    #GrabCutAutoBrush(),
+    #BestMobileSAMv2Implementation(),
     ModalScribeSAM()
 ]
 

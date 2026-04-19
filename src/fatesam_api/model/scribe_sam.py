@@ -15,10 +15,12 @@ class ScribeSAM(PointScribe):
     def __init__(
         self,
         support_images,
-        support_labels
+        support_labels,
+        top_n_supports=5
         ):
         self.support_images = images_to_tensor(support_images, image_size=1024)
         self.support_labels = labels_to_tensor(support_labels, image_size=1024)
+        self.top_n_supports = top_n_supports
         self.inference_state = None
         self.similarity_results = None
         
@@ -29,7 +31,8 @@ class ScribeSAM(PointScribe):
         self.inference_state, self.similarity_results = prepare_inference_state(
             query_image=image,
             support_images=self.support_images,
-            support_labels=self.support_labels
+            support_labels=self.support_labels,
+            top_n=self.top_n_supports
         )
         self._output_hw = image.shape[:2]
         return self
