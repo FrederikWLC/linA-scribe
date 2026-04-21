@@ -27,7 +27,7 @@ class Config:
     SAM2_CHECKPOINT_PATH = ROOT_DIR / "checkpoints" / SAM2_CHECKPOINT
 
     # Path definitions for project structure
-    FATESAM_LOCAL_ROOT = ROOT_DIR / "fatesam_api"
+    FATESAM_LOCAL_ROOT = ROOT_DIR / "fatesam2d_api"
     SCRIBE_LOCAL_ROOT = ROOT_DIR / "scribe"
     CONFIG_LOCAL_PATH = ROOT_DIR / "config.py"
     RAW_LOCAL_ROOT = DATA_DIR / "raw"

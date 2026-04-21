@@ -17,7 +17,7 @@ def _ensure_workspace_src_on_path() -> None:
 
     resolved_file = Path(__file__).resolve()
     for parent in resolved_file.parents:
-        if (parent / "fatesam_api").exists() and (parent / "scribe").exists():
+        if (parent / "fatesam2d_api").exists() and (parent / "scribe").exists():
             candidates.append(parent)
 
     for candidate in candidates:
@@ -58,7 +58,7 @@ class ScribeSAMService:
 
     def _get_model(self):
         if self.model is None:
-            from fatesam_api.model.modal_scribe_sam import ModalFATESAM2D
+            from fatesam2d_api.ModalFATESAM2D import ModalFATESAM2D
 
             self.model = ModalFATESAM2D()
         return self.model

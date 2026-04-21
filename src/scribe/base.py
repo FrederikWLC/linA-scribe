@@ -5,16 +5,19 @@ import numpy as np
 from scribe.binary_mask import BinaryMask
 from scribe.prompts import PointPrompt, Prompt
 
-class Named:
+class Named:    
 
     # name of the model, used for display and evaluation purposes
+    NAME = None
+    SHORT_NAME = None
+
     @property
     def name(self) -> str:
-        return type(self).__name__
+        return self.NAME or type(self).__name__
 
     @property
     def short_name(self) -> str:
-        return self.name
+        return self.SHORT_NAME or self.name
 
 class BaseScribe(ABC, Named):
 

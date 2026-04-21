@@ -1,13 +1,13 @@
-﻿import cv2
+import cv2
 from pathlib import Path
 from data.split import DIFFICULTIES, get_test_data_by_difficulty, get_training_data
-from evaluation.baselines.sam import BestMobileSAMv2Implementation
-from evaluation.baselines.canny_fill import CannyFill
-from evaluation.baselines.gaussian import Gaussian
-from evaluation.baselines.otsu import Otsu
-from evaluation.baselines.grabcut import GrabCutAutoBrush
-from fatesam_api.model.scribe_sam import FATESAM2D
-from gf_sam_api.modal_gfsam import ModalGFSAM
+from scribe.baselines.sam import BestMobileSAMv2Implementation
+from scribe.baselines.canny_fill import CannyFill
+from scribe.baselines.gaussian import Gaussian
+from scribe.baselines.otsu import Otsu
+from scribe.baselines.grabcut import GrabCutAutoBrush
+from fatesam2d_api.FATESAM2D import FATESAM2D
+from fatesam2d_api.ModalFATESAM2D import ModalFATESAM2D, ModalFATESAM2DAutoPoint
 from scribe.base import predict
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
@@ -20,7 +20,8 @@ MODELS = [
     #Otsu(),
     #GrabCutAutoBrush(),
     #BestMobileSAMv2Implementation(),
-    ModalGFSAM()
+    #ModalGFSAM()
+    ModalFATESAM2DAutoPoint()
 ]
 
 def perform_comparison(raw_images, labels, MODELS):

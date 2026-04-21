@@ -1,7 +1,7 @@
 import cv2
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
-from evaluation.baselines.sam import MobileSAMv2AutoPoint
-from evaluation.baselines.grabcut import GrabCutAutoBrush
+from scribe.baselines.sam import MobileSAMv2AutoPoint
+from scribe.baselines.grabcut import GrabCutAutoBrush
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 from pathlib import Path
 

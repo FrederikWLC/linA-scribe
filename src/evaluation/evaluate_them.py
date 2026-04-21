@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, probail, shapiro, ttest_rel, wilcoxon
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
-from evaluation.baselines.canny_fill import CannyFill
-from evaluation.baselines.gaussian import Gaussian
-from evaluation.baselines.grabcut import GrabCutAutoBrush
-from evaluation.baselines.otsu import Otsu
-from evaluation.baselines.sam import BestMobileSAMv2Implementation
+from scribe.baselines.canny_fill import CannyFill
+from scribe.baselines.gaussian import Gaussian
+from scribe.baselines.grabcut import GrabCutAutoBrush
+from scribe.baselines.otsu import Otsu
+from scribe.baselines.sam import BestMobileSAMv2Implementation
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 

@@ -13,7 +13,8 @@ class Tunable(ABC):
     def hyperparameters(self) -> dict:
         return {}
 
-    def hyperparameter_ranges(self, trial: Trial) -> dict:
+    @classmethod
+    def hyperparameter_ranges(cls, trial: Trial) -> dict:
         return {}
 
     def set_hyperparameters(self, **kwargs):
@@ -42,7 +43,8 @@ class BilateralTunable(BaseScribe, Tunable, ABC):
             "sigma_bilateral": int(self.sigma_bilateral),
         }
 
-    def hyperparameter_ranges(self, trial: Trial, sigma_max: int = 150) -> dict:
+    @classmethod
+    def hyperparameter_ranges(cls, trial: Trial, sigma_max: int = 150) -> dict:
         return super().hyperparameter_ranges(trial) | {
             "d_bilateral": trial.suggest_int("d_bilateral", 3, 31),
             "sigma_bilateral": trial.suggest_int("sigma_bilateral", 0, sigma_max),

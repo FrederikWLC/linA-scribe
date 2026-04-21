@@ -2,12 +2,12 @@ from pathlib import Path
 import optuna
 from optuna.samplers import TPESampler
 import pandas as pd
-from data.split import DIFFICULTIES, get_test_data_by_difficulty
-from evaluation.baselines.canny_fill import CannyFill
-from evaluation.baselines.gaussian import Gaussian
-from evaluation.baselines.grabcut import GrabCutAutoBrush
-from evaluation.baselines.otsu import Otsu
-from evaluation.baselines.sam import (
+from data.split import get_training_data
+from scribe.baselines.canny_fill import CannyFill
+from scribe.baselines.gaussian import Gaussian
+from scribe.baselines.grabcut import GrabCutAutoBrush
+from scribe.baselines.otsu import Otsu
+from scribe.baselines.sam import (
     MobileSAMv2AutoPointBilateralFilter,
     MobileSAMv2AutoPointBilateralFilterBestOfThree,
     MobileSAMv2AutoPointNoFilter,
@@ -17,41 +17,29 @@ from evaluation.baselines.sam import (
     MobileSAMv2NoFilterBestOfThree,
     MobileSAMv2NoFilter
 )
+from fatesam2d_api.ModalFATESAM2D import ModalFATESAM2DAutoPoint
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model
 
 
 METRIC = {"Dice": BinaryDiceScore} # only choose one metric pls
 METRIC_NAME = list(METRIC.keys())[0]
 MODELS = [
-    CannyFill(),
-    Gaussian(),
-    Otsu(),
+    #CannyFill(),
+    #Gaussian(),
+    #Otsu(),
+    #MobileSAMv2AutoPointBilateralFilter(),
+    #MobileSAMv2AutoPointBilateralFilterBestOfThree(),
+    #MobileSAMv2AutoPointNoFilter(),
+    #MobileSAMv2AutoPointNoFilterBestOfThree(),
+    #MobileSAMv2BilateralFilter(),
+    #MobileSAMv2BilateralFilterBestOfThree(),
+    #MobileSAMv2NoFilterBestOfThree(),
+    #MobileSAMv2NoFilter(),
+    ModalFATESAM2DAutoPoint(),
     GrabCutAutoBrush(),
-    MobileSAMv2AutoPointBilateralFilter(),
-    MobileSAMv2AutoPointBilateralFilterBestOfThree(),
-    MobileSAMv2AutoPointNoFilter(),
-    MobileSAMv2AutoPointNoFilterBestOfThree(),
-    MobileSAMv2BilateralFilter(),
-    MobileSAMv2BilateralFilterBestOfThree(),
-    MobileSAMv2NoFilterBestOfThree(),
-    MobileSAMv2NoFilter()
+
 ]
 
-def _load_dataset(seed: int = 42):
-    evaluation_data = get_test_data_by_difficulty(seed=seed)
-    images = []
-    ground_truths = []
-    labels = []
-
-    for difficulty in DIFFICULTIES:
-        if difficulty not in evaluation_data:
-            continue
-        split = evaluation_data[difficulty]
-        images.extend(split["images"])
-        ground_truths.extend(split["ground_truths"])
-        labels.extend(split["labels"])
-
-    return images, ground_truths, labels
 
 def evaluation_trial(trial, baseline, images, ground_truths):
     # set hyperparameters accoridng to trial's suggestions
@@ -61,7 +49,7 @@ def evaluation_trial(trial, baseline, images, ground_truths):
     return score
 
 def perform_tuning(n_trials=100):
-    X,Y,_ = _load_dataset()
+    X,Y,_ = get_training_data(seed=42) # get training data for tuning, seed for reproducibility
     output_dir = Path("data/results/tuning")
     output_dir.mkdir(parents=True, exist_ok=True)
     for model in MODELS:
