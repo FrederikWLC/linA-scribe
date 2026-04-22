@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import friedmanchisquare, probail, shapiro, ttest_rel, wilcoxon
+from scipy.stats import friedmanchisquare, shapiro, ttest_rel, wilcoxon
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from scribe.baselines.canny_fill import CannyFill
 from scribe.baselines.gaussian import Gaussian
@@ -14,8 +14,8 @@ from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
 
-# Get evaluation data, from data split module
-evaluation_data = get_test_data_by_difficulty(seed=42)
+# Get test data, from data split module
+evaluation_data = get_test_data_by_difficulty()
 
 METRICS = {"Dice": BinaryDiceScore}
 

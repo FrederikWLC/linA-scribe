@@ -2,7 +2,7 @@ from pathlib import Path
 import optuna
 from optuna.samplers import TPESampler
 import pandas as pd
-from data.split import get_training_data
+from data.split import get_val_data
 from scribe.baselines.canny_fill import CannyFill
 from scribe.baselines.gaussian import Gaussian
 from scribe.baselines.grabcut import GrabCutAutoBrush
@@ -49,7 +49,7 @@ def evaluation_trial(trial, baseline, images, ground_truths):
     return score
 
 def perform_tuning(n_trials=100):
-    X,Y,_ = get_training_data(seed=42) # get training data for tuning, seed for reproducibility
+    X,Y,_ = get_val_data() # get validation data for tuning
     output_dir = Path("data/results/tuning")
     output_dir.mkdir(parents=True, exist_ok=True)
     for model in MODELS:

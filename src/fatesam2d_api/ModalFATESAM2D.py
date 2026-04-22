@@ -11,7 +11,7 @@ import numpy as np
 from optuna import Trial
 
 from config import config
-from data.split import get_training_data
+from data.split import get_support_data
 from fatesam2d_api.FATESAM2D import FATESAM2D, FATESAM2DAutoPoint
 from scribe.base import Named
 
@@ -126,7 +126,7 @@ class FATESAM2DInterface:
     def _setup_model(self) -> None:
         _setup_runtime_env()
         _ensure_checkpoint_file()
-        support_images, support_labels, _ = get_training_data(seed=42, data_root=DATA_REMOTE_ROOT)
+        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
         self.model = FATESAM2D(support_images=support_images, support_labels=support_labels)
 
     @modal.enter()
@@ -170,7 +170,7 @@ class FATESAM2DAutoPointInterface:
     def _setup_model(self) -> None:
         _setup_runtime_env()
         _ensure_checkpoint_file()
-        support_images, support_labels, _ = get_training_data(seed=42, data_root=DATA_REMOTE_ROOT)
+        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
         self.model = FATESAM2DAutoPoint(support_images=support_images, support_labels=support_labels)
 
     @modal.enter()

@@ -50,5 +50,5 @@ def run_full_comparison(evaluation_data, MODELS):
 output_folder.mkdir(parents=True, exist_ok=True)
 
 def run_default_comparison():
-    evaluation_data = get_test_data_by_difficulty(seed=42)
+    evaluation_data = get_test_data_by_difficulty()
     run_full_comparison(evaluation_data=evaluation_data, MODELS=MODELS)

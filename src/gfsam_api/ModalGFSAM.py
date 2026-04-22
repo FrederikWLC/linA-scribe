@@ -11,7 +11,7 @@ from pathlib import Path
 import modal
 import numpy as np
 
-from data.split import get_training_data
+from data.split import get_support_data
 from scribe.base import Named
 from scribe.binary_mask import BinaryMask
 
@@ -146,7 +146,7 @@ class GFSAMInterface:
             if path not in sys.path:
                 sys.path.insert(0, path)
 
-        support_images, support_labels, _ = get_training_data(seed=42, data_root=DATA_REMOTE_ROOT)
+        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
         dinov2_weights, sam_weights = _ensure_weights()
         self.model = GFSAM(
             support_images=support_images,
