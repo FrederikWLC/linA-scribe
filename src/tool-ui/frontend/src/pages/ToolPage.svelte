@@ -4,13 +4,18 @@
   import { createToolPageController } from '../static/js/ToolPage.js';
 
   export let currentUser = '';
-  export let protectedMessage = '';
-  export let onReloadProtected = () => {};
+  export let token = '';
   export let onLogout = () => {};
 
   let fileInput;
-  const toolPage = createToolPageController();
+  const toolPage = createToolPageController({
+    getAuthHeaders: () => (token ? { Authorization: `Bearer ${token}` } : {})
+  });
   const {
+    modelOptions,
+    selectedModelKey,
+    selectedModel,
+    acceptsPrompts,
     imageUrl,
     imageName,
     segmentationImageUrl,
@@ -30,6 +35,7 @@
   } = toolPage;
 
   onMount(() => {
+    toolPage.warmupModels();
     return toolPage.bindToolPageShortcuts();
   });
 </script>
@@ -41,7 +47,6 @@
       <p>Logged in as <strong>{currentUser}</strong></p>
     </div>
     <div class="session-actions">
-      <button type="button" on:click={onReloadProtected}>Reload Protected Data</button>
       <button type="button" on:click={onLogout}>Logout</button>
     </div>
   </header>
@@ -50,11 +55,26 @@
     <div class="tool-heading">
       <div>
         <h2 id="annotator-title">Point Prompt Draft</h2>
-        <p>Import an image, then click to place foreground or background guidance points.</p>
+        <p>
+          {#if $acceptsPrompts}
+            Import an image, then click to place foreground or background guidance points.
+          {:else}
+            Import an image, then run {$selectedModel.label} without point prompts.
+          {/if}
+        </p>
       </div>
       <button type="button" class="run-button" on:click={toolPage.runPrompt} disabled={!$canRunPredict}>
         {$isSettingImage ? 'Setting image...' : 'Run'}
       </button>
+    </div>
+
+    <div class="model-picker">
+      <label for="model-select">Model</label>
+      <select id="model-select" value={$selectedModelKey} on:change={(event) => toolPage.selectModel(event.currentTarget.value)}>
+        {#each modelOptions as model}
+          <option value={model.key}>{model.label}</option>
+        {/each}
+      </select>
     </div>
 
     <div class="toolbar" aria-label="Point controls">
@@ -86,6 +106,7 @@
         type="button"
         class:active={$pointMode === 'foreground'}
         on:click={() => pointMode.set('foreground')}
+        disabled={!$acceptsPrompts}
       >
         Green foreground
       </button>
@@ -93,11 +114,12 @@
         type="button"
         class:active={$pointMode === 'background'}
         on:click={() => pointMode.set('background')}
+        disabled={!$acceptsPrompts}
       >
         Red background
       </button>
-      <button type="button" on:click={toolPage.undoPoint} disabled={$points.length === 0}>Undo</button>
-      <button type="button" on:click={toolPage.clearPoints} disabled={$points.length === 0}>Clear</button>
+      <button type="button" on:click={toolPage.undoPoint} disabled={!$acceptsPrompts || $points.length === 0}>Undo</button>
+      <button type="button" on:click={toolPage.clearPoints} disabled={!$acceptsPrompts || $points.length === 0}>Clear</button>
     </div>
 
     {#if $displayedImageUrl}
@@ -108,7 +130,7 @@
         on:click={toolPage.placePoint}
         on:drop={toolPage.handleDrop}
         on:dragover={toolPage.keepDropActive}
-        aria-label="Place point on image"
+        aria-label={$acceptsPrompts ? 'Place point on image' : 'Preview image'}
       >
         <img
           class:segmentation-image={$isSegmentationActive}
@@ -116,7 +138,7 @@
           alt={$imageName || 'Imported point prompting target'}
           on:load={toolPage.updateImageBounds}
         />
-        {#if $activeImageMode === 'raw'}
+        {#if $activeImageMode === 'raw' && $acceptsPrompts}
           {#each $points as point, index (point.id)}
             <span
               class:foreground={point.kind === 'foreground'}
@@ -144,7 +166,13 @@
     {/if}
 
     <div class="status-row">
-      <p><strong>{$foregroundCount}</strong> foreground / <strong>{$backgroundCount}</strong> background</p>
+      <p>
+        {#if $acceptsPrompts}
+          <strong>{$foregroundCount}</strong> foreground / <strong>{$backgroundCount}</strong> background
+        {:else}
+          Prompts disabled for {$selectedModel.label}
+        {/if}
+      </p>
       <p>
         {$importMessage} View: {$activeImageMode === 'segmentation' ? 'segmentation' : 'raw image'}. Undo shortcut:
         Ctrl/Cmd+Z
@@ -154,10 +182,5 @@
     {#if $runMessage}
       <p class="run-message">{$runMessage}</p>
     {/if}
-  </section>
-
-  <section class="protected-page">
-    <h2>Protected Page</h2>
-    <p>{protectedMessage}</p>
   </section>
 </div>

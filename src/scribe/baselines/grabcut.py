@@ -8,9 +8,10 @@ from scribe.binary_mask import BinaryMask
 from scribe.prompts import BrushPrompt
 from scribe.baselines.gaussian import Gaussian
 
+
 # implementation of GrabCut with automatic brush mask given as prompt
 class GrabCutAutoBrush(BrushScribe, BilateralTunable):
-    def __init__(self, iters=1, d_bilateral=15, sigma_bilateral=75, C=5, d_gaussian=21, d_prb_erosion=12):
+    def __init__(self, d_bilateral=25, sigma_bilateral=37, C=8, d_gaussian=31, d_prb_erosion=3,iters=1):
         self.iters = int(iters)
         self.C = int(C)
         self.d_gaussian = int(d_gaussian)

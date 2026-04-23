@@ -12,4 +12,5 @@ def set_tuned_hyperparameters(model: Tunable,):
 def set_all_tuned_hyperparameters(models):
     for model in models:
         if isinstance(model, (Tunable)):
-            set_tuned_hyperparameters(model)
+            if len(model.hyperparameters) > 0:
+                set_tuned_hyperparameters(model)

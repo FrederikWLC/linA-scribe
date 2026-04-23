@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import friedmanchisquare, shapiro, ttest_rel, wilcoxon
+from scipy.stats import friedmanchisquare, shapiro, ttest_rel, wilcoxon, probplot
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from scribe.baselines.canny_fill import CannyFill
 from scribe.baselines.gaussian import Gaussian

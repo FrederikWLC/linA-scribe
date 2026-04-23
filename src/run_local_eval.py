@@ -28,18 +28,22 @@ def run_local(task: str, n_trials: int) -> None:
 
         perform_tuning(n_trials=n_trials)
 
-    if task in {"evaluate", "all"}:
-        from evaluation.evaluate_them import run_default_evaluation
-
-        run_default_evaluation()
-
-    if task in {"ablate", "all"}:
+    if task in {"ablate", "all", "all-eval"}:
         from evaluation.ablate_SAM import run_ablation
 
         run_ablation()
 
-    if task in {"compare", "all"}:
-        from evaluation.compare_them import run_default_comparison
+    if task in {"evaluate-sam", "all", "all-eval"}:
+        from evaluation.evaluate_SAMs import evaluate_sam_variants
+        evaluate_sam_variants()
+
+    if task in {"evaluate", "all", "all-eval"}:
+        from evaluation.evaluate_them import run_default_evaluation
+
+        run_default_evaluation()
+
+    if task in {"scribe", "all"}:
+        from evaluation.scribe_them import run_default_comparison
 
         run_default_comparison()
 
@@ -53,7 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run local evaluation workflows outside Docker.")
     parser.add_argument(
         "task",
-        choices=["tune", "evaluate", "ablate", "compare", "autoprompt", "all"],
+        choices=["tune", "evaluate", "ablate", "scribe", "autoprompt", "evaluate-sam", "all","all-eval"],
         help="Which local workflow to run.",
     )
     parser.add_argument(

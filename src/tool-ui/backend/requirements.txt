@@ -4,5 +4,7 @@ python-multipart==0.0.20
 supabase==2.15.0
 modal==1.1.4
 numpy==2.2.5
+pandas==2.2.3
 pillow==11.2.1
 opencv-python-headless==4.11.0.86
+optuna==4.8.0

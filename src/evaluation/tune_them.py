@@ -24,20 +24,17 @@ from evaluation.utils.metrics import BinaryDiceScore, evaluate_model
 METRIC = {"Dice": BinaryDiceScore} # only choose one metric pls
 METRIC_NAME = list(METRIC.keys())[0]
 MODELS = [
-    #CannyFill(),
-    #Gaussian(),
-    #Otsu(),
-    #MobileSAMv2AutoPointBilateralFilter(),
-    #MobileSAMv2AutoPointBilateralFilterBestOfThree(),
-    #MobileSAMv2AutoPointNoFilter(),
-    #MobileSAMv2AutoPointNoFilterBestOfThree(),
-    #MobileSAMv2BilateralFilter(),
-    #MobileSAMv2BilateralFilterBestOfThree(),
-    #MobileSAMv2NoFilterBestOfThree(),
-    #MobileSAMv2NoFilter(),
     ModalFATESAM2DAutoPoint(),
     GrabCutAutoBrush(),
-
+    CannyFill(),
+    Gaussian(),
+    Otsu(),
+    MobileSAMv2AutoPointBilateralFilter(),
+    MobileSAMv2AutoPointBilateralFilterBestOfThree(),
+    MobileSAMv2AutoPointNoFilter(),
+    MobileSAMv2AutoPointNoFilterBestOfThree(),
+    MobileSAMv2BilateralFilter(),
+    MobileSAMv2BilateralFilterBestOfThree()
 ]
 
 

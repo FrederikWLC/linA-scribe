@@ -5,9 +5,8 @@ import cv2
 import numpy as np
 from scribe.binary_mask import BinaryMask
 
-
 class CannyFill(Scribe, BilateralTunable):
-    def __init__(self, d_closing=15, sigma_canny=0.1, d_bilateral=15, sigma_bilateral=75):
+    def __init__(self, d_bilateral=23, sigma_bilateral=21, d_closing=19, sigma_canny=0.869782773928433):
         self.d_closing = int(d_closing)
         self.sigma_canny = float(sigma_canny)
         super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)

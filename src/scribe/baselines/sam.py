@@ -145,7 +145,12 @@ class MobileSAMv2AutoPoint(MobileSAMv2):
         n_bgd_points = int(self.n_bgd_points)
         d_gap_erosion = int(self.d_gap_erosion)
 
-        thresh = Gaussian(C, d_gaussian, d_bilateral, sigma_bilateral=sigma_bilateral).predict(image)
+        thresh = Gaussian(
+            d_bilateral=d_bilateral,
+            sigma_bilateral=sigma_bilateral,
+            C=C,
+            d_gaussian=d_gaussian,
+        ).predict(image)
         points = auto_points(thresh, n_fgd_points, n_bgd_points, d_gap_erosion)
         return points
 
@@ -220,12 +225,13 @@ class MobileSAMv2NoFilterBestOfThree(MobileSAMv2):
 
 class MobileSAMv2AutoPointBilateralFilter(MobileSAMv2AutoPoint):
     """Legacy: Mobile SAM with autoseeding and bilateral filter."""
-    def __init__(self, d_bilateral=15, sigma_bilateral=75, C=5, d_gaussian=19, 
-                 n_fgd_points=1000, n_bgd_points=1000, d_gap_erosion=3):
+    def __init__(self, d_bilateral=16, sigma_bilateral=23, C=6, d_gaussian=15, 
+                 n_fgd_points=438, n_bgd_points=1306, d_gap_erosion=3):
         super().__init__(use_bilateral_filter=True,use_bilateral_filter_hyperparams=True, use_best_of_three=False,
                          d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral,
                          C=C, d_gaussian=d_gaussian, n_fgd_points=n_fgd_points,
                          n_bgd_points=n_bgd_points, d_gap_erosion=d_gap_erosion)
+
 
 class MobileSAMv2AutoPointBilateralFilterBestOfThree(MobileSAMv2AutoPoint):
     """Legacy: Mobile SAM with autoseeding, bilateral filter, and best-of-three."""

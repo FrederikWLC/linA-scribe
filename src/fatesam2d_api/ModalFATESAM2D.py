@@ -7,13 +7,8 @@ import threading
 from pathlib import Path
 
 import modal
-import numpy as np
-from optuna import Trial
 
 from config import config
-from data.split import get_support_data
-from fatesam2d_api.FATESAM2D import FATESAM2D, FATESAM2DAutoPoint
-from scribe.base import Named
 
 
 APP_NAME = os.getenv("MODAL_APP_NAME", "FATESAM2D")
@@ -121,9 +116,12 @@ def _setup_runtime_env() -> None:
     os.environ.setdefault("SAM2_CONFIG", CONFIG_FILE)
 
 
-@app.cls(image=image, gpu="T4", timeout=30 * 60)
-class FATESAM2DInterface:
+class FATESAM2DInterfaceTemplate:
     def _setup_model(self) -> None:
+        import numpy as np  # noqa: F401
+        from data.split import get_support_data
+        from fatesam2d_api.FATESAM2D import FATESAM2D
+
         _setup_runtime_env()
         _ensure_checkpoint_file()
         support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
@@ -133,7 +131,7 @@ class FATESAM2DInterface:
     def setup(self) -> None:
         self._setup_model()
 
-    def _get_model(self) -> FATESAM2D:
+    def _get_model(self):
         if getattr(self, "model", None) is None:
             self._setup_model()
         return self.model
@@ -144,6 +142,8 @@ class FATESAM2DInterface:
 
     @modal.method()
     def setImage(self, image) -> dict[str, object]:
+        import numpy as np
+
         model = self._get_model()
         model.setImage(np.asarray(image))
         output_hw = getattr(model, "_output_hw", None)
@@ -162,51 +162,43 @@ class FATESAM2DInterface:
 
     @modal.method()
     def predict(self, image, prompts=None):
+        import numpy as np
+
         return self._get_model().predict(np.asarray(image), prompts=prompts, autoprompt=False)
 
-@app.cls(image=image, gpu="T4", timeout=30 * 60)
-class FATESAM2DAutoPointInterface:
 
+@app.cls(image=image, gpu="A10", timeout=30 * 60)
+class FATESAM2DInterface(FATESAM2DInterfaceTemplate):
+    pass
+
+@app.cls(image=image, gpu="A10", timeout=30 * 60)
+class FATESAM2DBlankInterface(FATESAM2DInterfaceTemplate):
     def _setup_model(self) -> None:
+        from data.split import get_support_data
+        from fatesam2d_api.FATESAM2D import FATESAM2DBlank
+
         _setup_runtime_env()
         _ensure_checkpoint_file()
         support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
+        print(f"ModalFATESAM2DBlank: loaded support_images={len(support_images)}, support_labels={len(support_labels)}")
+        if not support_images or not support_labels:
+            raise RuntimeError("ModalFATESAM2DBlank failed to load support data from /root/data")
+        self.model = FATESAM2DBlank(support_images=support_images, support_labels=support_labels)
+
+@app.cls(image=image, gpu="A10", timeout=30 * 60)
+class FATESAM2DAutoPointInterface(FATESAM2DInterfaceTemplate):
+
+    def _setup_model(self) -> None:
+        from data.split import get_support_data
+        from fatesam2d_api.FATESAM2D import FATESAM2DAutoPoint
+
+        _setup_runtime_env()
+        _ensure_checkpoint_file()
+        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
+        print(f"ModalFATESAM2DAutoPoint: loaded support_images={len(support_images)}, support_labels={len(support_labels)}")
+        if not support_images or not support_labels:
+            raise RuntimeError("ModalFATESAM2DAutoPoint failed to load support data from /root/data")
         self.model = FATESAM2DAutoPoint(support_images=support_images, support_labels=support_labels)
-
-    @modal.enter()
-    def setup(self) -> None:
-        self._setup_model()
-        
-    def _get_model(self) -> FATESAM2DAutoPoint:
-        if getattr(self, "model", None) is None:
-            self._setup_model()
-        return self.model
-
-    @modal.method()
-    def ping(self) -> str:
-        return f"ready: {_ensure_checkpoint_file()}"
-
-    @modal.method()
-    def setImage(self, image) -> dict[str, object]:
-        model = self._get_model()
-        model.setImage(np.asarray(image))
-        output_hw = getattr(model, "_output_hw", None)
-        return {
-            "status": "ok",
-            "output_hw": [] if output_hw is None else [int(x) for x in output_hw],
-        }
-
-    @modal.method()
-    def decode_mask(self, prompts=None):
-        return self._get_model().decode_mask(prompts=prompts)
-
-    @modal.method()
-    def decode_mask_image(self, prompts=None):
-        return self._get_model().decode_mask(prompts=prompts).to_image()
-
-    @modal.method()
-    def predict(self, image, prompts=None):
-        return self._get_model().predict(np.asarray(image), prompts=prompts, autoprompt=True)
 
     @modal.method()
     def set_hyperparameters(self, **kwargs) -> None:
@@ -215,18 +207,25 @@ class FATESAM2DAutoPointInterface:
     @modal.method()
     def hyperparameters(self) -> dict:
         return self._get_model().hyperparameters
-    
+
     @modal.method()
-    def hyperparameter_ranges(self, trial: Trial) -> dict:
+    def hyperparameter_ranges(self, trial) -> dict:
+        from fatesam2d_api.FATESAM2D import FATESAM2DAutoPoint
+
         return FATESAM2DAutoPoint.hyperparameter_ranges(trial)
 
-class ModalFATESAM2D(Named):
-    NAME = FATESAM2D.NAME
-    SHORT_NAME = FATESAM2D.SHORT_NAME
+
+class ModalFATESAM2D:
+    NAME = "FATESAM2D"
+    SHORT_NAME = "FATE"
 
     def __init__(self):
         _ensure_modal_app_started()
         self.interface = FATESAM2DInterface()
+
+    @property
+    def name(self) -> str:
+        return self.NAME
 
     def predict(self, image, prompts=None):
         return self.interface.predict.remote(image=image, prompts=prompts)
@@ -241,9 +240,18 @@ class ModalFATESAM2D(Named):
         return self.interface.decode_mask_image.remote(prompts=prompts)
 
 
+class ModalFATESAM2DBlank(ModalFATESAM2D):
+    NAME = "FATESAM2DBlank"
+    SHORT_NAME = "FATEBlank"
+
+    def __init__(self):
+        _ensure_modal_app_started()
+        self.interface = FATESAM2DBlankInterface()
+
+
 class ModalFATESAM2DAutoPoint(ModalFATESAM2D):
-    NAME = FATESAM2DAutoPoint.NAME
-    SHORT_NAME = FATESAM2DAutoPoint.SHORT_NAME
+    NAME = "FATESAM2D+pts"
+    SHORT_NAME = "FATE+pts"
 
     def __init__(self):
         _ensure_modal_app_started()
@@ -252,10 +260,18 @@ class ModalFATESAM2DAutoPoint(ModalFATESAM2D):
     @property
     def hyperparameters(self) -> dict:
         return self.interface.hyperparameters.remote()
-    
+
     @classmethod
-    def hyperparameter_ranges(cls, trial: Trial) -> dict:
-        return FATESAM2DAutoPoint.hyperparameter_ranges(trial)
-    
+    def hyperparameter_ranges(cls, trial) -> dict:
+        return {
+            "d_bilateral": trial.suggest_int("d_bilateral", 3, 31),
+            "sigma_bilateral": trial.suggest_int("sigma_bilateral", 0, 150),
+            "C": trial.suggest_int("C", 0, 10),
+            "d_gaussian": trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1, 16)]),
+            "n_fgd_points": trial.suggest_int("n_fgd_points", 1, 2000),
+            "n_bgd_points": trial.suggest_int("n_bgd_points", 1, 2000),
+            "d_gap_erosion": trial.suggest_categorical("d_gap_erosion", [i * 2 + 1 for i in range(1, 11)]),
+        }
+
     def set_hyperparameters(self, **kwargs):
         self.interface.set_hyperparameters.remote(**kwargs)

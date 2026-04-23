@@ -58,6 +58,27 @@ body {
   gap: 0.5rem;
 }
 
+.tool-page .model-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.tool-page .model-picker label {
+  font-weight: 700;
+  color: #253225;
+}
+
+.tool-page .model-picker select {
+  min-width: min(100%, 22rem);
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #9ba39a;
+  border-radius: 6px;
+  background: #fbfcfa;
+  color: #1e261e;
+}
+
 .tool-page .annotator,
 .tool-page .protected-page {
   border-top: 1px solid #d8ded5;
@@ -189,8 +210,14 @@ body {
   }
 
   .tool-page .session-actions,
-  .tool-page .toolbar {
+  .tool-page .toolbar,
+  .tool-page .model-picker {
     margin-top: 0.8rem;
+  }
+
+  .tool-page .model-picker {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .tool-page .run-button {

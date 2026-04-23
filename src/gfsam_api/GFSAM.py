@@ -72,7 +72,6 @@ class GFSAM(Named):
         )
         self.transform = transforms.Compose(
             [
-                transforms.Resize(size=(self.img_size, self.img_size)),
                 transforms.ToTensor(),
             ]
         )
@@ -81,9 +80,9 @@ class GFSAM(Named):
         return self.query_tensor is not None
 
     def setImage(self, image):
-        image = np.asarray(image)
+        image = to_rgb_image(image)
         self.output_hw = image.shape[:2]
-        self.query_tensor = self.transform(image)
+        self.query_tensor = self._to_model_tensor(image)
         self.selected_support_index, self.selected_support_score = self._select_support(image)
         return self
 
@@ -95,7 +94,7 @@ class GFSAM(Named):
             raise RuntimeError("No image is set. Call setImage(image) before decode_mask().")
 
         support_image = self.support_images[self.selected_support_index]
-        support_tensor = self.transform(support_image)
+        support_tensor = self._to_model_tensor(support_image)
         support_mask = torch.tensor(self.support_labels[self.selected_support_index])
         support_mask = F.interpolate(
             support_mask.unsqueeze(0).unsqueeze(0).float(),
@@ -140,7 +139,7 @@ class GFSAM(Named):
             batch = torch.stack(
                 [
                     self.model.encoder_transform(
-                        image.resize((self.img_size, self.img_size))
+                        self._resize_image(image)
                     )
                     for image in images[start:start + batch_size]
                 ]
@@ -155,8 +154,14 @@ class GFSAM(Named):
 
         height, width = self.output_hw
         return np.asarray(
-            cv2.resize(mask, (width, height), interpolation=cv2.INTER_NEAREST)
+            cv2.resize(mask.astype(np.uint8), (width, height), interpolation=cv2.INTER_NEAREST)
         ) > 0
 
-def to_rgb_image(image):
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    def _resize_image(self, image: np.ndarray) -> np.ndarray:
+        return cv2.resize(image, (self.img_size, self.img_size), interpolation=cv2.INTER_LINEAR)
+
+    def _to_model_tensor(self, image: np.ndarray) -> torch.Tensor:
+        return self.transform(self._resize_image(image))
+
+def to_rgb_image(image) -> np.ndarray:
+    return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)

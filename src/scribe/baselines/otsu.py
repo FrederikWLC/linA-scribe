@@ -4,7 +4,7 @@ from scribe.tunable import BilateralTunable
 from scribe.binary_mask import BinaryMask
 
 class Otsu(BilateralTunable,Scribe):
-    def __init__(self, d_bilateral=15, sigma_bilateral=75):
+    def __init__(self, d_bilateral=27, sigma_bilateral=9):
         super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
 
     def segment(self, image):

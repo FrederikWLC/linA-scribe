@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import io
 import os
 import subprocess
 import sys
@@ -9,11 +8,6 @@ import threading
 from pathlib import Path
 
 import modal
-import numpy as np
-
-from data.split import get_support_data
-from scribe.base import Named
-from scribe.binary_mask import BinaryMask
 
 
 APP_NAME = os.getenv("GF_SAM_MODAL_APP_NAME", "GFSAM")
@@ -32,11 +26,6 @@ LOCAL_SCRIBE_ROOT = LOCAL_SRC_ROOT / "scribe"
 LOCAL_DATA_SPLIT_PATH = LOCAL_SRC_ROOT / "data" / "split.py"
 LOCAL_RAW_ROOT = LOCAL_SRC_ROOT / "data" / "raw"
 LOCAL_GT_ROOT = LOCAL_SRC_ROOT / "data" / "ground_truth" / "registered"
-
-if str(LOCAL_GF_SAM_API_ROOT) not in sys.path:
-    sys.path.insert(0, str(LOCAL_GF_SAM_API_ROOT))
-
-from gfsam_api.GFSAM import GFSAM
 
 _modal_app_started = False
 _modal_app_thread: threading.Thread | None = None
@@ -62,7 +51,7 @@ image = (
             "POT==0.9.0",
             "omegaconf",
             "iopath",
-            "numpy==1.24.4",
+            "numpy",
             "tqdm==4.64.1",
             "scipy",
             "pillow",
@@ -76,16 +65,6 @@ image = (
 )
 
 app = modal.App(APP_NAME)
-
-
-def _array_to_bytes(array) -> bytes:
-    buffer = io.BytesIO()
-    np.save(buffer, np.asarray(array), allow_pickle=False)
-    return buffer.getvalue()
-
-
-def _bytes_to_array(payload: bytes) -> np.ndarray:
-    return np.load(io.BytesIO(payload), allow_pickle=False)
 
 
 async def _run_modal_app_background() -> None:
@@ -146,6 +125,9 @@ class GFSAMInterface:
             if path not in sys.path:
                 sys.path.insert(0, path)
 
+        from data.split import get_support_data
+        from gfsam_api.GFSAM import GFSAM
+
         support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
         dinov2_weights, sam_weights = _ensure_weights()
         self.model = GFSAM(
@@ -155,26 +137,26 @@ class GFSAMInterface:
             sam_weights=sam_weights,
         )
 
-    def get_model(self) -> GFSAM:
+    def get_model(self):
         if getattr(self, "model", None) is None:
             self.setup()
         return self.model
 
     @modal.method()
     def setImage(self, image) -> dict[str, object]:
-        model = self.get_model().setImage(_bytes_to_array(image))
+        model = self.get_model().setImage(image)
         return {
             "selected_support_index": model.selected_support_index,
             "selected_support_score": model.selected_support_score,
         }
 
     @modal.method()
-    def decode_mask_image(self) -> bytes:
-        return _array_to_bytes(self.get_model().decode_mask().to_image())
+    def decode_mask_image(self):
+        return self.get_model().decode_mask().to_image()
 
     @modal.method()
-    def predict(self, image) -> bytes:
-        return _array_to_bytes(self.get_model().predict(_bytes_to_array(image)).to_image())
+    def predict(self, image):
+        return self.get_model().predict(image).to_image()
 
     @modal.method()
     def smoke(self) -> dict[str, str]:
@@ -182,20 +164,28 @@ class GFSAMInterface:
         return {"status": "ok", "message": "GFSAM predictor loaded on Modal GPU"}
 
 
-class ModalGFSAM(Named):
-    NAME = GFSAM.NAME
-    SHORT_NAME = GFSAM.SHORT_NAME
+class ModalGFSAM:
+    NAME = "GFSAM"
+    SHORT_NAME = "GFSAM"
 
     def __init__(self):
         _ensure_modal_app_started()
         self.interface = GFSAMInterface()
 
+    @property
+    def name(self) -> str:
+        return self.NAME
+
     def setImage(self, image):
-        self.image_metadata = self.interface.setImage.remote(image=_array_to_bytes(image))
+        self.image_metadata = self.interface.setImage.remote(image=image)
         return self
 
-    def decode_mask(self) -> BinaryMask:
-        return BinaryMask.from_image(_bytes_to_array(self.interface.decode_mask_image.remote()))
+    def decode_mask(self):
+        from scribe.binary_mask import BinaryMask
 
-    def predict(self, image) -> BinaryMask:
-        return BinaryMask.from_image(_bytes_to_array(self.interface.predict.remote(image=_array_to_bytes(image))))
+        return BinaryMask.from_image(self.interface.decode_mask_image.remote())
+
+    def predict(self, image):
+        from scribe.binary_mask import BinaryMask
+
+        return BinaryMask.from_image(self.interface.predict.remote(image=image))

@@ -7,7 +7,7 @@ from optuna import Trial
 
 # implementation of the Gaussian threshold
 class Gaussian(Scribe, BilateralTunable):
-    def __init__(self, C=5, d_gaussian=19, d_bilateral=15, sigma_bilateral=75):
+    def __init__(self, d_bilateral=25, sigma_bilateral=43, C=9, d_gaussian=39):
         self.d_gaussian = int(d_gaussian)
         self.C = int(C)
         super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)

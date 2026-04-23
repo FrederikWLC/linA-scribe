@@ -82,6 +82,29 @@ class FATESAM2D(PointScribe):
 
         return BinaryMask.from_bool(merged > 0)
 
+
+class FATESAM2DBlank(FATESAM2D):
+    NAME = "FATESAM2DBlank"
+    SHORT_NAME = "FATEBlank"
+
+    def __init__(self, support_images, support_labels, top_n_supports: int = 3):
+        # We give blank supports to disable the few-shot effect.
+        rng = np.random.default_rng(42)
+        
+        support_labels = [
+            np.where(
+                rng.random(label.shape) < 0.05,
+                0,
+                255,
+            ).astype(np.uint8)
+            for label in support_labels
+        ]
+        super().__init__(
+            support_images=support_images,
+            support_labels=support_labels,
+            top_n_supports=top_n_supports,
+        )
+
 class FATESAM2DAutoPoint(FATESAM2D,BilateralTunable):
     """FATESAM2D with automatic point prompts."""
 
