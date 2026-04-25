@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY tool-ui/backend/app ./app
 COPY . /workspace/src
-COPY --from=frontend-builder /frontend/dist ./app/frontend/dist
+COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
 EXPOSE 8000
 
