@@ -60,13 +60,6 @@ MODEL_OPTIONS: dict[str, dict[str, object]] = {
         "requires_set_image": True,
         "accepts_prompts": True,
     },
-    "canny-fill": {
-        "label": "CannyFill",
-        "import_path": "scribe.baselines.canny_fill",
-        "class_name": "CannyFill",
-        "requires_set_image": False,
-        "accepts_prompts": False,
-    },
     "gaussian": {
         "label": "Gaussian",
         "import_path": "scribe.baselines.gaussian",
@@ -80,27 +73,6 @@ MODEL_OPTIONS: dict[str, dict[str, object]] = {
         "class_name": "GrabCutAutoBrush",
         "requires_set_image": False,
         "accepts_prompts": False,
-    },
-    "otsu": {
-        "label": "Otsu",
-        "import_path": "scribe.baselines.otsu",
-        "class_name": "Otsu",
-        "requires_set_image": False,
-        "accepts_prompts": False,
-    },
-    "modal-gfsam": {
-        "label": "GFSAM (ModalGFSAM)",
-        "import_path": "gfsam_api.ModalGFSAM",
-        "class_name": "ModalGFSAM",
-        "requires_set_image": True,
-        "accepts_prompts": False,
-    },
-    "modal-fatesam2d": {
-        "label": "FATESAM2D (ModalFATESAM2D)",
-        "import_path": "fatesam2d_api.ModalFATESAM2D",
-        "class_name": "ModalFATESAM2D",
-        "requires_set_image": True,
-        "accepts_prompts": True,
     },
 }
 

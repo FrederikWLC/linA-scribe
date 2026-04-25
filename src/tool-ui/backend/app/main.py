@@ -1,8 +1,10 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from app.routes.auth import router as auth_router
 from app.routes.health import router as health_router
 from app.routes.scribe import router as scribe_router
@@ -10,6 +12,15 @@ from app.routes.storage import router as storage_router
 
 app = FastAPI(title="FastAPI + Svelte Demo")
 logger = logging.getLogger(__name__)
+
+static_dir = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if static_dir.exists():
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="frontend")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def spa_resource(full_path: str) -> FileResponse:
+    return FileResponse(static_dir / "index.html")
 
 
 @app.exception_handler(Exception)

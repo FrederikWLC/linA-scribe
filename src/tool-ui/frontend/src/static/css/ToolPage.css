@@ -101,6 +101,13 @@ body {
   margin-bottom: 0.9rem;
 }
 
+.tool-page .canvas-root {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
 .tool-page .file-input {
   position: absolute;
   width: 1px;
@@ -163,26 +170,24 @@ body {
 
 .tool-page .point {
   position: absolute;
-  width: 1.35rem;
-  height: 1.35rem;
   transform: translate(-50%, -50%);
-  border: 2px solid #fff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
-  color: #fff;
+  color: transparent;
   font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.25rem;
+  line-height: 1;
   text-align: center;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.35);
+  background-clip: padding-box;
   pointer-events: none;
+  opacity: 0.5;
 }
 
 .tool-page .foreground {
-  background: #16a34a;
+  background: rgba(22, 163, 74, 0.5);
 }
 
 .tool-page .background {
-  background: #dc2626;
+  background: rgba(220, 38, 38, 0.5);
 }
 
 .tool-page .status-row {
@@ -224,4 +229,5 @@ body {
     margin-top: 0.8rem;
     width: 100%;
   }
+
 }

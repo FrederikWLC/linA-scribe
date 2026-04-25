@@ -15,7 +15,7 @@ services:
       MODAL_TOKEN_SECRET: ${MODAL_TOKEN_SECRET:-}
       MODAL_API_TOKEN: ${MODAL_API_TOKEN:-}
       MODAL_PROFILE: ${MODAL_PROFILE:-}
-      MODAL_APP_NAME: ${MODAL_APP_NAME:-FATESAM2D}
+      MODAL_APP_NAME: ${MODAL_APP_NAME:-ScribeSAM}
     ports:
       - "8000:8000"
     volumes:

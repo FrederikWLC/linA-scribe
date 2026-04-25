@@ -8,6 +8,11 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173"
   },
+  "dependencies": {
+    "@skeletonlabs/skeleton": "^4.15.2",
+    "konva": "^10.0.0",
+    "svelte-konva": "^1.0.1"
+  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
     "svelte": "^5.23.1",
