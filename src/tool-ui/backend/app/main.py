@@ -13,6 +13,20 @@ from app.routes.storage import router as storage_router
 app = FastAPI(title="FastAPI + Svelte Demo")
 logger = logging.getLogger(__name__)
 
+# Keep CORS open for local development and containerized previews.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(health_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(storage_router, prefix="/api")
+app.include_router(scribe_router, prefix="/api")
+
 static_dir = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 if static_dir.exists():
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="frontend")
@@ -30,17 +44,3 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         status_code=500,
         content={"detail": f"Internal server error: {exc}"},
     )
-
-# Keep CORS open for local development and containerized previews.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(health_router, prefix="/api")
-app.include_router(auth_router, prefix="/api")
-app.include_router(storage_router, prefix="/api")
-app.include_router(scribe_router, prefix="/api")
