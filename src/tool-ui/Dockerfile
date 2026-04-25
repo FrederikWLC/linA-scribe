@@ -5,10 +5,10 @@
 FROM node:22-alpine AS frontend-builder
 WORKDIR /frontend
 
-COPY frontend/package*.json ./
+COPY src/tool-ui/frontend/package*.json ./
 RUN npm install
 
-COPY frontend/ ./
+COPY src/tool-ui/frontend/ ./
 RUN npm run build
 
 # 2) Build backend runtime image
@@ -18,11 +18,13 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV MODAL_APP_NAME=ScribeSAM
+ENV PYTHONPATH=/workspace/src:$PYTHONPATH
 
-COPY backend/requirements.txt ./
+COPY src/tool-ui/backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/app ./app
+COPY src/tool-ui/backend/app ./app
+COPY src /workspace/src
 COPY --from=frontend-builder /frontend/dist ./app/frontend/dist
 
 EXPOSE 8000
