@@ -4,6 +4,7 @@ import asyncio
 import os
 import sys
 import threading
+import urllib.request
 from pathlib import Path, PurePosixPath
 
 import modal
@@ -24,6 +25,40 @@ for candidate in (LOCAL_SRC_ROOT, Path(REMOTE_SRC_ROOT)):
         sys.path.insert(0, str(candidate))
 
 from config import config  # noqa: E402
+
+CHECKPOINT_LOCAL_DIR = config.MOBILESAM_CHECKPOINT_PATH.parent
+CHECKPOINT_LOCAL_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _download_mobilesam_checkpoint_remote() -> Path:
+    remote_checkpoint_path = Path(REMOTE_SRC_ROOT) / "checkpoints" / config.MOBILESAM_CHECKPOINT
+    if remote_checkpoint_path.exists():
+        return remote_checkpoint_path
+
+    checkpoint_url = os.environ.get(
+        "MOBILESAM_CHECKPOINT_URL",
+        "https://huggingface.co/dhkim2810/MobileSAM/resolve/main/mobile_sam.pt",
+    ).strip()
+    if not checkpoint_url:
+        raise FileNotFoundError(
+            f"remote checkpoint {remote_checkpoint_path} does not exist and MOBILESAM_CHECKPOINT_URL is not configured."
+        )
+
+    remote_checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = remote_checkpoint_path.with_suffix(remote_checkpoint_path.suffix + ".download")
+    try:
+        with urllib.request.urlopen(checkpoint_url, timeout=300) as response, open(tmp_path, "wb") as out_file:
+            out_file.write(response.read())
+        tmp_path.replace(remote_checkpoint_path)
+    except Exception as exc:
+        if tmp_path.exists():
+            tmp_path.unlink()
+        raise RuntimeError(
+            f"Failed to download MobileSAM checkpoint from {checkpoint_url}: {exc}"
+        ) from exc
+
+    return remote_checkpoint_path
+
 
 REMOTE_CHECKPOINT_PATH = PurePosixPath(REMOTE_SRC_ROOT) / "checkpoints" / config.MOBILESAM_CHECKPOINT
 
@@ -49,7 +84,7 @@ image = (
         ]
     )
     .add_local_file(local_path=str(config.CONFIG_LOCAL_PATH), remote_path=REMOTE_CONFIG_PATH)
-    .add_local_file(local_path=str(config.MOBILESAM_CHECKPOINT_PATH), remote_path=str(REMOTE_CHECKPOINT_PATH))
+    .add_local_dir(local_path=str(CHECKPOINT_LOCAL_DIR), remote_path=f"{REMOTE_SRC_ROOT}/checkpoints")
     .add_local_dir(local_path=str(LOCAL_SCRIBE_ROOT), remote_path=REMOTE_SCRIBE_ROOT)
 )
 
@@ -124,6 +159,7 @@ def _serialize_point_prompts(prompts) -> list[dict[str, int]]:
 class BestMobileSAMv2Interface:
     @modal.enter()
     def setup(self) -> None:
+        _download_mobilesam_checkpoint_remote()
         _setup_runtime_env()
 
         from scribe.baselines.sam import BestMobileSAMv2Implementation
