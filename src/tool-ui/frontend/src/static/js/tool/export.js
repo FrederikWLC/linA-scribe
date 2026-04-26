@@ -1,4 +1,6 @@
-import JSZip from 'jszip';
+import JSZipModule from 'jszip';
+const JSZip = JSZipModule?.default ?? JSZipModule;
+
 function sanitizeFileName(fileName) {
   return fileName
     .replace(/\.[^.]+$/, '')
