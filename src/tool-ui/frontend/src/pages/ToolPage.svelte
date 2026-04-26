@@ -68,6 +68,9 @@
       acceptsPrompts={$acceptsPrompts}
       isSettingImage={$isSettingImage}
       canRunPredict={$canRunPredict}
+      canRunExport={$isSegmentationActive}
+      segmentationImageUrl={$segmentationImageUrl}
+      imageName={$imageName}
       runPrompt={toolPage.runPrompt}
       onLogout={onLogout}
     />

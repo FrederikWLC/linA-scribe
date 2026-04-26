@@ -97,6 +97,65 @@ body {
   font-weight: 700;
 }
 
+.tool-page .action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tool-page .export-dropdown {
+  position: relative;
+}
+
+.tool-page .export-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #9ba39a;
+  border-radius: 6px;
+  background: #fbfcfa;
+  color: #1e261e;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.tool-page .export-summary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tool-page .export-options {
+  position: absolute;
+  right: 0;
+  margin: 0.4rem 0 0;
+  padding: 0.4rem 0;
+  border: 1px solid #9ba39a;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  z-index: 10;
+}
+
+.tool-page .export-options li {
+  margin: 0;
+}
+
+.tool-page .export-options button {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  color: #1e261e;
+}
+
+.tool-page .export-options button:hover {
+  background: #f2f2f2;
+}
+
 .tool-page .toolbar {
   margin-bottom: 0.9rem;
 }
