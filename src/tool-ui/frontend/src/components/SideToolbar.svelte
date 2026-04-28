@@ -13,6 +13,7 @@
     class="tool-panel-button {pointMode === 'foreground' ? 'active' : ''}"
     on:click={() => setPointMode('foreground')}
     disabled={!promptControlsEnabled}
+    aria-pressed={pointMode === 'foreground'}
     aria-label="Foreground point"
     title="Foreground"
   >
@@ -23,6 +24,7 @@
     class="tool-panel-button {pointMode === 'background' ? 'active' : ''}"
     on:click={() => setPointMode('background')}
     disabled={!promptControlsEnabled}
+    aria-pressed={pointMode === 'background'}
     aria-label="Background point"
     title="Background"
   >
@@ -33,10 +35,11 @@
     class="tool-panel-button {pointMode === 'delete' ? 'active' : ''}"
     on:click={() => setPointMode('delete')}
     disabled={!promptControlsEnabled}
+    aria-pressed={pointMode === 'delete'}
     aria-label="Delete point"
     title="Delete"
   >
-    ✖
+    🧼
   </button>
   <button
     type="button"
@@ -46,7 +49,7 @@
     aria-label="Undo point"
     title="Undo"
   >
-    ↶
+    ↩️
   </button>
   <button
     type="button"
@@ -56,6 +59,6 @@
     aria-label="Clear points"
     title="Clear"
   >
-    🧹
+    🗑️
   </button>
 </aside>

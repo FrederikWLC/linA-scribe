@@ -57,6 +57,14 @@ export function createToolPageController(options = {}) {
     }
   }
 
+  function setStatusMessage(value) {
+    setRunMessage(value, false);
+  }
+
+  function setTempStatusMessage(value) {
+    setRunMessage(value, true);
+  }
+
   const selectedModel = derived(selectedModelKey, ($selectedModelKey) =>
     modelOptions.find((model) => model.key === $selectedModelKey) || modelOptions[0]
   );
@@ -86,13 +94,14 @@ export function createToolPageController(options = {}) {
     isSettingImage,
     runMessage,
     importMessage,
-    setStatusMessage: setRunMessage
+    setStatusMessage,
+    setTempStatusMessage
   });
 
   const canRunPredict = derived(
     [imageUrl, isImageSet, isSettingImage, requiresSetImage],
     ([$imageUrl, $isImageSet, $isSettingImage, $requiresSetImage]) =>
-      Boolean($imageUrl) &&
+      !!$imageUrl &&
       !$isSettingImage &&
       (!$requiresSetImage || $isImageSet)
   );
@@ -106,7 +115,7 @@ export function createToolPageController(options = {}) {
   const isSegmentationActive = derived(
     [segmentationImageUrl, activeImageMode],
     ([$segmentationImageUrl, $activeImageMode]) =>
-      $activeImageMode === 'segmentation' && Boolean($segmentationImageUrl)
+      $activeImageMode === 'segmentation' && !!$segmentationImageUrl
   );
   const foregroundCount = derived(points, ($points) =>
     $points.filter((point) => point.kind === 'foreground').length
@@ -279,20 +288,18 @@ export function createToolPageController(options = {}) {
       await syncModelImageIfNeeded();
     }
 
-    if (typeof onModelSelected === 'function') {
-      onModelSelected(modelKey);
-    }
+    onModelSelected?.(modelKey);
   }
 
   async function runPrompt() {
     const rawImageUrl = get(imageUrl);
     if (!rawImageUrl) {
-      setRunMessage('Import an image before running.');
+      setStatusMessage('Import an image before running.');
       return;
     }
 
     if (!get(canRunPredict)) {
-      setRunMessage(
+      setStatusMessage(
         get(isSettingImage)
           ? 'Image is still being set.'
           : 'Set the image before running.'
@@ -300,7 +307,7 @@ export function createToolPageController(options = {}) {
       return;
     }
 
-    setRunMessage('Running segmentation...');
+    setStatusMessage('Running segmentation...');
     const promptPoints = get(acceptsPrompts) ? get(points) : [];
 
     try {
@@ -315,7 +322,7 @@ export function createToolPageController(options = {}) {
       revokeSegmentationImageUrl(get(segmentationImageUrl), get(imageUrl));
       segmentationImageUrl.set(URL.createObjectURL(result.maskBlob));
       activeImageMode.set('segmentation');
-      setRunMessage('Segmentation completed.', true);
+      setTempStatusMessage('Segmentation completed.');
     } catch (err) {
       setRunMessage(err instanceof Error ? err.message : String(err));
     }

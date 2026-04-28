@@ -1,9 +1,7 @@
 import { clampPercent } from './imageBounds.js';
 
 function makePointId() {
-  return typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random()}`;
+  return crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
 export function buildAutoseedPoints(data) {

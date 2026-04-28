@@ -35,7 +35,8 @@ export function createImageLoader(options) {
     isSettingImage,
     runMessage,
     importMessage,
-    setStatusMessage
+    setStatusMessage,
+    setTempStatusMessage
   } = options;
 
   async function loadImageFile(file) {
@@ -75,9 +76,7 @@ export function createImageLoader(options) {
     }
 
     try {
-      if (typeof setStatusMessage === 'function') {
-        setStatusMessage('Setting model image...', false);
-      }
+      setStatusMessage('Setting model image...');
 
       const nextPoints = await uploadAndSeedImage(
         file,
@@ -87,26 +86,21 @@ export function createImageLoader(options) {
       );
       points.set(nextPoints);
       actionHistory.set([]);
-      isImageSet.set(get(requiresSetImage) ? true : false);
+      isImageSet.set(get(requiresSetImage));
       importMessage.set(
         nextPoints.length > 0
           ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
           : `${nextImageName} loaded.`
       );
-      if (typeof setStatusMessage === 'function') {
-        setStatusMessage(
-          nextPoints.length > 0
-            ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
-            : `${nextImageName} loaded.`,
-          true
-        );
-      }
+      setTempStatusMessage(
+        nextPoints.length > 0
+          ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
+          : `${nextImageName} loaded.`
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       importMessage.set(message);
-      if (typeof setStatusMessage === 'function') {
-        setStatusMessage(message);
-      }
+      setTempStatusMessage(message);
     } finally {
       isSettingImage.set(false);
     }
@@ -136,9 +130,7 @@ export function createImageLoader(options) {
     isSettingImage.set(true);
     const statusName = get(imageName) || 'Image';
     importMessage.set(`${statusName} loaded. Setting model image...`);
-    if (typeof setStatusMessage === 'function') {
-      setStatusMessage(`Setting model image...`, { autoClear: false });
-    }
+    setStatusMessage('Setting model image...');
 
     try {
       const nextPoints = await uploadAndSeedImage(
@@ -149,21 +141,17 @@ export function createImageLoader(options) {
       );
       points.set(nextPoints);
       actionHistory.set([]);
-      isImageSet.set(get(requiresSetImage) ? true : false);
+      isImageSet.set(get(requiresSetImage));
       const completedMessage =
         nextPoints.length > 0
           ? `${statusName} loaded with ${nextPoints.length} seed point(s).`
           : `${statusName} loaded.`;
       importMessage.set(completedMessage);
-      if (typeof setStatusMessage === 'function') {
-        setStatusMessage(completedMessage, true);
-      }
+      setTempStatusMessage(completedMessage);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       importMessage.set(message);
-      if (typeof setStatusMessage === 'function') {
-        setStatusMessage(message, true);
-      }
+      setTempStatusMessage(message);
     } finally {
       isSettingImage.set(false);
     }
