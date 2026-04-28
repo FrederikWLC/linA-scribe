@@ -1,0 +1,55 @@
+.tool-page .page-header,
+.tool-page .tool-heading,
+.tool-page .status-row,
+.tool-page .run-message {
+  flex: 0 0 auto;
+}
+
+.tool-page .page-header,
+.tool-page .tool-heading,
+.tool-page .status-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tool-page .page-header {
+  margin-bottom: 1.5rem;
+}
+
+.tool-page .page-header p,
+.tool-page .tool-heading p,
+.tool-page .status-row,
+.tool-page .run-message,
+.tool-page .protected-page p {
+  color: #536053;
+}
+
+.tool-page .tool-heading {
+  margin-bottom: 1rem;
+}
+
+.tool-page .status-row {
+  margin-top: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.tool-page .run-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #c8d5bf;
+  border-radius: 0;
+  background: #f7fbf2;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  text-align: center;
+}
+
+.tool-page .protected-page {
+  margin-top: 1.5rem;
+}

@@ -1,0 +1,54 @@
+.tool-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  padding-top: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  height: calc(100vh - 4rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.tool-page .annotator {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tool-page h1 {
+  margin-top: 0;
+}
+
+.tool-page h1,
+.tool-page h2,
+.tool-page p {
+  margin-bottom: 0;
+}
+
+.tool-page h2 {
+  margin-top: 0;
+}
+
+.tool-page button {
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  border: 1px solid #9ba39a;
+  border-radius: 6px;
+  background: #fbfcfa;
+  color: #1e261e;
+}
+
+.tool-page button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tool-page .annotator,
+.tool-page .protected-page {
+  padding-top: 1.25rem;
+}

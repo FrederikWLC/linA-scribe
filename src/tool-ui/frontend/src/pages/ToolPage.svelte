@@ -42,6 +42,8 @@
     imageBounds,
     pointMode,
     points,
+    boxes,
+    previewBox,
     runMessage,
     importMessage,
     isImageSet,
@@ -94,9 +96,11 @@
       onToggleSidebar={toggleSidebar}
       closeSidebar={closeSidebar}
       acceptsPrompts={$acceptsPrompts}
-      promptControlsEnabled={$acceptsPrompts && (!$selectedModel.requiresSetImage || $isImageSet)}
+      promptControlsEnabled={$acceptsPrompts && (!$selectedModel.requiresSetImage || $isImageSet) && $activeImageMode === 'raw'}
       pointMode={$pointMode}
       points={$points}
+      boxes={$boxes}
+      previewBox={$previewBox}
       setPointMode={(mode) => pointMode.set(mode)}
       undoPoint={toolPage.undoPoint}
       clearPoints={toolPage.clearPoints}

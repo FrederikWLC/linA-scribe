@@ -3,9 +3,15 @@ export function createSessionHistoryAction(pointerSession) {
     return null;
   }
 
-  return pointerSession.mode === 'delete'
-    ? { type: 'removeBatch', actions: pointerSession.actions }
-    : { type: 'addBatch', points: pointerSession.actions };
+  if (pointerSession.mode === 'delete') {
+    return { type: 'removeBatch', actions: pointerSession.actions };
+  }
+
+  if (pointerSession.mode === 'box') {
+    return { type: 'addBatchBox', boxes: pointerSession.actions };
+  }
+
+  return { type: 'addBatch', points: pointerSession.actions };
 }
 
 export function undoAction(lastAction, currentPoints) {
@@ -38,4 +44,27 @@ export function undoAction(lastAction, currentPoints) {
   }
 
   return currentPoints;
+}
+
+export function undoBoxAction(lastAction, currentBoxes) {
+  if (!lastAction) {
+    return currentBoxes;
+  }
+
+  if (lastAction.type === 'addBatchBox') {
+    const idsToRemove = new Set(lastAction.boxes.map((box) => box.id));
+    return currentBoxes.filter((box) => !idsToRemove.has(box.id));
+  }
+
+  if (lastAction.type === 'removeBatch') {
+    const nextBoxes = [...currentBoxes];
+    const actions = [...lastAction.actions].filter((action) => action.box);
+    actions.sort((a, b) => b.index - a.index);
+    actions.forEach(({ box, index }) => {
+      nextBoxes.splice(index, 0, box);
+    });
+    return nextBoxes;
+  }
+
+  return currentBoxes;
 }

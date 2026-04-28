@@ -1,6 +1,7 @@
 <script>
   import ImageLayer from './ImageLayer.svelte';
   import PointsLayer from './PointsLayer.svelte';
+  import BoxesLayer from './BoxesLayer.svelte';
   import SideToolbar from './SideToolbar.svelte';
 
   export let displayedImageUrl = '';
@@ -11,6 +12,8 @@
   export let promptControlsEnabled = true;
   export let pointMode = 'foreground';
   export let points = [];
+  export let boxes = [];
+  export let previewBox = null;
   export let imageBounds = { left: 0, top: 0, width: 0, height: 0 };
   export let setPointMode = () => {};
   export let undoPoint = () => {};
@@ -21,6 +24,18 @@
   export let onDrop = () => {};
   export let onImageLoad = () => {};
   export let fileInput;
+
+  function clampPercent(value) {
+    return Math.min(100, Math.max(0, value));
+  }
+
+  function previewBoxStyle(box) {
+    const left = clampPercent(imageBounds.left + (box.x / 100) * imageBounds.width);
+    const top = clampPercent(imageBounds.top + (box.y / 100) * imageBounds.height);
+    const width = clampPercent((box.width / 100) * imageBounds.width);
+    const height = clampPercent((box.height / 100) * imageBounds.height);
+    return `left: ${left}%; top: ${top}%; width: ${width}%; height: ${height}%;`;
+  }
 </script>
 
 <div class="canvas-root">
@@ -28,6 +43,7 @@
     promptControlsEnabled={promptControlsEnabled}
     pointMode={pointMode}
     points={points}
+    boxes={boxes}
     setPointMode={setPointMode}
     undoPoint={undoPoint}
     clearPoints={clearPoints}
@@ -54,6 +70,10 @@
         />
 
         {#if activeImageMode === 'raw' && acceptsPrompts && imageBounds.width > 0 && imageBounds.height > 0}
+          <BoxesLayer {boxes} {imageBounds} />
+          {#if previewBox}
+            <span class="box preview" style={previewBoxStyle(previewBox)} title="Preview box"></span>
+          {/if}
           <PointsLayer {points} {imageBounds} />
         {/if}
       </button>

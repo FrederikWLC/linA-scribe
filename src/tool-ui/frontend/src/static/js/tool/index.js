@@ -11,11 +11,12 @@ import {
   createPointerSession,
   capturePointer,
   releasePointer,
-  shouldProcessPoint,
   getPointsWithinDistance,
-  getClosestPointIndex
+  getClosestPointIndex,
+  processPointerEvent,
+  updatePreviewBox
 } from './pointerSession.js';
-import { createSessionHistoryAction, undoAction } from './actionHistory.js';
+import { createSessionHistoryAction, undoAction, undoBoxAction } from './actionHistory.js';
 import { bindToolPageShortcuts as bindKeyShortcuts } from './shortcuts.js';
 import { createImageLoader, revokeSegmentationImageUrl } from './imageLoader.js';
 
@@ -32,8 +33,10 @@ export function createToolPageController(options = {}) {
   const segmentationImageUrl = writable('');
   const activeImageMode = writable('raw');
   const imageBounds = writable(emptyBounds);
-  const pointMode = writable('foreground');
+  const pointMode = writable('box');
   const points = writable([]);
+  const boxes = writable([]);
+  const previewBox = writable(null);
   const actionHistory = writable([]);
   const runMessage = writable('');
   const importMessage = writable('Paste, drop, or import an image to begin.');
@@ -41,6 +44,7 @@ export function createToolPageController(options = {}) {
   let runMessageTimeout = null;
   const isImageSet = writable(false);
   const isSettingImage = writable(false);
+  let pendingBoxCorner = null;
 
   function setRunMessage(value, temporary = false) {
     runMessage.set(value);
@@ -65,6 +69,13 @@ export function createToolPageController(options = {}) {
     setRunMessage(value, true);
   }
 
+  pointMode.subscribe((mode) => {
+    if (mode !== 'box') {
+      pendingBoxCorner = null;
+      previewBox.set(null);
+    }
+  });
+
   const selectedModel = derived(selectedModelKey, ($selectedModelKey) =>
     modelOptions.find((model) => model.key === $selectedModelKey) || modelOptions[0]
   );
@@ -72,7 +83,7 @@ export function createToolPageController(options = {}) {
   const requiresSetImage = derived(selectedModel, ($selectedModel) => $selectedModel.requiresSetImage);
 
   const {
-    loadImageFile,
+    loadImageFile: loadImageFileRaw,
     importFromFiles,
     handleDrop,
     syncModelImageIfNeeded
@@ -97,6 +108,13 @@ export function createToolPageController(options = {}) {
     setStatusMessage,
     setTempStatusMessage
   });
+
+  async function loadImageFile(file) {
+    pendingBoxCorner = null;
+    previewBox.set(null);
+    boxes.set([]);
+    return await loadImageFileRaw(file);
+  }
 
   const canRunPredict = derived(
     [imageUrl, isImageSet, isSettingImage, requiresSetImage],
@@ -137,62 +155,26 @@ export function createToolPageController(options = {}) {
   }
 
   function processPointEvent(event) {
-    if (
-      !get(imageUrl) ||
-      !get(acceptsPrompts) ||
-      get(activeImageMode) !== 'raw' ||
-      (get(requiresSetImage) && !get(isImageSet))
-    ) {
-      return;
-    }
-
-    const mode = pointerSession?.mode || get(pointMode);
-    if (mode === 'delete') {
-      points.update(($points) => {
-        if (pointerSession?.hasDragged) {
-          const nearby = getPointsWithinDistance(event, $points, get(imageBounds));
-          if (nearby.length === 0) {
-            return $points;
-          }
-
-          const removedPoints = nearby.map(({ point, index }) => ({ point, index }));
-          addSessionAction(removedPoints);
-
-          const keep = $points.filter((_, index) => !nearby.some((item) => item.index === index));
-          return keep;
-        }
-
-        const indexToRemove = getClosestPointIndex(event, $points, get(imageBounds));
-        if (indexToRemove < 0) {
-          return $points;
-        }
-
-        const removedPoint = $points[indexToRemove];
-        addSessionAction({ point: removedPoint, index: indexToRemove });
-        pointerSession.lastProcessed = { x: removedPoint.x, y: removedPoint.y };
-
-        return [...$points.slice(0, indexToRemove), ...$points.slice(indexToRemove + 1)];
-      });
-      setRunMessage('');
-      return;
-    }
-
-    const point = getPromptPointFromClick(event, get(imageBounds));
-    if (!point || !shouldProcessPoint(point, mode, pointerSession)) {
-      return;
-    }
-
-    const nextPoint = {
-      ...point,
-      kind: mode
-    };
-
-    points.update(($points) => {
-      addSessionAction(nextPoint);
-      pointerSession.lastProcessed = { x: point.x, y: point.y };
-      return [...$points, nextPoint];
+    processPointerEvent({
+      event,
+      pointerSession,
+      pointMode: get(pointMode),
+      imageUrl: get(imageUrl),
+      acceptsPrompts: get(acceptsPrompts),
+      activeImageMode: get(activeImageMode),
+      requiresSetImage: get(requiresSetImage),
+      isImageSet: get(isImageSet),
+      imageBounds: get(imageBounds),
+      points: get(points),
+      boxes: get(boxes),
+      pendingBoxCorner,
+      setPendingBoxCorner: (value) => { pendingBoxCorner = value; },
+      setPreviewBox: (value) => previewBox.set(value),
+      addSessionAction,
+      setRunMessage,
+      pointsUpdate: (fn) => points.update(fn),
+      boxesUpdate: (fn) => boxes.update(fn)
     });
-    setRunMessage('');
   }
 
   function beginPointSession(event) {
@@ -202,7 +184,16 @@ export function createToolPageController(options = {}) {
   }
 
   function continuePointSession(event) {
+    if (get(pointMode) === 'box' && pendingBoxCorner) {
+      updatePreviewBox(event, pendingBoxCorner, get(imageBounds), (value) => previewBox.set(value));
+      return;
+    }
+
     if (!pointerSession) {
+      return;
+    }
+
+    if (pointerSession.mode === 'box') {
       return;
     }
 
@@ -248,12 +239,16 @@ export function createToolPageController(options = {}) {
     const lastAction = history[history.length - 1];
     actionHistory.update(($history) => $history.slice(0, -1));
     points.update(($points) => undoAction(lastAction, $points));
+    boxes.update(($boxes) => undoBoxAction(lastAction, $boxes));
     setRunMessage('');
   }
 
   function clearPoints() {
     points.set([]);
+    boxes.set([]);
+    previewBox.set(null);
     actionHistory.set([]);
+    pendingBoxCorner = null;
     setRunMessage('');
   }
 
@@ -361,6 +356,8 @@ export function createToolPageController(options = {}) {
     imageBounds,
     pointMode,
     points,
+    boxes,
+    previewBox,
     runMessage,
     importMessage,
     isImageSet,

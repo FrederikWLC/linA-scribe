@@ -1,0 +1,61 @@
+.tool-page .canvas-root {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+  min-height: 0;
+  overflow: visible;
+}
+
+.tool-page .canvas-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tool-page .image-stage,
+.tool-page .drop-zone {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #768176;
+  background: #172017;
+  line-height: 0;
+  box-sizing: border-box;
+}
+
+.tool-page .image-stage.segmentation-active {
+  border-color: #e68a35;
+  background: #fff1d8;
+}
+
+.tool-page .drop-zone {
+  display: grid;
+  place-content: center;
+  gap: 0.65rem;
+  border-style: dashed;
+  background: #eef3ea;
+  color: #253225;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.tool-page .drop-zone strong {
+  font-size: 1.1rem;
+}
+
+.tool-page .drop-zone span {
+  color: #536053;
+}
+
+.tool-page .image-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}

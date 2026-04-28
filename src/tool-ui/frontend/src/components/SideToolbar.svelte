@@ -1,13 +1,25 @@
 <script>
   export let promptControlsEnabled = true;
-  export let pointMode = 'foreground';
+  export let pointMode = 'box';
   export let points = [];
+  export let boxes = [];
   export let setPointMode = () => {};
   export let undoPoint = () => {};
   export let clearPoints = () => {};
 </script>
 
 <aside class="side-toolbar" aria-hidden="false">
+<button
+    type="button"
+    class="tool-panel-button {pointMode === 'box' ? 'active' : ''}"
+    on:click={() => setPointMode('box')}
+    disabled={!promptControlsEnabled}
+    aria-pressed={pointMode === 'box'}
+    aria-label="Box"
+    title="Box"
+  >
+    🟦
+  </button>
   <button
     type="button"
     class="tool-panel-button {pointMode === 'foreground' ? 'active' : ''}"
@@ -45,7 +57,7 @@
     type="button"
     class="tool-panel-button"
     on:click={undoPoint}
-    disabled={!promptControlsEnabled || points.length === 0}
+    disabled={!promptControlsEnabled || (points.length === 0 && boxes.length === 0)}
     aria-label="Undo point"
     title="Undo"
   >
@@ -55,7 +67,7 @@
     type="button"
     class="tool-panel-button"
     on:click={clearPoints}
-    disabled={!promptControlsEnabled || points.length === 0}
+    disabled={!promptControlsEnabled || (points.length === 0 && boxes.length === 0)}
     aria-label="Clear points"
     title="Clear"
   >

@@ -1,0 +1,70 @@
+.tool-page .side-toolbar {
+  position: relative;
+  flex: 0 0 3.2rem;
+  width: 3.2rem;
+  background: #fff;
+  padding: 0.75rem 0.4rem;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tool-page .side-toolbar.open {
+  transform: none;
+}
+
+.tool-page .side-toolbar-header {
+  display: none;
+}
+
+.tool-page .close-sidebar {
+  display: none;
+}
+
+.tool-page .tool-panel-button {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tool-page .tool-panel-button.active {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(96, 165, 250, 0.8);
+  box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.18);
+  transform: scale(1.05);
+}
+
+.tool-page .tool-panel-button.active:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.tool-page .tool-panel-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tool-page .side-toolbar p {
+  color: #d1d5db;
+  margin: 0;
+}
+
+.tool-page .file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
