@@ -5,8 +5,7 @@ export const modelOptions = [
     requiresSetImage: true,
     acceptsPrompts: true
   },
-  { key: 'gaussian', label: 'Gaussian', requiresSetImage: false, acceptsPrompts: false },
-  { key: 'grabcut-auto-brush', label: 'GC+brush', requiresSetImage: false, acceptsPrompts: false }
+  { key: 'gaussian', label: 'Gaussian', requiresSetImage: false, acceptsPrompts: false }
 ];
 
 export function resolveInitialModelKey(initialModelKey) {

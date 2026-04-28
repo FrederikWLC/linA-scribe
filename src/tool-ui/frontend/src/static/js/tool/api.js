@@ -19,7 +19,7 @@ export async function setBackendImage(file, selectedModelKey, getAuthHeaders) {
 }
 
 const SAM_MODEL_KEYS = ['modal-mobilesam'];
-const CLASSICAL_MODEL_KEYS = ['gaussian', 'grabcut-auto-brush'];
+const CLASSICAL_MODEL_KEYS = ['gaussian'];
 
 function isSAMModel(selectedModelKey) {
   return SAM_MODEL_KEYS.includes(selectedModelKey);
@@ -27,6 +27,23 @@ function isSAMModel(selectedModelKey) {
 
 function isClassicalModel(selectedModelKey) {
   return CLASSICAL_MODEL_KEYS.includes(selectedModelKey);
+}
+
+function base64ToBlob(base64, type = 'image/png') {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i += 1) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return new Blob([bytes], { type });
+}
+
+async function parsePredictResponse(response) {
+  const data = await response.json();
+  return {
+    maskBlob: base64ToBlob(data.mask_png, 'image/png'),
+  };
 }
 
 export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, promptPoints) {
@@ -53,7 +70,7 @@ export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, p
     throw new Error(await readErrorMessage(response, 'Segmentation failed'));
   }
 
-  return response.blob();
+  return parsePredictResponse(response);
 }
 
 export async function predictClassical(imageFile, selectedModelKey, getAuthHeaders) {
@@ -75,7 +92,7 @@ export async function predictClassical(imageFile, selectedModelKey, getAuthHeade
     throw new Error(await readErrorMessage(response, 'Segmentation failed'));
   }
 
-  return response.blob();
+  return parsePredictResponse(response);
 }
 
 export async function warmupModels(getAuthHeaders) {
@@ -88,3 +105,4 @@ export async function warmupModels(getAuthHeaders) {
     console.warn('Model warmup failed', err);
   }
 }
+

@@ -1,9 +1,17 @@
-from fastapi import APIRouter, Depends, File, Query, Response, UploadFile
+import base64
+import json
+from fastapi import APIRouter, Depends, File, Query, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
+import cv2
+import numpy as np
+
+import logging
 
 from app.utils.sam_model import DEFAULT_MODEL_KEY, scribe_sam_service
 from app.utils.auth import require_session
+from scribe.binary_mask import BinaryMask
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -55,24 +63,46 @@ async def set_mask_alias(
     return await set_image(file, model, session)
 
 
-@router.get("/scribe/predict")
-def predict(
-    x: list[float] = Query(default_factory=list),
-    y: list[float] = Query(default_factory=list),
-    labels: list[int] = Query(default_factory=list),
-    coordinate_space: str = Query("percent", pattern="^(percent|pixel)$"),
-    model: str = Query(DEFAULT_MODEL_KEY),
-    session: dict[str, str] = Depends(require_session),
-) -> Response:
-    mask_png = scribe_sam_service.predict_mask_png(
-        username=session["username"],
-        xs=x,
-        ys=y,
-        labels=labels,
-        coordinate_space=coordinate_space,
-        model_key=model,
+def _predict_response(mask_png: bytes) -> Response:
+    image_array = np.frombuffer(mask_png, dtype=np.uint8)
+    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    if image is None:
+        raise HTTPException(status_code=500, detail="Unable to decode prediction mask image.")
+
+    original_shape = image.shape
+    original_dtype = image.dtype.name
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    unique_values = np.unique(image)
+    zero_count = int(np.count_nonzero(image == 0))
+    nonzero_count = int(np.count_nonzero(image != 0))
+    print(
+        "predict response generated",
+        {
+            "original_shape": original_shape,
+            "original_dtype": original_dtype,
+            "shape": image.shape,
+            "dtype": image.dtype.name,
+            "unique_values": unique_values.tolist(),
+            "zero_count": zero_count,
+            "nonzero_count": nonzero_count,
+        },
+        flush=True,
     )
-    return Response(content=mask_png, media_type="image/png")
+    logger.info(
+        "predict response generated",
+        extra={
+            "original_shape": original_shape,
+            "original_dtype": original_dtype,
+            "shape": image.shape,
+            "dtype": image.dtype.name,
+        },
+    )
+
+    payload = {
+        "mask_png": base64.b64encode(mask_png).decode("ascii"),
+    }
+
+    return Response(content=json.dumps(payload), media_type="application/json")
 
 
 @router.post("/scribe/predict-set-image")
@@ -88,26 +118,22 @@ def predict_set_image(
         coordinate_space=payload.coordinate_space,
         model_key=payload.model,
     )
-    return Response(content=mask_png, media_type="image/png")
+    return _predict_response(mask_png)
 
 
 @router.post("/scribe/predict")
-async def predict_upload(
+async def predict_classical(
     file: UploadFile = File(...),
-    x: list[float] = Query(default_factory=list),
-    y: list[float] = Query(default_factory=list),
-    labels: list[int] = Query(default_factory=list),
-    coordinate_space: str = Query("percent", pattern="^(percent|pixel)$"),
     model: str = Query(DEFAULT_MODEL_KEY),
     session: dict[str, str] = Depends(require_session),
 ) -> Response:
     mask_png = await scribe_sam_service.predict_upload_mask_png(
         username=session["username"],
         file=file,
-        xs=x,
-        ys=y,
-        labels=labels,
-        coordinate_space=coordinate_space,
+        xs=[],
+        ys=[],
+        labels=[],
+        coordinate_space="percent",
         model_key=model,
     )
-    return Response(content=mask_png, media_type="image/png")
+    return _predict_response(mask_png)

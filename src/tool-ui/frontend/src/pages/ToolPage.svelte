@@ -1,4 +1,5 @@
 <script>
+  import { fade } from 'svelte/transition';
   import { onMount } from 'svelte';
   import '../static/css/ToolPage.css';
   import { createToolPageController } from '../static/js/tool/index.js';
@@ -7,9 +8,7 @@
   import CanvasRoot from '../components/CanvasRoot.svelte';
   import StatusBar from '../components/StatusBar.svelte';
 
-  export let currentUser = '';
   export let token = '';
-  export let onLogout = () => {};
   export let initialModelKey = '';
   export let onRouteChange = () => {};
 
@@ -24,8 +23,6 @@
           ? '/tool/sam'
           : modelKey === 'gaussian'
           ? '/tool/gaussian'
-          : modelKey === 'grabcut-auto-brush'
-          ? '/tool/grabcut'
           : '/tool';
 
       if (window.location.pathname !== route) {
@@ -54,8 +51,18 @@
     backgroundCount
   } = toolPage;
 
-  onMount(() => {
-    toolPage.warmupModels();
+  let isSidebarOpen = false;
+
+  function toggleSidebar() {
+    isSidebarOpen = !isSidebarOpen;
+  }
+
+  function closeSidebar() {
+    isSidebarOpen = false;
+  }
+
+  onMount(async () => {
+    await toolPage.warmupModels();
     return toolPage.bindToolPageShortcuts();
   });
 </script>
@@ -63,42 +70,40 @@
 <div class="tool-page">
   <section class="annotator" aria-labelledby="annotator-title">
     <ToolHeader
-      currentUser={currentUser}
-      selectedModelLabel={$selectedModel.label}
       acceptsPrompts={$acceptsPrompts}
-      isSettingImage={$isSettingImage}
-      canRunPredict={$canRunPredict}
-      canRunExport={$isSegmentationActive}
-      segmentationImageUrl={$segmentationImageUrl}
-      imageName={$imageName}
-      runPrompt={toolPage.runPrompt}
-      onLogout={onLogout}
     />
 
     <ToolBar
       imageUrl={$imageUrl}
       segmentationImageUrl={$segmentationImageUrl}
+      imageName={$imageName}
       acceptsPrompts={$acceptsPrompts}
-      promptControlsEnabled={$acceptsPrompts && (!$selectedModel.requiresSetImage || $isImageSet)}
       activeImageMode={$activeImageMode}
-      pointMode={$pointMode}
-      points={$points}
       onImportChange={toolPage.importFromFiles}
       showRawImage={toolPage.showRawImage}
       showSegmentationImage={toolPage.showSegmentationImage}
-      setPointMode={(mode) => pointMode.set(mode)}
-      undoPoint={toolPage.undoPoint}
-      clearPoints={toolPage.clearPoints}
+      runPrompt={toolPage.runPrompt}
+      canRunPredict={$canRunPredict}
+      canRunExport={$isSegmentationActive}
+      isSettingImage={$isSettingImage}
       bind:fileInput={fileInput}
     />
 
     <CanvasRoot
+      isSidebarOpen={isSidebarOpen}
+      onToggleSidebar={toggleSidebar}
+      closeSidebar={closeSidebar}
+      acceptsPrompts={$acceptsPrompts}
+      promptControlsEnabled={$acceptsPrompts && (!$selectedModel.requiresSetImage || $isImageSet)}
+      pointMode={$pointMode}
+      points={$points}
+      setPointMode={(mode) => pointMode.set(mode)}
+      undoPoint={toolPage.undoPoint}
+      clearPoints={toolPage.clearPoints}
       displayedImageUrl={$displayedImageUrl}
       imageName={$imageName}
       isSegmentationActive={$isSegmentationActive}
       activeImageMode={$activeImageMode}
-      acceptsPrompts={$acceptsPrompts}
-      points={$points}
       imageBounds={$imageBounds}
       onPointerDown={toolPage.beginPointSession}
       onPointerMove={toolPage.continuePointSession}
@@ -118,7 +123,7 @@
     />
 
     {#if $runMessage}
-      <p class="run-message">{$runMessage}</p>
+      <p class="run-message" transition:fade>{$runMessage}</p>
     {/if}
   </section>
 </div>

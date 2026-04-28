@@ -1,5 +1,36 @@
-body {
-  background: #f4f6f3;
+.tool-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  padding-top: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  height: calc(100vh - 4rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.tool-page .annotator {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tool-page .toolbar,
+.tool-page .tool-heading,
+.tool-page .status-row,
+.tool-page .run-message {
+  flex: 0 0 auto;
+}
+
+.tool-page .canvas-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: visible;
 }
 
 .tool-page h1 {
@@ -81,7 +112,6 @@ body {
 
 .tool-page .annotator,
 .tool-page .protected-page {
-  border-top: 1px solid #d8ded5;
   padding-top: 1.25rem;
 }
 
@@ -158,13 +188,97 @@ body {
 
 .tool-page .toolbar {
   margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.tool-page .toolbar-spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.tool-page .toolbar .run-button,
+.tool-page .toolbar .export-dropdown {
+  flex: 0 0 auto;
+}
+
+.tool-page .toolbar button,
+.tool-page .toolbar .export-dropdown {
+  white-space: nowrap;
 }
 
 .tool-page .canvas-root {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 0.75rem;
   margin-bottom: 0.9rem;
+  min-height: 0;
+  overflow: visible;
+}
+
+.tool-page .canvas-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tool-page .side-toolbar {
+  position: relative;
+  flex: 0 0 3.2rem;
+  width: 3.2rem;
+  background: #fff;
+  padding: 0.75rem 0.4rem;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tool-page .side-toolbar.open {
+  transform: none;
+}
+
+.tool-page .side-toolbar-header {
+  display: none;
+}
+
+.tool-page .close-sidebar {
+  display: none;
+}
+
+.tool-page .tool-panel-button {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tool-page .tool-panel-button.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.tool-page .tool-panel-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tool-page .side-toolbar p {
+  color: #d1d5db;
+  margin: 0;
 }
 
 .tool-page .file-input {
@@ -188,11 +302,13 @@ body {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
+  max-height: 100%;
   overflow: hidden;
   padding: 0;
   border: 1px solid #768176;
   background: #172017;
   line-height: 0;
+  box-sizing: border-box;
 }
 
 .tool-page .image-stage.segmentation-active {
@@ -255,11 +371,18 @@ body {
 }
 
 .tool-page .run-message {
-  margin-top: 0.75rem;
-  padding: 0.7rem 0.8rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin: 0;
+  padding: 0.9rem 1rem;
   border: 1px solid #c8d5bf;
-  border-radius: 6px;
+  border-radius: 0;
   background: #f7fbf2;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  text-align: center;
 }
 
 .tool-page .protected-page {
@@ -284,9 +407,5 @@ body {
     flex-direction: column;
   }
 
-  .tool-page .run-button {
-    margin-top: 0.8rem;
-    width: 100%;
-  }
 
 }

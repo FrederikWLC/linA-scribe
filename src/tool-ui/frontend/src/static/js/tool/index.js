@@ -38,8 +38,24 @@ export function createToolPageController(options = {}) {
   const runMessage = writable('');
   const importMessage = writable('Paste, drop, or import an image to begin.');
   let pointerSession = null;
+  let runMessageTimeout = null;
   const isImageSet = writable(false);
   const isSettingImage = writable(false);
+
+  function setRunMessage(value, temporary = false) {
+    runMessage.set(value);
+    if (runMessageTimeout) {
+      clearTimeout(runMessageTimeout);
+      runMessageTimeout = null;
+    }
+
+    if (temporary && value) {
+      runMessageTimeout = setTimeout(() => {
+        runMessage.set('');
+        runMessageTimeout = null;
+      }, 3000);
+    }
+  }
 
   const selectedModel = derived(selectedModelKey, ($selectedModelKey) =>
     modelOptions.find((model) => model.key === $selectedModelKey) || modelOptions[0]
@@ -69,7 +85,8 @@ export function createToolPageController(options = {}) {
     isImageSet,
     isSettingImage,
     runMessage,
-    importMessage
+    importMessage,
+    setStatusMessage: setRunMessage
   });
 
   const canRunPredict = derived(
@@ -82,7 +99,9 @@ export function createToolPageController(options = {}) {
   const displayedImageUrl = derived(
     [imageUrl, segmentationImageUrl, activeImageMode],
     ([$imageUrl, $segmentationImageUrl, $activeImageMode]) =>
-      $activeImageMode === 'segmentation' && $segmentationImageUrl ? $segmentationImageUrl : $imageUrl
+      $activeImageMode === 'segmentation' && $segmentationImageUrl
+        ? $segmentationImageUrl
+        : $imageUrl
   );
   const isSegmentationActive = derived(
     [segmentationImageUrl, activeImageMode],
@@ -145,7 +164,7 @@ export function createToolPageController(options = {}) {
 
         return [...$points.slice(0, indexToRemove), ...$points.slice(indexToRemove + 1)];
       });
-      runMessage.set('');
+      setRunMessage('');
       return;
     }
 
@@ -164,7 +183,7 @@ export function createToolPageController(options = {}) {
       pointerSession.lastProcessed = { x: point.x, y: point.y };
       return [...$points, nextPoint];
     });
-    runMessage.set('');
+    setRunMessage('');
   }
 
   function beginPointSession(event) {
@@ -220,13 +239,13 @@ export function createToolPageController(options = {}) {
     const lastAction = history[history.length - 1];
     actionHistory.update(($history) => $history.slice(0, -1));
     points.update(($points) => undoAction(lastAction, $points));
-    runMessage.set('');
+    setRunMessage('');
   }
 
   function clearPoints() {
     points.set([]);
     actionHistory.set([]);
-    runMessage.set('');
+    setRunMessage('');
   }
 
   function showRawImage() {
@@ -250,7 +269,7 @@ export function createToolPageController(options = {}) {
     activeImageMode.set('raw');
     points.set([]);
     actionHistory.set([]);
-    runMessage.set('');
+    setRunMessage('');
 
     if (!get(acceptsPrompts)) {
       pointMode.set('foreground');
@@ -268,12 +287,12 @@ export function createToolPageController(options = {}) {
   async function runPrompt() {
     const rawImageUrl = get(imageUrl);
     if (!rawImageUrl) {
-      runMessage.set('Import an image before running.');
+      setRunMessage('Import an image before running.');
       return;
     }
 
     if (!get(canRunPredict)) {
-      runMessage.set(
+      setRunMessage(
         get(isSettingImage)
           ? 'Image is still being set.'
           : 'Set the image before running.'
@@ -281,22 +300,24 @@ export function createToolPageController(options = {}) {
       return;
     }
 
-    runMessage.set('Running segmentation...');
+    setRunMessage('Running segmentation...');
     const promptPoints = get(acceptsPrompts) ? get(points) : [];
 
     try {
-      const maskBlob = get(requiresSetImage)
+      const result = get(requiresSetImage)
         ? await predictSAMwithSetImage(get(selectedModelKey), getAuthHeaders, promptPoints)
         : await predictClassical(get(imageFile), get(selectedModelKey), getAuthHeaders);
+      console.log('runPrompt result', {
+        model: get(selectedModelKey),
+        requiresSetImage: get(requiresSetImage),
+        maskBlobSize: result.maskBlob?.size,
+      });
       revokeSegmentationImageUrl(get(segmentationImageUrl), get(imageUrl));
-      segmentationImageUrl.set(URL.createObjectURL(maskBlob));
+      segmentationImageUrl.set(URL.createObjectURL(result.maskBlob));
       activeImageMode.set('segmentation');
-      runMessage.set(get(acceptsPrompts)
-        ? `Segmentation ready with ${get(foregroundCount)} foreground and ${get(backgroundCount)} background point(s).`
-        : 'Segmentation ready.'
-      );
+      setRunMessage('Segmentation completed.', true);
     } catch (err) {
-      runMessage.set(err instanceof Error ? err.message : String(err));
+      setRunMessage(err instanceof Error ? err.message : String(err));
     }
   }
 

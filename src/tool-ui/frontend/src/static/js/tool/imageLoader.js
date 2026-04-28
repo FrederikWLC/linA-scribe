@@ -34,7 +34,8 @@ export function createImageLoader(options) {
     isImageSet,
     isSettingImage,
     runMessage,
-    importMessage
+    importMessage,
+    setStatusMessage
   } = options;
 
   async function loadImageFile(file) {
@@ -74,6 +75,10 @@ export function createImageLoader(options) {
     }
 
     try {
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage('Setting model image...', false);
+      }
+
       const nextPoints = await uploadAndSeedImage(
         file,
         get(selectedModelKey),
@@ -88,8 +93,20 @@ export function createImageLoader(options) {
           ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
           : `${nextImageName} loaded.`
       );
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage(
+          nextPoints.length > 0
+            ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
+            : `${nextImageName} loaded.`,
+          true
+        );
+      }
     } catch (err) {
-      importMessage.set(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      importMessage.set(message);
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage(message);
+      }
     } finally {
       isSettingImage.set(false);
     }
@@ -117,7 +134,11 @@ export function createImageLoader(options) {
 
     isImageSet.set(false);
     isSettingImage.set(true);
-    importMessage.set(`${get(imageName) || 'Image'} loaded. Setting model image...`);
+    const statusName = get(imageName) || 'Image';
+    importMessage.set(`${statusName} loaded. Setting model image...`);
+    if (typeof setStatusMessage === 'function') {
+      setStatusMessage(`Setting model image...`, { autoClear: false });
+    }
 
     try {
       const nextPoints = await uploadAndSeedImage(
@@ -129,13 +150,20 @@ export function createImageLoader(options) {
       points.set(nextPoints);
       actionHistory.set([]);
       isImageSet.set(get(requiresSetImage) ? true : false);
-      importMessage.set(
+      const completedMessage =
         nextPoints.length > 0
-          ? `${get(imageName) || 'Image'} loaded with ${nextPoints.length} seed point(s).`
-          : `${get(imageName) || 'Image'} loaded.`
-      );
+          ? `${statusName} loaded with ${nextPoints.length} seed point(s).`
+          : `${statusName} loaded.`;
+      importMessage.set(completedMessage);
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage(completedMessage, true);
+      }
     } catch (err) {
-      importMessage.set(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      importMessage.set(message);
+      if (typeof setStatusMessage === 'function') {
+        setStatusMessage(message, true);
+      }
     } finally {
       isSettingImage.set(false);
     }

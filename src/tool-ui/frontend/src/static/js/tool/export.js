@@ -133,27 +133,49 @@ function makeThumbnailDataUrl(sourceDataUrl, width, height) {
   });
 }
 
-export async function exportImageAsOra(imageUrl, sourceName = 'export') {
-  const image = await loadImage(imageUrl);
-  const canvas = createCanvasFromImage(image, true);
-  const mergedDataUrl = canvas.toDataURL('image/png');
+export async function exportImageAsOra(imageUrl, rawImageUrl, sourceName = 'export') {
+  const segmentationImage = await loadImage(imageUrl);
+  const rawImage = rawImageUrl ? await loadImage(rawImageUrl) : segmentationImage;
+
+  const rawCanvas = createCanvasFromImage(rawImage, false);
+  const segmentationCanvas = createCanvasFromImage(segmentationImage, true);
+
+  const width = Math.max(rawCanvas.width, segmentationCanvas.width);
+  const height = Math.max(rawCanvas.height, segmentationCanvas.height);
+
+  const mergedCanvas = document.createElement('canvas');
+  mergedCanvas.width = width;
+  mergedCanvas.height = height;
+  const mergedContext = mergedCanvas.getContext('2d');
+  if (!mergedContext) {
+    throw new Error('Unable to create merged canvas context for export.');
+  }
+
+  mergedContext.drawImage(rawCanvas, 0, 0);
+  mergedContext.drawImage(segmentationCanvas, 0, 0);
+
+  const rawDataUrl = rawCanvas.toDataURL('image/png');
+  const segmentationDataUrl = segmentationCanvas.toDataURL('image/png');
+  const mergedDataUrl = mergedCanvas.toDataURL('image/png');
 
   const zip = new JSZip();
   zip.file('mimetype', 'image/openraster', { compression: 'STORE' });
 
   const stackXml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<image w="${canvas.width}" h="${canvas.height}" version="0.0.1" xres="72" yres="72">\n` +
+    `<image w="${width}" h="${height}" version="0.0.1" xres="72" yres="72">\n` +
     `  <stack composite-op="svg:src-over" opacity="1" name="root" visibility="visible">\n` +
-    `    <layer name="Layer 1" src="data/layer0.png" x="0" y="0" visibility="visible" opacity="1" composite-op="svg:src-over"/>\n` +
+    `    <layer name="Segmentation" src="data/segmentation.png" x="0" y="0" visibility="visible" opacity="1" composite-op="svg:src-over"/>\n` +
+    `    <layer name="Raw Image" src="data/raw.png" x="0" y="0" visibility="visible" opacity="0.75" composite-op="svg:src-over"/>\n` +
     `  </stack>\n` +
     `</image>`;
 
   zip.file('stack.xml', stackXml);
   zip.file('mergedimage.png', mergedDataUrl.split(',')[1], { base64: true });
 
-  const thumbnailDataUrl = await makeThumbnailDataUrl(mergedDataUrl, canvas.width, canvas.height);
+  const thumbnailDataUrl = await makeThumbnailDataUrl(mergedDataUrl, width, height);
   zip.file('Thumbnails/thumbnail.png', thumbnailDataUrl.split(',')[1], { base64: true });
-  zip.file('data/layer0.png', mergedDataUrl.split(',')[1], { base64: true });
+  zip.file('data/segmentation.png', segmentationDataUrl.split(',')[1], { base64: true });
+  zip.file('data/raw.png', rawDataUrl.split(',')[1], { base64: true });
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const fileName = getExportFileName(sourceName, '.ora');
@@ -161,7 +183,7 @@ export async function exportImageAsOra(imageUrl, sourceName = 'export') {
   return blob;
 }
 
-export async function exportImage(imageUrl, extension, sourceName = 'export') {
+export async function exportImage(imageUrl, extension, sourceName = 'export', rawImageUrl) {
   if (!imageUrl) {
     throw new Error('No image URL provided for export.');
   }
@@ -175,7 +197,7 @@ export async function exportImage(imageUrl, extension, sourceName = 'export') {
     case '.jpeg':
       return exportImageAsJpeg(imageUrl, sourceName);
     case '.ora':
-      return exportImageAsOra(imageUrl, sourceName);
+      return exportImageAsOra(imageUrl, rawImageUrl, sourceName);
     default:
       throw new Error(`Export for ${normalizedExt} is not implemented yet.`);
   }

@@ -5,14 +5,12 @@
 
   const TOOL_MODEL_ROUTE_MAP = {
     sam: 'modal-mobilesam',
-    gaussian: 'gaussian',
-    grabcut: 'grabcut-auto-brush'
+    gaussian: 'gaussian'
   };
 
   const ROUTE_FOR_MODEL_KEY = {
     'modal-mobilesam': '/tool/sam',
-    gaussian: '/tool/gaussian',
-    'grabcut-auto-brush': '/tool/grabcut'
+    gaussian: '/tool/gaussian'
   };
 
   let username = '';
@@ -29,7 +27,7 @@
       return '/tool';
     }
 
-    const match = clean.match(/^\/tool\/(sam|gaussian|grabcut)$/);
+    const match = clean.match(/^\/tool\/(sam|gaussian)$/);
     if (match) {
       return `/tool/${match[1]}`;
     }
@@ -38,7 +36,7 @@
   }
 
   function modelKeyFromRoute(routePath) {
-    const match = routePath.match(/^\/tool\/(sam|gaussian|grabcut)$/);
+    const match = routePath.match(/^\/tool\/(sam|gaussian)$/);
     return match ? TOOL_MODEL_ROUTE_MAP[match[1]] : '';
   }
 
@@ -140,19 +138,16 @@
   {:else if route === '/tool'}
     <section class="tool-selection">
       <h1>Choose a tool</h1>
-      <p>Select one of the three available models.</p>
+      <p>Select one of the two available models.</p>
       <div class="tool-selection-buttons">
         <button type="button" on:click={() => pickTool('/tool/sam')}>SAM</button>
         <button type="button" on:click={() => pickTool('/tool/gaussian')}>Gaussian</button>
-        <button type="button" on:click={() => pickTool('/tool/grabcut')}>GrabCut</button>
       </div>
     </section>
   {:else}
     <ToolPage
-      {currentUser}
       {token}
       initialModelKey={selectedRouteModelKey}
-      onLogout={logout}
       onRouteChange={goTo}
     />
   {/if}
@@ -167,20 +162,21 @@
   }
 
   main {
-    max-width: 760px;
-    margin: 2rem auto;
-    padding: 1rem;
-    background: #fff;
-    border: 1px solid #ddd;
+    margin: 2rem 0;
   }
 
   .tool-selection {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #fff;
+    border: 1px solid #ddd;
     text-align: center;
   }
 
   .tool-selection-buttons {
     display: grid;
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
   }

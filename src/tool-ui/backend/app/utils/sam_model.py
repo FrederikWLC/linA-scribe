@@ -67,13 +67,6 @@ MODEL_OPTIONS: dict[str, dict[str, object]] = {
         "requires_set_image": False,
         "accepts_prompts": False,
     },
-    "grabcut-auto-brush": {
-        "label": "GC+brush",
-        "import_path": "scribe.baselines.grabcut",
-        "class_name": "GrabCutAutoBrush",
-        "requires_set_image": False,
-        "accepts_prompts": False,
-    },
 }
 
 DEFAULT_MODEL_KEY = "modal-mobilesam"
