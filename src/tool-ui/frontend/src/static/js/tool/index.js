@@ -84,8 +84,8 @@ export function createToolPageController(options = {}) {
 
   const {
     loadImageFile: loadImageFileRaw,
-    importFromFiles,
-    handleDrop,
+    importFromFiles: importFromFilesRaw,
+    handleDrop: handleDropRaw,
     syncModelImageIfNeeded
   } = createImageLoader({
     get,
@@ -109,11 +109,29 @@ export function createToolPageController(options = {}) {
     setTempStatusMessage
   });
 
-  async function loadImageFile(file) {
-    pendingBoxCorner = null;
-    previewBox.set(null);
+  function clearPrompts() {
+    points.set([]);
     boxes.set([]);
+    previewBox.set(null);
+    actionHistory.set([]);
+    pendingBoxCorner = null;
+    setRunMessage('');
+  }
+
+
+  async function loadImageFile(file) {
+    clearPrompts();
     return await loadImageFileRaw(file);
+  }
+
+  async function importFromFiles(event) {
+    clearPrompts();
+    return await importFromFilesRaw(event);
+  }
+
+  async function handleDrop(event) {
+    clearPrompts();
+    return await handleDropRaw(event);
   }
 
   const canRunPredict = derived(
@@ -244,12 +262,7 @@ export function createToolPageController(options = {}) {
   }
 
   function clearPoints() {
-    points.set([]);
-    boxes.set([]);
-    previewBox.set(null);
-    actionHistory.set([]);
-    pendingBoxCorner = null;
-    setRunMessage('');
+    clearPrompts();
   }
 
   function showRawImage() {
@@ -304,10 +317,11 @@ export function createToolPageController(options = {}) {
 
     setStatusMessage('Running segmentation...');
     const promptPoints = get(acceptsPrompts) ? get(points) : [];
+    const currentBoxes = get(acceptsPrompts) ? get(boxes) : [];
 
     try {
       const result = get(requiresSetImage)
-        ? await predictSAMwithSetImage(get(selectedModelKey), getAuthHeaders, promptPoints)
+        ? await predictSAMwithSetImage(get(selectedModelKey), getAuthHeaders, promptPoints, currentBoxes)
         : await predictClassical(get(imageFile), get(selectedModelKey), getAuthHeaders);
       console.log('runPrompt result', {
         model: get(selectedModelKey),

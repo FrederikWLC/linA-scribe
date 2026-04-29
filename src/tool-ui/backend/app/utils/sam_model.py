@@ -48,15 +48,15 @@ def _normalize_modal_token_env() -> None:
 _ensure_workspace_src_on_path()
 _normalize_modal_token_env()
 
-from scribe.prompts import PointPrompt  # noqa: E402
+from scribe.prompts import BoxPrompt, PointPrompt, PointPromptList  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
 MODEL_OPTIONS: dict[str, dict[str, object]] = {
     "modal-mobilesam": {
-        "label": "BestMobileSAMv2Implementation",
+        "label": "MobileSAM",
         "import_path": "sam_api.modal_sam",
-        "class_name": "ModalBestMobileSAMv2Implementation",
+        "class_name": "ModalMobileSAMImplementation",
         "requires_set_image": True,
         "accepts_prompts": True,
     },
@@ -214,9 +214,13 @@ class ScribeSAMService:
     def predict_mask_png(
         self,
         username: str,
-        xs: list[float],
-        ys: list[float],
-        labels: list[int],
+        xs: list[float], # for points
+        ys: list[float], #
+        labels: list[int], #
+        x1s: list[float], # for boxes
+        y1s: list[float], #
+        x2s: list[float], #
+        y2s: list[float], #
         coordinate_space: str,
         model_key: str = DEFAULT_MODEL_KEY,
     ) -> bytes:
@@ -231,8 +235,15 @@ class ScribeSAMService:
             raise HTTPException(status_code=409, detail="No image is set. Call set-image before predict.")
 
         prompts = None
-        if metadata["accepts_prompts"] and xs:
-            prompts = self._make_point_prompts(xs, ys, labels, coordinate_space, state.image_hw)
+        box_prompts = []
+        if metadata["accepts_prompts"]:
+            if x1s and y1s and x2s and y2s:
+                box_prompts = self._make_box_prompts(x1s, y1s, x2s, y2s, coordinate_space, state.image_hw)
+            if xs and ys and labels:
+                point_prompts = self._make_point_prompts(xs, ys, labels, coordinate_space, state.image_hw)
+            else:
+                point_prompts = []
+            prompts = (box_prompts, PointPromptList(point_prompts))
 
         with self._lock:
             try:
@@ -261,6 +272,7 @@ class ScribeSAMService:
         xs: list[float],
         ys: list[float],
         labels: list[int],
+        boxes: list[dict[str, float]],
         coordinate_space: str,
         model_key: str,
     ) -> bytes:
@@ -268,8 +280,10 @@ class ScribeSAMService:
         image = await _read_upload_as_grayscale(file)
         image_hw = tuple(int(value) for value in image.shape[:2])
         prompts = None
-        if metadata["accepts_prompts"] and xs:
-            prompts = self._make_point_prompts(xs, ys, labels, coordinate_space, image_hw)
+        if metadata["accepts_prompts"]:
+            box_prompts = self._make_box_prompts(boxes, coordinate_space, image_hw) if boxes else []
+            point_prompts = self._make_point_prompts(xs, ys, labels, coordinate_space, image_hw) if xs or ys or labels else []
+            prompts = (box_prompts, PointPromptList(point_prompts))
 
         with self._lock:
             state = self._get_state(username)
@@ -313,6 +327,30 @@ class ScribeSAMService:
                 point_y = round(float(y))
 
             prompts.append(PointPrompt(x=point_x, y=point_y, label=int(label)))
+
+        return prompts
+
+    def _make_box_prompts(
+        self,
+        x1s: list[float],
+        y1s: list[float],
+        x2s: list[float],
+        y2s: list[float],
+        coordinate_space: str,
+        image_hw: tuple[int, int] | None = None,
+    ) -> list[BoxPrompt]:
+        if coordinate_space not in {"percent", "pixel"}:
+            raise HTTPException(status_code=400, detail="coordinate_space must be 'percent' or 'pixel'")
+
+        height, width = image_hw or (0, 0)
+        prompts: list[BoxPrompt] = []
+        for x1, y1, x2, y2 in zip(x1s, y1s, x2s, y2s):
+            if coordinate_space == "percent":
+                x1 = round((x1 / 100) * max(width - 1, 0))
+                y1 = round((y1 / 100) * max(height - 1, 0))
+                x2 = round((x2 / 100) * max(width - 1, 0))
+                y2 = round((y2 / 100) * max(height - 1, 0))                
+            prompts.append(BoxPrompt(x1=x1, y1=y1, x2=x2, y2=y2))
 
         return prompts
 

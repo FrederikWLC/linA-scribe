@@ -1,4 +1,5 @@
 import { readErrorMessage } from './utils.js';
+import { buildBoxPayloads } from './prompts.js';
 
 export async function setBackendImage(file, selectedModelKey, getAuthHeaders) {
   const formData = new FormData();
@@ -46,7 +47,7 @@ async function parsePredictResponse(response) {
   };
 }
 
-export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, promptPoints) {
+export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, promptPoints, boxes = []) {
   if (!isSAMModel(selectedModelKey)) {
     throw new Error('predictSAMwithSetImage is only supported for SAM models.');
   }
@@ -62,7 +63,11 @@ export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, p
       coordinate_space: 'percent',
       x: promptPoints.map((point) => point.x),
       y: promptPoints.map((point) => point.y),
-      labels: promptPoints.map((point) => (point.kind === 'foreground' ? 1 : 0))
+      labels: promptPoints.map((point) => (point.kind === 'foreground' ? 1 : 0)),
+      x1s: boxes.map((box) => box.x1),
+      y1s: boxes.map((box) => box.y1),
+      x2s: boxes.map((box) => box.x2),
+      y2s: boxes.map((box) => box.y2)
     })
   });
 

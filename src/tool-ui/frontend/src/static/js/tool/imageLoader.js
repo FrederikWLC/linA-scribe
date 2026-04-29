@@ -107,9 +107,12 @@ export function createImageLoader(options) {
   }
 
   async function importFromFiles(event) {
-    const [file] = event.currentTarget.files || [];
+    const input = event.currentTarget;
+    const [file] = input?.files || [];
     await loadImageFile(file);
-    event.currentTarget.value = '';
+    if (input) {
+      input.value = '';
+    }
   }
 
   async function handleDrop(event) {

@@ -1,4 +1,4 @@
-import { getPromptPointFromClick } from './prompts.js';
+import { getPromptPointFromClick, createBoxFromCorners } from './prompts.js';
 
 export const pointDragThreshold = 0.25;
 
@@ -55,10 +55,10 @@ export function getPointsWithinDistance(event, currentPoints, imageBounds, maxDi
 
 export function isPointInsideBox(point, box) {
   return (
-    point.x >= box.x &&
-    point.x <= box.x + box.width &&
-    point.y >= box.y &&
-    point.y <= box.y + box.height
+    point.x >= box.x1 &&
+    point.x <= box.x2 &&
+    point.y >= box.y1 &&
+    point.y <= box.y2
   );
 }
 
@@ -96,20 +96,6 @@ export function getClosestPointIndex(event, currentPoints, imageBounds, maxDista
   });
 
   return bestDistance <= maxDistance * maxDistance ? bestIndex : -1;
-}
-
-function createBoxFromCorners(first, second) {
-  const x1 = Math.min(first.x, second.x);
-  const x2 = Math.max(first.x, second.x);
-  const y1 = Math.min(first.y, second.y);
-  const y2 = Math.max(first.y, second.y);
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-    x: x1,
-    y: y1,
-    width: x2 - x1,
-    height: y2 - y1
-  };
 }
 
 export function updatePreviewBox(event, pendingBoxCorner, imageBounds, setPreviewBox) {
@@ -209,10 +195,6 @@ export function processPointerEvent({
 
     const box = createBoxFromCorners(pendingBoxCorner, point);
     setPendingBoxCorner(null);
-
-    if (!box.width || !box.height) {
-      return;
-    }
 
     boxesUpdate(($boxes) => [...$boxes, box]);
     addSessionAction(box);

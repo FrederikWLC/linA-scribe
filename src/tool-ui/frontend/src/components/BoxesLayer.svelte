@@ -7,10 +7,10 @@
   }
 
   function boxStyle(box) {
-    const left = clampPercent(imageBounds.left + (box.x / 100) * imageBounds.width);
-    const top = clampPercent(imageBounds.top + (box.y / 100) * imageBounds.height);
-    const width = clampPercent((box.width / 100) * imageBounds.width);
-    const height = clampPercent((box.height / 100) * imageBounds.height);
+    const left = clampPercent(imageBounds.left + (box.x1 / 100) * imageBounds.width);
+    const top = clampPercent(imageBounds.top + (box.y1 / 100) * imageBounds.height);
+    const width = clampPercent(((box.x2 - box.x1) / 100) * imageBounds.width);
+    const height = clampPercent(((box.y2 - box.y1) / 100) * imageBounds.height);
     return `left: ${left}%; top: ${top}%; width: ${width}%; height: ${height}%;`;
   }
 </script>

@@ -1,5 +1,7 @@
 import base64
 import json
+from typing import Optional
+
 from fastapi import APIRouter, Depends, File, Query, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 import cv2
@@ -15,10 +17,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+class BoxPromptRequest(BaseModel):
+    x: Optional[float] = None
+    y: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    x1: Optional[float] = None
+    y1: Optional[float] = None
+    x2: Optional[float] = None
+    y2: Optional[float] = None
+
+
 class SetImagePredictRequest(BaseModel):
     x: list[float] = Field(default_factory=list)
     y: list[float] = Field(default_factory=list)
     labels: list[int] = Field(default_factory=list)
+    x1s: list[float] = Field(default_factory=list)
+    y1s: list[float] = Field(default_factory=list)
+    x2s: list[float] = Field(default_factory=list)
+    y2s: list[float] = Field(default_factory=list)
     coordinate_space: str = Field(default="percent", pattern="^(percent|pixel)$")
     model: str = DEFAULT_MODEL_KEY
 
@@ -115,6 +132,10 @@ def predict_set_image(
         xs=payload.x,
         ys=payload.y,
         labels=payload.labels,
+        x1s=payload.x1s,
+        y1s=payload.y1s,
+        x2s=payload.x2s,
+        y2s=payload.y2s,
         coordinate_space=payload.coordinate_space,
         model_key=payload.model,
     )
