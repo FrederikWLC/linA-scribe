@@ -1,19 +1,22 @@
-from __future__ import annotations
-
 import asyncio
 import os
 import subprocess
 import sys
 import threading
 from pathlib import Path
-
 import modal
 
+if "/root" not in sys.path:
+    sys.path.insert(0, "/root")
+
+from scribe.base import BaseScribe
+from scribe.binary_mask import BinaryMask
+from gfsam_api.GFSAM import GFSAMConfiguration
 
 APP_NAME = os.getenv("GF_SAM_MODAL_APP_NAME", "GFSAM")
 START_TIMEOUT_SECONDS = int(os.getenv("GF_SAM_MODAL_START_TIMEOUT_SECONDS", "900"))
-GF_SAM_REMOTE_ROOT = "/root/gf_sam_api"
-DATA_REMOTE_ROOT = Path("/root/data")
+GFSAM_REMOTE_ROOT = "/root/gfsam_api"
+DATA_REMOTE_ROOT = "/root/data"
 MODEL_DIR = Path("/root/models")
 DINO_WEIGHTS = MODEL_DIR / "dinov2_vitl14_pretrain.pth"
 SAM_WEIGHTS = MODEL_DIR / "sam_vit_h_4b8939.pth"
@@ -21,6 +24,7 @@ DINO_URL = "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_pr
 SAM_URL = "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
 
 LOCAL_SRC_ROOT = Path(__file__).resolve().parents[1]
+LOCAL_CONFIG_PATH = LOCAL_SRC_ROOT / "config.py"
 LOCAL_GF_SAM_API_ROOT = LOCAL_SRC_ROOT / "gfsam_api"
 LOCAL_SCRIBE_ROOT = LOCAL_SRC_ROOT / "scribe"
 LOCAL_DATA_SPLIT_PATH = LOCAL_SRC_ROOT / "data" / "split.py"
@@ -57,7 +61,9 @@ image = (
             "pillow",
         ]
     )
-    .add_local_dir(local_path=str(LOCAL_GF_SAM_API_ROOT), remote_path=GF_SAM_REMOTE_ROOT)
+    .env({"PYTHONPATH": "/root"})
+    .add_local_file(local_path=str(LOCAL_CONFIG_PATH), remote_path="/root/config.py")
+    .add_local_dir(local_path=str(LOCAL_GF_SAM_API_ROOT), remote_path=GFSAM_REMOTE_ROOT)
     .add_local_dir(local_path=str(LOCAL_SCRIBE_ROOT), remote_path="/root/scribe")
     .add_local_file(local_path=str(LOCAL_DATA_SPLIT_PATH), remote_path="/root/data/split.py")
     .add_local_dir(local_path=str(LOCAL_GT_ROOT), remote_path="/root/data/ground_truth/registered")
@@ -119,22 +125,31 @@ def _ensure_weights() -> tuple[str, str]:
 
 @app.cls(image=image, gpu="T4", timeout=30 * 60)
 class GFSAMInterface:
+
+    support_data_root: str = modal.parameter()
+    dinov2_size: str = modal.parameter()
+    sam_size: str = modal.parameter()
+    img_size: int = modal.parameter()
+
     @modal.enter()
     def setup(self) -> None:
-        for path in ("/root", GF_SAM_REMOTE_ROOT, "/root/scribe"):
+        for path in ("/root", GFSAM_REMOTE_ROOT, "/root/scribe"):
             if path not in sys.path:
                 sys.path.insert(0, path)
 
-        from data.split import get_support_data
-        from gfsam_api.GFSAM import GFSAM
+        from gfsam_api.GFSAM import build_from_gfsam_configuration, GFSAMConfiguration
 
-        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
         dinov2_weights, sam_weights = _ensure_weights()
-        self.model = GFSAM(
-            support_images=support_images,
-            support_labels=support_labels,
-            dinov2_weights=dinov2_weights,
-            sam_weights=sam_weights,
+
+        self.model = build_from_gfsam_configuration(
+            GFSAMConfiguration(
+                support_data_root=self.support_data_root,
+                dinov2_weights=dinov2_weights,
+                sam_weights=sam_weights,
+                dinov2_size=self.dinov2_size,
+                sam_size=self.sam_size,
+                img_size=self.img_size,
+            )
         )
 
     def get_model(self):
@@ -164,28 +179,27 @@ class GFSAMInterface:
         return {"status": "ok", "message": "GFSAM predictor loaded on Modal GPU"}
 
 
-class ModalGFSAM:
-    NAME = "GFSAM"
-    SHORT_NAME = "GFSAM"
+class ModalGFSAM(BaseScribe):
 
-    def __init__(self):
+    def __init__(self, configuration: GFSAMConfiguration):
+        super().__init__(configuration)
         _ensure_modal_app_started()
-        self.interface = GFSAMInterface()
+        support_data_root = configuration.support_data_root
+        img_size = configuration.img_size
+        dinov2_size = configuration.dinov2_size
+        sam_size = configuration.sam_size
+        self.interface = GFSAMInterface(support_data_root=str(support_data_root), img_size=img_size, dinov2_size=dinov2_size, sam_size=sam_size)
 
-    @property
-    def name(self) -> str:
-        return self.NAME
 
     def setImage(self, image):
-        self.image_metadata = self.interface.setImage.remote(image=image)
+        self.interface.setImage.remote(image=image)
         return self
 
     def decode_mask(self):
-        from scribe.binary_mask import BinaryMask
-
         return BinaryMask.from_image(self.interface.decode_mask_image.remote())
 
     def predict(self, image):
-        from scribe.binary_mask import BinaryMask
-
         return BinaryMask.from_image(self.interface.predict.remote(image=image))
+
+def build_modal_gfsam() -> ModalGFSAM:
+    return ModalGFSAM(GFSAMConfiguration(support_data_root=DATA_REMOTE_ROOT))

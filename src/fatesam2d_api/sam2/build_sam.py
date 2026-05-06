@@ -16,11 +16,32 @@ from omegaconf import OmegaConf
 from config import config
 
 
-def _ensure_hydra_initialized():
+def _resolve_config_file(config_file) -> Path:
+    config_path = Path(config_file)
+    candidates = [config_path]
+
+    if not config_path.is_absolute():
+        candidates.append(Path(config.ROOT_DIR) / config_path)
+
+    candidates.append(Path(config.FATESAM_CONFIGS) / config_path.name)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+
+    raise FileNotFoundError(
+        f"SAM2 config file not found: {config_file}. "
+        f"Tried: {', '.join(str(path) for path in candidates)}"
+    )
+
+
+def _ensure_hydra_initialized(config_file):
+    config_path = _resolve_config_file(config_file)
     if GlobalHydra.instance().is_initialized():
-        return
-    config_dir = Path(config.SAM2_CONFIG_PATH).resolve().parent
+        return config_path.name
+    config_dir = config_path.parent
     initialize_config_dir(config_dir=str(config_dir), version_base="1.2")
+    return config_path.name
 
 
 def build_sam2(
@@ -32,7 +53,7 @@ def build_sam2(
     apply_postprocessing=True,
     **kwargs,
 ):
-    _ensure_hydra_initialized()
+    config_name = _ensure_hydra_initialized(config_file)
 
     if apply_postprocessing:
         hydra_overrides_extra = hydra_overrides_extra.copy()
@@ -43,7 +64,7 @@ def build_sam2(
             "++model.sam_mask_decoder_extra_args.dynamic_multimask_stability_thresh=0.98",
         ]
     # Read config and init model
-    cfg = compose(config_name=config_file, overrides=hydra_overrides_extra)
+    cfg = compose(config_name=config_name, overrides=hydra_overrides_extra)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path)
@@ -62,7 +83,7 @@ def build_sam2_video_predictor(
     apply_postprocessing=True,
     **kwargs,
 ):
-    _ensure_hydra_initialized()
+    config_name = _ensure_hydra_initialized(config_file)
     hydra_overrides = [
         "++model._target_=fatesam2d_api.sam2.sam2_video_predictor.SAM2VideoPredictor",
     ]
@@ -81,7 +102,7 @@ def build_sam2_video_predictor(
     hydra_overrides.extend(hydra_overrides_extra)
 
     # Read config and init model
-    cfg = compose(config_name=config_file, overrides=hydra_overrides)
+    cfg = compose(config_name=config_name, overrides=hydra_overrides)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path)
@@ -150,7 +171,7 @@ def build_sam2_video_predictor_fate(
     apply_postprocessing=True,
     **kwargs,
 ):
-    _ensure_hydra_initialized()
+    config_name = _ensure_hydra_initialized(config_file)
     hydra_overrides = [
         "++model._target_=fatesam2d_api.sam2.sam2_video_predictor_FATE.SAM2VideoPredictorFATE",
     ]
@@ -177,7 +198,7 @@ def build_sam2_video_predictor_fate(
     hydra_overrides.extend(hydra_overrides_extra)
 
     # Read config and init model
-    cfg = compose(config_name=config_file, overrides=hydra_overrides)
+    cfg = compose(config_name=config_name, overrides=hydra_overrides)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path, strict=False)
@@ -203,67 +224,3 @@ def device_setup():
     elif device.type == "cpu":
         torch.autocast("cpu", dtype=torch.bfloat16).__enter__()
     return device
-
-
-def _sam2_cfg_name() -> str:
-    configured = Path(config.SAM2_CONFIG_PATH)
-    if configured.exists():
-        return configured.name
-
-    config_dir = configured.parent
-    fallback_names = ["sam2_hiera_t.yaml", "sam2.1_hiera_t.yaml"]
-    for name in fallback_names:
-        candidate = config_dir / name
-        if candidate.exists():
-            logging.warning(
-                "Configured SAM2 config not found at %s; falling back to %s",
-                configured,
-                candidate,
-            )
-            return name
-
-    raise FileNotFoundError(
-        f"Could not find SAM2 config. Tried configured path {configured} and fallbacks {fallback_names} in {config_dir}."
-    )
-
-
-def sam2_checkpoint_path() -> Path:
-    configured = Path(config.SAM2_CHECKPOINT_PATH)
-    if configured.exists():
-        return configured
-
-    ckpt_dir = configured.parent
-    fallback_names = ["sam2_hiera_tiny.pt", "sam2.1_hiera_tiny.pt"]
-    for name in fallback_names:
-        candidate = ckpt_dir / name
-        if candidate.exists():
-            logging.warning(
-                "Configured SAM2 checkpoint not found at %s; falling back to %s",
-                configured,
-                candidate,
-            )
-            return candidate
-
-    raise FileNotFoundError(
-        f"Could not find SAM2 checkpoint. Tried configured path {configured} and fallbacks {fallback_names} in {ckpt_dir}."
-    )
-
-
-def sam2_predictor():
-    device = device_setup()
-    return build_sam2_video_predictor(
-        config_file=_sam2_cfg_name(),
-        ckpt_path=str(sam2_checkpoint_path()),
-        device=device,
-    )
-
-
-def sam2_predictor_fate():
-    device = device_setup()
-    return build_sam2_video_predictor_fate(
-        config_file=_sam2_cfg_name(),
-        ckpt_path=str(sam2_checkpoint_path()),
-        device=device,
-    )
-
-

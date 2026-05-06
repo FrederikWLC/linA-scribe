@@ -1,11 +1,20 @@
 import cv2
 from scribe.base import Scribe
-from scribe.tunable import BilateralTunable
+from scribe.tunable import BILATERAL_SPECS, BilateralTunable, TunableConfiguration
 from scribe.binary_mask import BinaryMask
 
+
+class OtsuConfiguration(TunableConfiguration):
+    def __init__(self):
+        super().__init__(
+            name="Otsu",
+            short_name="Otsu",
+            hyperparameter_specs=BILATERAL_SPECS
+        )
+
 class Otsu(BilateralTunable,Scribe):
-    def __init__(self, d_bilateral=27, sigma_bilateral=9):
-        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
+
+    configuration: OtsuConfiguration
 
     def segment(self, image):
         
@@ -25,3 +34,6 @@ class Otsu(BilateralTunable,Scribe):
         # Convert and return image as binary mask
         # having 1 as foreground (ink), and 0 as background
         return BinaryMask.from_image(thresholded)
+
+def build_otsu():
+    return Otsu(OtsuConfiguration())

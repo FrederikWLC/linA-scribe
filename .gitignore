@@ -11,6 +11,7 @@
 # Checkpoints
 src/checkpoints/*
 *.pth
+*.pt
 sam_vit_h_4b839.pth
 sam_vit_l_0b3195.pth
 sam_vit_b_01ec64.pth
@@ -34,6 +35,19 @@ src/data/ground_truth/registered/*
 # ignore GF SAM data
 src/gfsam_api/matcher/data/*
 src/gfsam_api/dinov2/data/*
+
+# Tool UI generated/local artifacts
+src/tool-ui/outputs/
+src/tool-ui/frontend/node_modules/
+src/tool-ui/frontend/dist/
+src/tool-ui/frontend/.vite/
+src/tool-ui/frontend/.svelte-kit/
+src/tool-ui/frontend/coverage/
+src/tool-ui/backend/.pytest_cache/
+src/tool-ui/backend/*.db
+src/tool-ui/backend/*.sqlite
+src/tool-ui/backend/*.sqlite3
+src/tool-ui/backend/*.log
 
 #Python
 __pycache__

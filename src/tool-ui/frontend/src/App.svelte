@@ -3,13 +3,8 @@
   import LoginPage from './pages/LoginPage.svelte';
   import ToolPage from './pages/ToolPage.svelte';
 
-  const TOOL_MODEL_ROUTE_MAP = {
-    sam: 'modal-mobilesam',
-    gaussian: 'gaussian'
-  };
-
-  const ROUTE_FOR_MODEL_KEY = {
-    'modal-mobilesam': '/tool/sam',
+  const ROUTE_FOR_MODEL_ID = {
+    sam: '/tool/sam',
     gaussian: '/tool/gaussian'
   };
 
@@ -18,7 +13,7 @@
   let currentUser = '';
   let token = '';
   let route = '/login';
-  let selectedRouteModelKey = '';
+  let selectedRouteModelID = '';
   let status = '';
 
   function routeFromPathname(pathname) {
@@ -35,14 +30,14 @@
     return '/tool';
   }
 
-  function modelKeyFromRoute(routePath) {
+  function modelIDFromRoute(routePath) {
     const match = routePath.match(/^\/tool\/(sam|gaussian)$/);
-    return match ? TOOL_MODEL_ROUTE_MAP[match[1]] : '';
+    return match ? match[1] : '';
   }
 
   function goTo(path, replace = false) {
     route = path;
-    selectedRouteModelKey = modelKeyFromRoute(path);
+    selectedRouteModelID = modelIDFromRoute(path);
     if (replace) {
       window.history.replaceState({}, '', path);
     } else {
@@ -147,7 +142,7 @@
   {:else}
     <ToolPage
       {token}
-      initialModelKey={selectedRouteModelKey}
+      routeModelID={selectedRouteModelID}
       onRouteChange={goTo}
     />
   {/if}

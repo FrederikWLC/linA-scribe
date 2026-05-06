@@ -8,15 +8,17 @@ get_raw_root = lambda data_root: data_root / "raw"
 get_ground_truth_root = lambda data_root: data_root / "ground_truth" / "registered"
 
 
-def get_difficulty_paths(difficulty: str, data_root: Path = DATA_ROOT) -> list[Path]:
+def get_difficulty_paths(difficulty: str, data_root: Path | str = DATA_ROOT) -> list[Path]:
+	data_root = Path(data_root)
 	return sorted((get_raw_root(data_root) / difficulty).glob("*.jpg"))
 
-
-def iter_difficulty_image_paths(data_root: Path = DATA_ROOT):
+def iter_difficulty_image_paths(data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	for difficulty in DIFFICULTIES:
 		yield difficulty, get_difficulty_paths(difficulty, data_root=data_root)
 
-def load_paths(image_paths: list[Path], data_root: Path = DATA_ROOT):
+def load_paths(image_paths: list[Path], data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	images = [cv2.imread(path.as_posix(), cv2.IMREAD_GRAYSCALE) for path in image_paths]
 	ground_truths = [
 		cv2.imread((get_ground_truth_root(data_root) / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
@@ -37,7 +39,8 @@ def load_paths(image_paths: list[Path], data_root: Path = DATA_ROOT):
 # with equal difficulty sample sizes all the way through
 # n(easy) = n(medium) = n(hard)
 
-def get_support_val_test_paths(seed: int = 42, data_root: Path = DATA_ROOT):
+def get_support_val_test_paths(seed: int = 42, data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	rng = random.Random(seed)
 
 	support_paths = []
@@ -83,22 +86,26 @@ def get_support_val_test_paths(seed: int = 42, data_root: Path = DATA_ROOT):
 
 	return support_paths, val_paths, test_paths
 
-def get_support_data(seed: int = 42, data_root: Path = DATA_ROOT):
+def get_support_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	support_paths, _, _ = get_support_val_test_paths(seed=seed, data_root=data_root)
 	images, ground_truths, labels = load_paths(support_paths, data_root=data_root)
 	return images, ground_truths, labels
 
-def get_val_data(seed: int = 42, data_root: Path = DATA_ROOT):
+def get_val_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	_, val_paths, _ = get_support_val_test_paths(seed=seed, data_root=data_root)
 	images, ground_truths, labels = load_paths(val_paths, data_root=data_root)
 	return images, ground_truths, labels
 
-def get_test_data(seed: int = 42, data_root: Path = DATA_ROOT):
+def get_test_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	_, _, test_paths = get_support_val_test_paths(seed=seed, data_root=data_root)
 	images, ground_truths, labels = load_paths(test_paths, data_root=data_root)
 	return images, ground_truths, labels
 
-def get_test_data_by_difficulty(seed: int = 42, data_root: Path = DATA_ROOT):
+def get_test_data_by_difficulty(seed: int = 42, data_root: Path | str = DATA_ROOT):
+	data_root = Path(data_root)
 	_, _, test_paths = get_support_val_test_paths(seed=seed, data_root=data_root)
 	evaluation_data = {difficulty: {"images": [], "ground_truths": [], "labels": [], "paths": []} for difficulty in DIFFICULTIES}
 

@@ -26,6 +26,23 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY tool-ui/backend/app ./app
 COPY . /workspace/src
 
+RUN mkdir -p /workspace/src/checkpoints && python - <<'PY'
+import pathlib
+import urllib.request
+
+urls = {
+    'mobile_sam.pt': 'https://github.com/ultralytics/assets/releases/download/v8.4.0/mobile_sam.pt',
+    'sam_vit_h_4b8939.pth': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth',
+}
+root = pathlib.Path('/workspace/src/checkpoints')
+root.mkdir(parents=True, exist_ok=True)
+for filename, url in urls.items():
+    dest = root / filename
+    if not dest.exists():
+        print(f'Downloading {filename} from {url}')
+        urllib.request.urlretrieve(url, dest)
+PY
+
 COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
 EXPOSE 8000

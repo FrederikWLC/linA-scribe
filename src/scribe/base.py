@@ -1,29 +1,30 @@
 from abc import ABC, abstractmethod
 import cv2
 import numpy as np
-
 from scribe.binary_mask import BinaryMask
 from scribe.prompts import PointPrompt, Prompt
+from config import config
+class ModelConfiguration:
+    def __init__(self, name: str = None, short_name: str = None):
+        self.name = name
+        self.short_name = short_name    
 
-class Named:    
+class BaseScribe(ABC):
 
-    # name of the model, used for display and evaluation purposes
-    NAME = None
-    SHORT_NAME = None
-
-    @property
-    def name(self) -> str:
-        return self.NAME or type(self).__name__
-
-    @property
-    def short_name(self) -> str:
-        return self.SHORT_NAME or self.name
-
-class BaseScribe(ABC, Named):
+    def __init__(self, configuration: ModelConfiguration, **kwargs):
+        self.configuration = configuration
 
     # method where the preprocessing happens (returns an image, not a binary mask)
     def preprocess(self, image: np.ndarray) -> np.ndarray:  # must be implemented by subclass, default is no preprocessing
         return image
+    
+    @property
+    def name(self):
+        return self.configuration.name
+    
+    @property
+    def short_name(self):
+        return self.configuration.short_name
 
 
 
@@ -48,7 +49,7 @@ class SeedableScribe(BaseScribe):
     def predict(self, image: np.ndarray = None, prompts=None, autoprompt: bool = True) -> BinaryMask:
         if prompts is None and autoprompt:  # if no prompt is provided but autoprompting is enabled, autoprompting happens
             prompts = self.autoprompt(image)  # autoprompting is supposed to be done on the raw image, not the preprocessed one
-        preprocessed = self.preprocess(image) if image is not None else None
+        preprocessed = self.preprocess(image) if image is not None else None # allow for possibility of prompt-only prediction (for future extensions where image can be set prior to prediction)
         return self.segment(preprocessed, prompts)
 
     # method where the autoprompting happens

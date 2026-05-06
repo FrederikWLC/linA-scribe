@@ -1,31 +1,20 @@
 import base64
 import json
-from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Query, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 import cv2
 import numpy as np
+from scribe.binary_mask import BinaryMask
 
 import logging
 
-from app.utils.sam_model import DEFAULT_MODEL_KEY, scribe_sam_service
+from app.utils.service import MODEL_OPTIONS, build_sam_prompts_from_raw, ScribeService
 from app.utils.auth import require_session
-from scribe.binary_mask import BinaryMask
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-class BoxPromptRequest(BaseModel):
-    x: Optional[float] = None
-    y: Optional[float] = None
-    width: Optional[float] = None
-    height: Optional[float] = None
-    x1: Optional[float] = None
-    y1: Optional[float] = None
-    x2: Optional[float] = None
-    y2: Optional[float] = None
+scribe_service = ScribeService()
 
 
 class SetImagePredictRequest(BaseModel):
@@ -37,50 +26,42 @@ class SetImagePredictRequest(BaseModel):
     x2s: list[float] = Field(default_factory=list)
     y2s: list[float] = Field(default_factory=list)
     coordinate_space: str = Field(default="percent", pattern="^(percent|pixel)$")
-    model: str = DEFAULT_MODEL_KEY
 
 
 @router.get("/scribe/models")
 def models(session: dict[str, str] = Depends(require_session)) -> dict[str, object]:
+    return {"models": list(MODEL_OPTIONS.values())}
+
+
+@router.post("/scribe/warmup-sam-for-user")
+def warmup(session: dict[str, str] = Depends(require_session)) -> dict[str, object]:
+    scribe_service.get_sam_instance_for_user(session["username"])
+    return {"status": "ok"}
+
+
+@router.post("/scribe/set-image-for-sam")
+async def set_image(
+    file: UploadFile = File(...),
+    session: dict[str, str] = Depends(require_session),
+) -> dict[str, object]:
+    image = await _read_upload_as_grayscale(file)
+    scribe_service.set_image_for_sam(session["username"], image)
     return {
-        "default_model": DEFAULT_MODEL_KEY,
-        "models": scribe_sam_service.model_options,
+        "status": "ok",
+        "width": int(image.shape[1]),
+        "height": int(image.shape[0]),
     }
 
 
-@router.post("/scribe/warmup")
-def warmup(session: dict[str, str] = Depends(require_session)) -> dict[str, object]:
-    return scribe_sam_service.warmup_user_models(session["username"])
-
-
-@router.post("/scribe/set-image")
-async def set_image(
-    file: UploadFile = File(...),
-    model: str = Query(DEFAULT_MODEL_KEY),
-    session: dict[str, str] = Depends(require_session),
-) -> dict[str, object]:
-    return await scribe_sam_service.set_image_from_upload(session["username"], file, model_key=model)
-
-
-@router.post("/scribe/setImage")
+@router.post("/scribe/set-image-for-sam")
 async def set_image_alias(
     file: UploadFile = File(...),
-    model: str = Query(DEFAULT_MODEL_KEY),
     session: dict[str, str] = Depends(require_session),
 ) -> dict[str, object]:
-    return await set_image(file, model, session)
+    return await set_image(file, session)
 
 
-@router.post("/scribe/set_mask")
-async def set_mask_alias(
-    file: UploadFile = File(...),
-    model: str = Query(DEFAULT_MODEL_KEY),
-    session: dict[str, str] = Depends(require_session),
-) -> dict[str, object]:
-    return await set_image(file, model, session)
-
-
-def _predict_response(mask_png: bytes) -> Response:
+def _get_predict_response_from_output_png(mask_png: bytes) -> Response:
     image_array = np.frombuffer(mask_png, dtype=np.uint8)
     image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
     if image is None:
@@ -122,39 +103,62 @@ def _predict_response(mask_png: bytes) -> Response:
     return Response(content=json.dumps(payload), media_type="application/json")
 
 
-@router.post("/scribe/predict-set-image")
-def predict_set_image(
+@router.post("/scribe/predict-with-sam")
+def predict_with_sam(
     payload: SetImagePredictRequest,
     session: dict[str, str] = Depends(require_session),
 ) -> Response:
-    mask_png = scribe_sam_service.predict_mask_png(
-        username=session["username"],
-        xs=payload.x,
-        ys=payload.y,
-        labels=payload.labels,
-        x1s=payload.x1s,
-        y1s=payload.y1s,
-        x2s=payload.x2s,
-        y2s=payload.y2s,
-        coordinate_space=payload.coordinate_space,
-        model_key=payload.model,
-    )
-    return _predict_response(mask_png)
+    image_hw = scribe_service.get_sam_image_hw(session["username"])
+    if image_hw is None:
+        raise HTTPException(status_code=400, detail="No image is set. Upload an image before running SAM.")
+ 
+    try:
+        prompts = build_sam_prompts_from_raw(
+            xs=payload.x,
+            ys=payload.y,
+            labels=payload.labels,
+            x1s=payload.x1s,
+            y1s=payload.y1s,
+            x2s=payload.x2s,
+            y2s=payload.y2s,
+            coordinate_space=payload.coordinate_space,
+            image_hw=image_hw,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    mask = scribe_service.predict_with_sam(session["username"], None, prompts=prompts)
+    return _get_predict_response_from_output_png(_mask_to_png(mask))
 
 
-@router.post("/scribe/predict")
-async def predict_classical(
+@router.post("/scribe/predict-with-classical")
+async def predict_with_classical(
     file: UploadFile = File(...),
-    model: str = Query(DEFAULT_MODEL_KEY),
     session: dict[str, str] = Depends(require_session),
 ) -> Response:
-    mask_png = await scribe_sam_service.predict_upload_mask_png(
-        username=session["username"],
-        file=file,
-        xs=[],
-        ys=[],
-        labels=[],
-        coordinate_space="percent",
-        model_key=model,
-    )
-    return _predict_response(mask_png)
+    image = await _read_upload_as_grayscale(file)
+    mask = scribe_service.predict_with_classical(image)
+    return _get_predict_response_from_output_png(_mask_to_png(mask))
+
+
+async def _read_upload_as_grayscale(file: UploadFile) -> np.ndarray:
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Image file is empty")
+
+    try:
+        image = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_COLOR)
+        if image is None:
+            raise ValueError("Unable to decode image")
+        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Could not read image: {exc}") from exc
+
+
+def _mask_to_png(mask: np.ndarray | BinaryMask) -> bytes:
+    mask = BinaryMask(mask)
+    image = mask.to_image()
+    success, encoded = cv2.imencode(".png", image)
+    if not success:
+        raise HTTPException(status_code=500, detail="Unable to encode mask image to PNG")
+    return encoded.tobytes()

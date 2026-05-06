@@ -1,5 +1,4 @@
 import { setBackendImage } from './api.js';
-import { buildAutoseedPoints } from './prompts.js';
 
 export function revokeSegmentationImageUrl(previousSegmentationImageUrl, currentImageUrl) {
   if (previousSegmentationImageUrl && previousSegmentationImageUrl !== currentImageUrl) {
@@ -7,20 +6,19 @@ export function revokeSegmentationImageUrl(previousSegmentationImageUrl, current
   }
 }
 
-async function uploadAndSeedImage(file, selectedModelKey, getAuthHeaders, requiresSetImage) {
+async function uploadAndSetImage(file, selectedModelID, getAuthHeaders, requiresSetImage) {
   if (!requiresSetImage) {
-    return [];
+    return;
   }
 
-  const data = await setBackendImage(file, selectedModelKey, getAuthHeaders);
-  return buildAutoseedPoints(data);
+  await setBackendImage(file, selectedModelID, getAuthHeaders);
 }
 
 export function createImageLoader(options) {
   const {
     get,
     getAuthHeaders,
-    selectedModelKey,
+    selectedModelID,
     requiresSetImage,
     imageFile,
     imageUrl,
@@ -78,25 +76,17 @@ export function createImageLoader(options) {
     try {
       setStatusMessage('Setting model image...');
 
-      const nextPoints = await uploadAndSeedImage(
+      await uploadAndSetImage(
         file,
-        get(selectedModelKey),
+        get(selectedModelID),
         getAuthHeaders,
         get(requiresSetImage)
       );
-      points.set(nextPoints);
+      points.set([]);
       actionHistory.set([]);
       isImageSet.set(get(requiresSetImage));
-      importMessage.set(
-        nextPoints.length > 0
-          ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
-          : `${nextImageName} loaded.`
-      );
-      setTempStatusMessage(
-        nextPoints.length > 0
-          ? `${nextImageName} loaded with ${nextPoints.length} seed point(s).`
-          : `${nextImageName} loaded.`
-      );
+      importMessage.set(`${nextImageName} loaded.`);
+      setTempStatusMessage(`${nextImageName} loaded.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       importMessage.set(message);
@@ -136,19 +126,16 @@ export function createImageLoader(options) {
     setStatusMessage('Setting model image...');
 
     try {
-      const nextPoints = await uploadAndSeedImage(
+      await uploadAndSetImage(
         file,
-        get(selectedModelKey),
+        get(selectedModelID),
         getAuthHeaders,
         get(requiresSetImage)
       );
-      points.set(nextPoints);
+      points.set([]);
       actionHistory.set([]);
       isImageSet.set(get(requiresSetImage));
-      const completedMessage =
-        nextPoints.length > 0
-          ? `${statusName} loaded with ${nextPoints.length} seed point(s).`
-          : `${statusName} loaded.`;
+      const completedMessage = `${statusName} loaded.`;
       importMessage.set(completedMessage);
       setTempStatusMessage(completedMessage);
     } catch (err) {

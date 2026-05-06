@@ -1,12 +1,12 @@
 import { readErrorMessage } from './utils.js';
 import { buildBoxPayloads } from './prompts.js';
 
-export async function setBackendImage(file, selectedModelKey, getAuthHeaders) {
+export async function setBackendImage(file, selectedModelID, getAuthHeaders) {
   const formData = new FormData();
   formData.append('file', file);
-  const params = new URLSearchParams({ model: selectedModelKey });
+  const params = new URLSearchParams({ model: selectedModelID });
 
-  const response = await fetch(`/api/scribe/set-image?${params.toString()}`, {
+  const response = await fetch(`/api/scribe/set-image-for-sam?${params.toString()}`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: formData
@@ -19,15 +19,15 @@ export async function setBackendImage(file, selectedModelKey, getAuthHeaders) {
   return response.json();
 }
 
-const SAM_MODEL_KEYS = ['modal-mobilesam'];
-const CLASSICAL_MODEL_KEYS = ['gaussian'];
+const SAM_MODEL_IDENTIFIER = 'sam';
+const CLASSICAL_MODEL_IDENTIFIER = 'gaussian';
 
-function isSAMModel(selectedModelKey) {
-  return SAM_MODEL_KEYS.includes(selectedModelKey);
+function isSAMModel(selectedModelID) {
+  return SAM_MODEL_IDENTIFIER === selectedModelID;
 }
 
-function isClassicalModel(selectedModelKey) {
-  return CLASSICAL_MODEL_KEYS.includes(selectedModelKey);
+function isClassicalModel(selectedModelID) {
+  return CLASSICAL_MODEL_IDENTIFIER === selectedModelID;
 }
 
 function base64ToBlob(base64, type = 'image/png') {
@@ -47,19 +47,19 @@ async function parsePredictResponse(response) {
   };
 }
 
-export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, promptPoints, boxes = []) {
-  if (!isSAMModel(selectedModelKey)) {
-    throw new Error('predictSAMwithSetImage is only supported for SAM models.');
+export async function predictWithSAM(selectedModelID, getAuthHeaders, promptPoints, boxes = []) {
+  if (!isSAMModel(selectedModelID)) {
+    throw new Error('predictWithSAM is only supported for SAM models.');
   }
 
-  const response = await fetch('/api/scribe/predict-set-image', {
+  const response = await fetch('/api/scribe/predict-with-sam', {
     method: 'POST',
     headers: {
       ...getAuthHeaders(),
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: selectedModelKey,
+      model: selectedModelID,
       coordinate_space: 'percent',
       x: promptPoints.map((point) => point.x),
       y: promptPoints.map((point) => point.y),
@@ -78,16 +78,16 @@ export async function predictSAMwithSetImage(selectedModelKey, getAuthHeaders, p
   return parsePredictResponse(response);
 }
 
-export async function predictClassical(imageFile, selectedModelKey, getAuthHeaders) {
-  if (!isClassicalModel(selectedModelKey)) {
-    throw new Error('predictClassical is only supported for classical models.');
+export async function predictWithClassical(imageFile, selectedModelID, getAuthHeaders) {
+  if (!isClassicalModel(selectedModelID)) {
+    throw new Error('predictWithClassical is only supported for classical models.');
   }
 
-  const params = new URLSearchParams({ model: selectedModelKey });
+  const params = new URLSearchParams({ model: selectedModelID });
   const formData = new FormData();
   formData.append('file', imageFile);
 
-  const response = await fetch(`/api/scribe/predict?${params.toString()}`, {
+  const response = await fetch(`/api/scribe/predict-with-classical?${params.toString()}`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: formData
@@ -100,9 +100,9 @@ export async function predictClassical(imageFile, selectedModelKey, getAuthHeade
   return parsePredictResponse(response);
 }
 
-export async function warmupModels(getAuthHeaders) {
+export async function warmupSAMForUser(getAuthHeaders) {
   try {
-    await fetch('/api/scribe/warmup', {
+    await fetch('/api/scribe/warmup-sam-for-user', {
       method: 'POST',
       headers: getAuthHeaders()
     });

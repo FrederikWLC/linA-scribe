@@ -1,23 +1,18 @@
-from __future__ import annotations
-
 import asyncio
 import os
-import subprocess
 import threading
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import modal
+from scribe.tunable import Tunable
 
 from config import config
+from fatesam2d_api.FATESAM2D import FATESAM2DConfiguration, get_all_fatesam2d_configurations, get_all_tunable_fatesam2d_configurations, get_default_fatesam2d_configuration
 
 
 APP_NAME = os.getenv("MODAL_APP_NAME", "FATESAM2D")
-CHECKPOINT_DIR = Path("/root/checkpoints")
-CHECKPOINT_FILE = config.SAM2_CHECKPOINT
-CHECKPOINT_URL = "https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_tiny.pt"
-CONFIG_FILE = config.SAM2_CONFIG
-DATA_REMOTE_ROOT = Path("/root/data")
-FATESAM_REMOTE_ROOT = "/root/fatesam_api"
+START_TIMEOUT_SECONDS = int(os.getenv("FATESAM_MODAL_START_TIMEOUT_SECONDS", "900"))
+REMOTE_ROOT = PurePosixPath("/root")
 
 _modal_app_started = False
 _modal_app_thread: threading.Thread | None = None
@@ -27,7 +22,7 @@ _modal_app_start_error: BaseException | None = None
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
-    .apt_install(["wget", "libgl1", "libglib2.0-0"])
+    .apt_install(["libgl1", "libglib2.0-0"])
     .pip_install(
         [
             "numpy",
@@ -45,14 +40,17 @@ image = (
             "torchvision",
         ]
     )
-    .add_local_file(local_path=str(config.CONFIG_LOCAL_PATH), remote_path="/root/config.py")
-    .add_local_file(local_path=str(config.DATA_SPLIT_LOCAL_PATH), remote_path="/root/data/split.py")
-    .add_local_file(local_path=str(config.SAM2_CHECKPOINT_PATH), remote_path=f"/root/checkpoints/{config.SAM2_CHECKPOINT}")
-    .add_local_file(local_path=str(config.SAM2_CONFIG_PATH), remote_path=f"/root/configs/{config.SAM2_CONFIG}")
-    .add_local_dir(local_path=str(config.FATESAM_LOCAL_ROOT), remote_path=FATESAM_REMOTE_ROOT)
-    .add_local_dir(local_path=str(config.SCRIBE_LOCAL_ROOT), remote_path="/root/scribe")
-    .add_local_dir(local_path=str(config.GT_LOCAL_ROOT), remote_path="/root/data/ground_truth/registered")
-    .add_local_dir(local_path=str(config.RAW_LOCAL_ROOT), remote_path="/root/data/raw")
+    .env({"PYTHONPATH": f"{REMOTE_ROOT}:{REMOTE_ROOT / 'fatesam2d_api'}"})
+    .add_local_file(local_path=str(config.CONFIG_LOCAL_PATH), remote_path=str(REMOTE_ROOT / "config.py"))
+    .add_local_file(local_path=str(config.DATA_SPLIT_LOCAL_PATH), remote_path=str(REMOTE_ROOT / "data/split.py"))
+    .add_local_file(
+        local_path=str(config.FATESAM_CHECKPOINT_PATH),
+        remote_path=str(REMOTE_ROOT / "checkpoints" / config.FATESAM_CHECKPOINT),
+    )
+    .add_local_dir(local_path=str(config.FATESAM_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "fatesam2d_api"))
+    .add_local_dir(local_path=str(config.SCRIBE_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "scribe"))
+    .add_local_dir(local_path=str(config.GT_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/ground_truth/registered"))
+    .add_local_dir(local_path=str(config.RAW_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/raw"))
 )
 
 app = modal.App(APP_NAME)
@@ -65,6 +63,9 @@ async def _run_modal_app_background() -> None:
             _modal_app_start_event.set()
             await asyncio.Event().wait()
     except BaseException as exc:
+        if isinstance(exc, modal.exception.InvalidError) and "already running" in str(exc):
+            _modal_app_start_event.set()
+            return
         _modal_app_start_error = exc
         _modal_app_start_event.set()
 
@@ -78,7 +79,7 @@ def _modal_app_thread_target() -> None:
         _modal_app_start_event.set()
 
 
-def _ensure_modal_app_started(timeout_seconds: int = 60) -> None:
+def _ensure_modal_app_started(timeout_seconds: int = START_TIMEOUT_SECONDS) -> None:
     global _modal_app_started, _modal_app_thread
     if _modal_app_started:
         return
@@ -99,33 +100,44 @@ def _ensure_modal_app_started(timeout_seconds: int = 60) -> None:
     _modal_app_started = True
 
 
-def _ensure_checkpoint_file() -> str:
-    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-    checkpoint_path = CHECKPOINT_DIR / CHECKPOINT_FILE
+def _validate_checkpoint_file(checkpoint_path: str | Path) -> str:
+    checkpoint_path = Path(checkpoint_path)
     if not checkpoint_path.exists():
-        subprocess.run(["wget", "-O", str(checkpoint_path), CHECKPOINT_URL], check=True)
+        raise FileNotFoundError(f"Checkpoint is missing: {checkpoint_path}")
+    if checkpoint_path.stat().st_size <= 0:
+        raise FileNotFoundError(f"Checkpoint is empty: {checkpoint_path}")
     return str(checkpoint_path)
 
 
-def _setup_runtime_env() -> None:
-    if "/root" not in os.sys.path:
-        os.sys.path.insert(0, "/root")
-    if FATESAM_REMOTE_ROOT not in os.sys.path:
-        os.sys.path.insert(0, FATESAM_REMOTE_ROOT)
-    os.environ.setdefault("SAM2_CHECKPOINT", CHECKPOINT_FILE)
-    os.environ.setdefault("SAM2_CONFIG", CONFIG_FILE)
+def _setup_runtime_env(configuration: FATESAM2DConfiguration) -> None:
+    for path in (config.ROOT_DIR, config.FATESAM_LOCAL_ROOT):
+        path = str(path)
+        if path not in os.sys.path:
+            os.sys.path.insert(0, path)
+    os.environ.setdefault("SAM2_CHECKPOINT", Path(configuration.checkpoint_path).name)
+    os.environ.setdefault("SAM2_CONFIG", str(configuration.config_file))
 
 
-class FATESAM2DInterfaceTemplate:
+@app.cls(image=image, gpu="T4", timeout=30 * 60)
+class FATESAM2DInterface:
+
+    support_data_root: str = modal.parameter(default=str(REMOTE_ROOT / "data"))
+    is_blank: bool = modal.parameter(default=False)
+    use_autopoints: bool = modal.parameter(default=False)
+    top_n_supports: int = modal.parameter(default=3)
+
     def _setup_model(self) -> None:
-        import numpy as np  # noqa: F401
-        from data.split import get_support_data
-        from fatesam2d_api.FATESAM2D import FATESAM2D
+        from fatesam2d_api.FATESAM2D import FATESAM2DConfiguration, build_from_fatesam_configuration
 
-        _setup_runtime_env()
-        _ensure_checkpoint_file()
-        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
-        self.model = FATESAM2D(support_images=support_images, support_labels=support_labels)
+        configuration = FATESAM2DConfiguration(
+            support_data_root=self.support_data_root,
+            is_blank=self.is_blank,
+            use_autopoints=self.use_autopoints,
+            top_n_supports=self.top_n_supports
+        )
+        _setup_runtime_env(configuration)
+        _validate_checkpoint_file(configuration.checkpoint_path)
+        self.model = build_from_fatesam_configuration(configuration)
 
     @modal.enter()
     def setup(self) -> None:
@@ -138,19 +150,18 @@ class FATESAM2DInterfaceTemplate:
 
     @modal.method()
     def ping(self) -> str:
-        return f"ready: {_ensure_checkpoint_file()}"
+        configuration = FATESAM2DConfiguration(
+            support_data_root=self.support_data_root,
+            is_blank=self.is_blank,
+            use_autopoints=self.use_autopoints,
+            top_n_supports=self.top_n_supports
+        )
+        return f"ready: {_validate_checkpoint_file(configuration.checkpoint_path)}"
 
     @modal.method()
     def setImage(self, image) -> dict[str, object]:
-        import numpy as np
-
         model = self._get_model()
-        model.setImage(np.asarray(image))
-        output_hw = getattr(model, "_output_hw", None)
-        return {
-            "status": "ok",
-            "output_hw": [] if output_hw is None else [int(x) for x in output_hw],
-        }
+        model.setImage(image)
 
     @modal.method()
     def decode_mask(self, prompts=None):
@@ -162,76 +173,43 @@ class FATESAM2DInterfaceTemplate:
 
     @modal.method()
     def predict(self, image, prompts=None):
-        import numpy as np
-
-        return self._get_model().predict(np.asarray(image), prompts=prompts, autoprompt=False)
-
-
-@app.cls(image=image, gpu="A10", timeout=30 * 60)
-class FATESAM2DInterface(FATESAM2DInterfaceTemplate):
-    pass
-
-@app.cls(image=image, gpu="A10", timeout=30 * 60)
-class FATESAM2DBlankInterface(FATESAM2DInterfaceTemplate):
-    def _setup_model(self) -> None:
-        from data.split import get_support_data
-        from fatesam2d_api.FATESAM2D import FATESAM2DBlank
-
-        _setup_runtime_env()
-        _ensure_checkpoint_file()
-        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
-        print(f"ModalFATESAM2DBlank: loaded support_images={len(support_images)}, support_labels={len(support_labels)}")
-        if not support_images or not support_labels:
-            raise RuntimeError("ModalFATESAM2DBlank failed to load support data from /root/data")
-        self.model = FATESAM2DBlank(support_images=support_images, support_labels=support_labels)
-
-@app.cls(image=image, gpu="A10", timeout=30 * 60)
-class FATESAM2DAutoPointInterface(FATESAM2DInterfaceTemplate):
-
-    def _setup_model(self) -> None:
-        from data.split import get_support_data
-        from fatesam2d_api.FATESAM2D import FATESAM2DAutoPoint
-
-        _setup_runtime_env()
-        _ensure_checkpoint_file()
-        support_images, support_labels, _ = get_support_data(data_root=DATA_REMOTE_ROOT)
-        print(f"ModalFATESAM2DAutoPoint: loaded support_images={len(support_images)}, support_labels={len(support_labels)}")
-        if not support_images or not support_labels:
-            raise RuntimeError("ModalFATESAM2DAutoPoint failed to load support data from /root/data")
-        self.model = FATESAM2DAutoPoint(support_images=support_images, support_labels=support_labels)
-
+        return self._get_model().predict(image, prompts=prompts)
+    
     @modal.method()
-    def set_hyperparameters(self, **kwargs) -> None:
+    def hyperparameter_values(self) -> dict:
+        return self._get_model().hyperparameter_values
+    
+    @modal.method()
+    def set_hyperparameters(self, **kwargs):
         self._get_model().set_hyperparameters(**kwargs)
+        
 
-    @modal.method()
-    def hyperparameters(self) -> dict:
-        return self._get_model().hyperparameters
+class ModalFATESAM2D(Tunable):
 
-    @modal.method()
-    def hyperparameter_ranges(self, trial) -> dict:
-        from fatesam2d_api.FATESAM2D import FATESAM2DAutoPoint
-
-        return FATESAM2DAutoPoint.hyperparameter_ranges(trial)
-
-
-class ModalFATESAM2D:
-    NAME = "FATESAM2D"
-    SHORT_NAME = "FATE"
-
-    def __init__(self):
+    def __init__(self,configuration: FATESAM2DConfiguration):
+        super().__init__(configuration=configuration)
         _ensure_modal_app_started()
-        self.interface = FATESAM2DInterface()
+        self.interface = FATESAM2DInterface(
+            support_data_root=str(configuration.support_data_root),
+            is_blank=configuration.is_blank,
+            use_autopoints=configuration.use_autopoints,
+            top_n_supports=configuration.top_n_supports
+        )
 
     @property
-    def name(self) -> str:
-        return self.NAME
+    def hyperparameter_values(self) -> dict:
+        return self.interface.hyperparameter_values.remote()
+        
+    def set_hyperparameters(self, **kwargs):
+        self.interface.set_hyperparameters.remote(**kwargs)
+        return self
+    
+    def setImage(self, image) -> dict[str, object]:
+        self.interface.setImage.remote(image=image)
+        return self
 
     def predict(self, image, prompts=None):
         return self.interface.predict.remote(image=image, prompts=prompts)
-
-    def setImage(self, image) -> dict[str, object]:
-        return self.interface.setImage.remote(image=image)
 
     def decode_mask(self, prompts=None):
         return self.interface.decode_mask.remote(prompts=prompts)
@@ -239,39 +217,18 @@ class ModalFATESAM2D:
     def decode_mask_image(self, prompts=None):
         return self.interface.decode_mask_image.remote(prompts=prompts)
 
+   
+def build_all_modal_fatesam2d_variants():
+    configurations = get_all_fatesam2d_configurations(data_root=str(REMOTE_ROOT / "data"))
+    variants = [ModalFATESAM2D(configuration=conf) for conf in configurations]
+    return variants
 
-class ModalFATESAM2DBlank(ModalFATESAM2D):
-    NAME = "FATESAM2DBlank"
-    SHORT_NAME = "FATEBlank"
+def build_all_tunable_modal_fatesam2d_variants():
+    configurations = get_all_tunable_fatesam2d_configurations(data_root=str(REMOTE_ROOT / "data"))
+    variants = [ModalFATESAM2D(configuration=conf) for conf in configurations]
+    return variants
 
-    def __init__(self):
-        _ensure_modal_app_started()
-        self.interface = FATESAM2DBlankInterface()
-
-
-class ModalFATESAM2DAutoPoint(ModalFATESAM2D):
-    NAME = "FATESAM2D+pts"
-    SHORT_NAME = "FATE+pts"
-
-    def __init__(self):
-        _ensure_modal_app_started()
-        self.interface = FATESAM2DAutoPointInterface()
-
-    @property
-    def hyperparameters(self) -> dict:
-        return self.interface.hyperparameters.remote()
-
-    @classmethod
-    def hyperparameter_ranges(cls, trial) -> dict:
-        return {
-            "d_bilateral": trial.suggest_int("d_bilateral", 3, 31),
-            "sigma_bilateral": trial.suggest_int("sigma_bilateral", 0, 150),
-            "C": trial.suggest_int("C", 0, 10),
-            "d_gaussian": trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1, 16)]),
-            "n_fgd_points": trial.suggest_int("n_fgd_points", 1, 2000),
-            "n_bgd_points": trial.suggest_int("n_bgd_points", 1, 2000),
-            "d_gap_erosion": trial.suggest_categorical("d_gap_erosion", [i * 2 + 1 for i in range(1, 11)]),
-        }
-
-    def set_hyperparameters(self, **kwargs):
-        self.interface.set_hyperparameters.remote(**kwargs)
+def build_default_modal_fatesam2d():
+    configuration = get_default_fatesam2d_configuration(support_data_root=str(REMOTE_ROOT / "data"))
+    variant = ModalFATESAM2D(configuration=configuration)
+    return variant

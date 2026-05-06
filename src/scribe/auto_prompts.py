@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from scribe.prompts import PointPrompt
+from scribe.prompts import PointPrompt, PointPromptList
 
 
 # returns foreground pixels and background pixels as mask given a thresholded image, used for autoseeding of GrabCutAutoBrush
@@ -28,7 +28,7 @@ def place_points_randomly(mask,num_points) -> list[tuple[int, int]]:
     return fgd_pixels[indices[:num_points]]  # we take first num_points
 
 # returns list of point seeds given a thresholded image, used for autoseeding of MobileSAMv2AutoPoint
-def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, d_bgd_erosion=3, point_placement_func=place_points_randomly) -> list[PointPrompt]:
+def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, d_bgd_erosion=3, point_placement_func=place_points_randomly) -> PointPromptList:
     bgd_erosion_kernel = cv2.getStructuringElement(shape=cv2.MORPH_RECT, ksize=(d_bgd_erosion, d_bgd_erosion))
 
     fgd_thresh, bgd_thresh = thresh, thresh.invert()
@@ -36,8 +36,8 @@ def auto_points(thresh, num_fgd_points=20, num_bgd_points=20, d_bgd_erosion=3, p
     
     fgd_points = point_placement_func(fgd_brush,num_points=num_fgd_points)
     bgd_points = point_placement_func(bgd_brush,num_points=num_bgd_points)
-    return [
+    return PointPromptList([
         PointPrompt(x, y, 1) for x, y in fgd_points
     ] + [
         PointPrompt(x, y, 0) for x, y in bgd_points
-    ]
+    ])

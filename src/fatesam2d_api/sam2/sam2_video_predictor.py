@@ -89,29 +89,6 @@ class SAM2VideoPredictor(SAM2Base):
             offload_state_to_cpu=offload_state_to_cpu,
         )
 
-    @torch.inference_mode()
-    def init_state_from_image(
-        self,
-        image,
-        video_height,
-        video_width,
-        offload_video_to_cpu=False,
-        offload_state_to_cpu=False,
-    ):
-        """Initialize an inference state from one in-memory image.
-
-        This is a thin wrapper around `init_state_from_images(...)` that adds the
-        leading batch dimension expected by the multi-frame initializer.
-        """
-
-        return self.init_state_from_images(
-            images=[image],
-            video_height=video_height,
-            video_width=video_width,
-            offload_video_to_cpu=offload_video_to_cpu,
-            offload_state_to_cpu=offload_state_to_cpu,
-        )
-
     def _build_inference_state(
         self,
         images,

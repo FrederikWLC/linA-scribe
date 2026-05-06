@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 from scipy.stats import friedmanchisquare, shapiro, ttest_rel, wilcoxon, probplot
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
-from scribe.baselines.canny_fill import CannyFill
-from scribe.baselines.gaussian import Gaussian
-from scribe.baselines.grabcut import GrabCutAutoBrush
-from scribe.baselines.otsu import Otsu
-from scribe.baselines.sam import BestMobileSAMv2Implementation
+from scribe.baselines.canny_fill import build_cannyfill
+from scribe.baselines.gaussian import build_gaussian
+from scribe.baselines.grabcut import build_grabcut
+from scribe.baselines.otsu import build_otsu
+from sam_api.modal_sam import build_best_modal_sam_variant
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
@@ -19,13 +19,14 @@ evaluation_data = get_test_data_by_difficulty()
 
 METRICS = {"Dice": BinaryDiceScore}
 
-MODELS = [
-    Otsu(),
-    Gaussian(),
-    CannyFill(),
-    GrabCutAutoBrush(), 
-    BestMobileSAMv2Implementation(),
-]
+def get_models_to_be_evaluated():
+    return [
+        build_cannyfill(),
+        build_gaussian(),
+        build_otsu(),
+        build_grabcut(),
+        build_best_modal_sam_variant()
+    ]
 
 BASE_COLUMNS = ["difficulty","model"]
 RESUME_COLUMNS = BASE_COLUMNS + [
@@ -112,7 +113,7 @@ def perform_evaluation(
     _build_raw_pivots(df_raw, csv_path)
 
 
-def do_resume(csv_path: str = "data/results/evaluation", models=MODELS):
+def do_resume(models, csv_path: str = "data/results/evaluation"):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
     if df_raw.empty:
         return
@@ -138,7 +139,7 @@ def do_resume(csv_path: str = "data/results/evaluation", models=MODELS):
     df_resume.to_csv(_variant_path(csv_path, "resume"), index=False)
 
 
-def do_statistical_tests(csv_path: str = "data/results/evaluation", alpha: float = 0.05, models=MODELS):
+def do_statistical_tests(models, csv_path: str = "data/results/evaluation", alpha: float = 0.05):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
     if df_raw.empty:
         return
@@ -286,7 +287,7 @@ def _series_by_model(df_resume: pd.DataFrame, difficulty: str, metric_field: str
     return np.array([values_by_model.get(model, 0.0) for model in model_names])
 
 
-def do_barplots(csv_path: str = "data/results/evaluation", models=MODELS):
+def do_barplots(models, csv_path: str = "data/results/evaluation"):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
@@ -373,7 +374,7 @@ def do_barplots(csv_path: str = "data/results/evaluation", models=MODELS):
         plt.savefig(plots_dir / f"{artifact_tag}{metric}_score_comparison.png")
         plt.close()
 
-def do_boxplots(csv_path: str = "data/results/evaluation", models=MODELS):
+def do_boxplots(models, csv_path: str = "data/results/evaluation"):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
@@ -426,14 +427,14 @@ def do_boxplots(csv_path: str = "data/results/evaluation", models=MODELS):
         plt.savefig(plots_dir / f"{artifact_tag}{metric}_boxplot.png")
         plt.close()
 
-def do_preview(csv_path: str = "data/results/evaluation", models=MODELS):
+def do_preview(models, csv_path: str = "data/results/evaluation"):
     do_resume(csv_path=csv_path, models=models)
     do_boxplots(csv_path=csv_path, models=models) # ensure boxplots are up to date
     do_barplots(csv_path=csv_path, models=models) # ensure barplots are up to date
-    do_statistical_tests(csv_path=csv_path, models=models) # ensure statistical tests are up to date
+    do_statistical_tests( models=models,csv_path=csv_path) # ensure statistical tests are up to date
 
 
-def run_full_evaluation(evaluation_data, csv_path: str = "data/results/evaluation", models=MODELS):
+def run_full_evaluation(models, evaluation_data, csv_path: str = "data/results/evaluation"):
     #do_preview(csv_path=csv_path, models=models) # ensure preview is up to date before starting evaluation
     set_all_tuned_hyperparameters(models) # ensure all models have their tuned hyperparameters set before starting evaluation
     for difficulty in DIFFICULTIES:
@@ -458,5 +459,6 @@ def run_full_evaluation(evaluation_data, csv_path: str = "data/results/evaluatio
 
 
 def run_default_evaluation():
+    MODELS = get_models_to_be_evaluated()
     print("Starting full evaluation...")
-    run_full_evaluation(evaluation_data=evaluation_data, models=MODELS)
+    run_full_evaluation(models=MODELS,evaluation_data=evaluation_data)

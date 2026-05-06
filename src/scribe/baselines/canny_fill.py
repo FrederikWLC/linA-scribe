@@ -1,21 +1,30 @@
 from optuna import Trial
 from scribe.base import Scribe
-from scribe.tunable import BilateralTunable
+from scribe.tunable import BilateralTunable, HyperparameterSpec, TunableConfiguration, BILATERAL_SPECS
 import cv2
 import numpy as np
 from scribe.binary_mask import BinaryMask
 
-class CannyFill(Scribe, BilateralTunable):
-    def __init__(self, d_bilateral=23, sigma_bilateral=21, d_closing=19, sigma_canny=0.869782773928433):
-        self.d_closing = int(d_closing)
-        self.sigma_canny = float(sigma_canny)
-        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
+CANNY_SPECS = BILATERAL_SPECS + [
+    HyperparameterSpec("d_closing", default=19, suggest=lambda trial: trial.suggest_categorical("d_closing", [i * 2 + 1 for i in range(1,16)])), # odd integers from 3 to 31
+    HyperparameterSpec("sigma_canny", default=0.869782773928433, suggest=lambda trial: trial.suggest_float("sigma_canny", 0, 1))
+]
+class CannyConfiguration(TunableConfiguration):
+    def __init__(self):
+        super().__init__(
+            name="CannyFill",
+            short_name="Canny",
+            hyperparameter_specs=CANNY_SPECS
+        )
 
+class CannyFill(Scribe, BilateralTunable):
+
+    configuration: CannyConfiguration
 
     def segment(self, image: np.ndarray) -> BinaryMask:
 
-        sigma = float(self.sigma_canny)
-        d = int(self.d_closing)
+        sigma = float(self.configuration.get_value("sigma_canny"))
+        d = int(self.configuration.get_value("d_closing"))
 
         # auto canny thresholds
         v = np.median(image)
@@ -32,22 +41,5 @@ class CannyFill(Scribe, BilateralTunable):
 
         return BinaryMask(filled)
     
-    @property
-    def name(self):
-        return "CannyFill"
-    
-    @property
-    def hyperparameters(self):
-        return super().hyperparameters | {
-            # Kernel size for morphological closing (filling)
-            "d_closing":int(self.d_closing),
-            # Sigma for auto Canny thresholding (determines how much the thresholds deviate from the median pixel intensity)
-            "sigma_canny":float(self.sigma_canny)
-            }
-
-    @classmethod
-    def hyperparameter_ranges(cls,trial: Trial):
-        return super().hyperparameter_ranges(trial) | {
-            "d_closing":trial.suggest_categorical("d_closing", [i * 2 + 1 for i in range(1,16)]), # odd integers from 3 to 31
-            "sigma_canny":trial.suggest_float("sigma_canny", 0, 1)
-            }
+def build_cannyfill():
+    return CannyFill(CannyConfiguration())

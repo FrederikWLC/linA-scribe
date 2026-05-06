@@ -1,10 +1,7 @@
-# Source: adapted from upstream FATE-SAM dataset loader.
-# This implementation provides a generic image-label loader for plain image support data.
-
-import cv2
+from scribe.binary_mask import BinaryMask
 import numpy as np
 import torch
-from scribe.binary_mask import BinaryMask
+import cv2
 
 # Convert a grayscale image into a normalized RGB tensor at the target size.
 def _image_to_tensor(image_array: np.ndarray, image_size: int=1024) -> torch.Tensor:
@@ -31,13 +28,6 @@ def prepare_query(query_image, image_size=1024):
     arr = np.asarray(query_image)
     frame = _image_to_tensor(arr, image_size=image_size)
     return frame.unsqueeze(0), (int(frame.shape[1]), int(frame.shape[2]))
-
-
-# Resize a mask to match query resolution using nearest-neighbor sampling.
-def resize_mask_to_shape(mask: np.ndarray, target_hw: tuple[int, int]) -> np.ndarray:
-    return cv2.resize(mask.astype(np.int32), (target_hw[1], target_hw[0]), interpolation=cv2.INTER_NEAREST)
-
-
 
 def add_support_image(existing_tensor, similarity_results, compute_device=torch.device("cpu")):
     new_images_tensor = torch.stack([data['image'] for data in similarity_results.values()], dim=0)

@@ -1,20 +1,31 @@
 from scribe.base import Scribe
-from scribe.tunable import BilateralTunable
+from scribe.tunable import BILATERAL_SPECS, BilateralTunable, HyperparameterSpec, TunableConfiguration
 import numpy as np
 import cv2
 from scribe.binary_mask import BinaryMask
 from optuna import Trial
 
+GAUSSIAN_SPECS = BILATERAL_SPECS + [
+    HyperparameterSpec("C", default=9, suggest=lambda trial: trial.suggest_int("C", 0, 10)),
+    HyperparameterSpec("d_gaussian", default=39, suggest=lambda trial: trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,21)])), # odd integers from 3 to 41
+]   
+                       
+class GaussianConfiguration(TunableConfiguration):
+    def __init__(self):
+        super().__init__(
+            name="Gaussian",
+            short_name="Gaus",
+            hyperparameter_specs=GAUSSIAN_SPECS
+        )
+
 # implementation of the Gaussian threshold
 class Gaussian(Scribe, BilateralTunable):
-    def __init__(self, d_bilateral=25, sigma_bilateral=43, C=9, d_gaussian=39):
-        self.d_gaussian = int(d_gaussian)
-        self.C = int(C)
-        super().__init__(d_bilateral=d_bilateral, sigma_bilateral=sigma_bilateral)
+    
+    configuration: GaussianConfiguration
 
     def segment(self, image: np.ndarray) -> BinaryMask:
-        kernel_size = int(self.d_gaussian) # size of kernel (neighborhood)
-        C = int(self.C) # constant to be subtracted for local threshold computation
+        kernel_size = int(self.configuration.get_value("d_gaussian")) # size of kernel (neighborhood)
+        C = int(self.configuration.get_value("C")) # constant to be subtracted for local threshold computation
         # 255 is the value put 
         # for the brightests pixels
         # that pass the threshold...
@@ -29,16 +40,5 @@ class Gaussian(Scribe, BilateralTunable):
         # having 1 as foreground (ink), and 0 as background
         return BinaryMask.from_image(thresholded)
 
-    @property
-    def hyperparameters(self):
-        return super().hyperparameters | {
-            "C":int(self.C),
-            "d_gaussian":int(self.d_gaussian),
-        }
-    
-    @classmethod
-    def hyperparameter_ranges(cls,trial: Trial) -> dict:
-        return super().hyperparameter_ranges(trial) | {
-            "C":trial.suggest_int("C", 0, 10),
-            "d_gaussian":trial.suggest_categorical("d_gaussian", [i * 2 + 1 for i in range(1,21)]), # odd integers from 3 to 41
-        }
+def build_gaussian():
+    return Gaussian(GaussianConfiguration())

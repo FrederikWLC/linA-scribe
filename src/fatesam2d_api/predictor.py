@@ -1,21 +1,11 @@
-# Source: adapted from upstream FATE-SAM predictor utilities.
+# Source: adapted from upstream FATE-SAM predictor utilities and some of their other scripts
 # Upstream reference: https://github.com/I3Tlab/FATE-SAM/blob/main/notebooks/predictor_utils.py
 
 import os
 import warnings
-from pathlib import Path
-
-
-from fatesam2d_api.dataset_loader import (
-    add_support_image,
-    prepare_query
-)
-from fatesam2d_api.sam2.build_sam import sam2_predictor, sam2_predictor_fate
-
-
 import numpy as np
 import torch
-from scribe.prompts import get_point_prompts_and_labels
+from fatesam2d_api.tensor_handling import add_support_image, prepare_query
 from tqdm import tqdm
 import logging
 import time
@@ -39,11 +29,11 @@ def manhattan_distance_per_pixel(target_feats, image_feats):
 
 
 @torch.inference_mode()
-def compute_features(images, predictor, video_height, video_width, batch_size=1):
+def compute_features(images, sam2_predictor, video_height, video_width, batch_size=1):
     """Compute deep features for each frame in a video using a given predictor."""
     t0 = time.perf_counter()
     
-    inference_state = predictor.init_state_from_images(
+    inference_state = sam2_predictor.init_state_from_images(
         images=images,
         video_height=video_height,
         video_width=video_width,
@@ -54,7 +44,7 @@ def compute_features(images, predictor, video_height, video_width, batch_size=1)
     features = []
     for idx in range(inference_state["num_frames"]):
         logger.info("compute_features: input tensor shape %s", tuple(images.shape))
-        _, _, feature, _, _ = predictor._get_image_feature(inference_state, idx, batch_size=batch_size)
+        _, _, feature, _, _ = sam2_predictor._get_image_feature(inference_state, idx, batch_size=batch_size)
         features.append(feature)
         
         if (idx + 1) % 10 == 0 or (idx + 1) == inference_state["num_frames"]:
@@ -105,6 +95,7 @@ def find_top_similar_images_embed(support_images, support_features, support_labe
     
 @torch.inference_mode()
 def prepare_inference_state(
+    sam2_predictor,
     query_image,
     support_images,
     support_labels,
@@ -115,10 +106,7 @@ def prepare_inference_state(
     
     query_image, (video_height, video_width) = prepare_query(query_image, image_size=1024)
 
-    # allow caller to provide a predictor and/or cached support_features
-    predictor = sam2_predictor()
-
-    inference_state = predictor.init_state_from_images(
+    inference_state = sam2_predictor.init_state_from_images(
         images=query_image,
         video_height=video_height,
         video_width=video_width,
@@ -131,12 +119,14 @@ def prepare_inference_state(
     inference_state["images"] = inference_state["images"].to(inference_state["device"])
     logger.info("prepare_inference_state: video_height=%s video_width=%s", video_height, video_width)
 
-    # FIND AND ADD SUPPORT IMAGES
-    # ==============
+    # ==================================
+    # FINDING AND ADDING SUPPORT IMAGES
+    # ==================================
+
     logger.info("prepare_inference_state: computing support features for %d support images", len(support_images))
     support_features = compute_features(
         images=support_images,
-        predictor=predictor,
+        sam2_predictor=sam2_predictor,
         batch_size=1,
         video_height=video_height,
         video_width=video_width
@@ -144,7 +134,7 @@ def prepare_inference_state(
 
     query_feature = compute_features(
         images=query_image,
-        predictor=predictor,
+        sam2_predictor=sam2_predictor,
         video_height=video_height,
         video_width=video_width
     )
@@ -161,22 +151,23 @@ def prepare_inference_state(
     inference_state["images"] = add_support_image(
         inference_state["images"],
         similarity_results[0],
-        compute_device=inference_state["device"],
+        compute_device=inference_state["device"]
     )
     logger.info("prepare_inference_state: after add_support_image, images tensor shape %s", tuple(inference_state["images"].shape))
     logger.info("prepare_inference_state: added %d support images to inference_state", len(similarity_results[0]))
     inference_state["num_frames"] += top_n  # assuming top_n support images are added;
-    predictor.reset_state(inference_state)
-    logger.info("prepare_inference_state: reset predictor state after adding supports")
-    # =============
+    sam2_predictor.reset_state(inference_state)
+    logger.info("prepare_inference_state: reset sam2_predictor state after adding supports")
 
     return inference_state, similarity_results
 
 @torch.inference_mode()
 def run_from_inference_state(
+    sam2_predictor_fate,
     inference_state,
     similarity_results,
-    prompts=None,
+    points=None,
+    labels=None,
     prompt_input_hw=None,
     num_classes=0
 ):
@@ -187,8 +178,7 @@ def run_from_inference_state(
     Returns:
         dict[int, np.ndarray] | None:  mask predictions for query frame 0.
     """
-    predictor = sam2_predictor_fate()
-    points, labels = get_point_prompts_and_labels(prompts)
+    
     if points is not None and labels is not None:
         if prompt_input_hw is not None:
             input_h, input_w = prompt_input_hw
@@ -199,7 +189,7 @@ def run_from_inference_state(
             points[:, 1] *= video_h / input_h
 
         logger.info("run_from_inference_state: adding point prompts to inference_state")
-        predictor.add_new_points_or_box(
+        sam2_predictor_fate.add_new_points_or_box(
             inference_state=inference_state,
             frame_idx=0,
             obj_id=1,
@@ -208,7 +198,7 @@ def run_from_inference_state(
             clear_old_points=True,
         )
 
-    # For single image: query at frame 0, supports are appended after the query frame
+    # For single image: the query is at frame 0, supports are appended after the query frame
     start_frame_idx = 0
 
     for idx, (k, s) in enumerate(similarity_results[start_frame_idx].items()):
@@ -218,7 +208,7 @@ def run_from_inference_state(
             for actual_label in actual_labels:
                 # `s['label']` is a tensor; use tensor ops instead of numpy `.astype`
                 mask = (s["label"] == actual_label).float().squeeze(0)
-                predictor.add_new_mask(
+                sam2_predictor_fate.add_new_mask(
                     inference_state=inference_state,
                     frame_idx=idx + 1,  # supports start after query frame
                     obj_id=actual_label,
@@ -230,7 +220,7 @@ def run_from_inference_state(
         Helper function to propagate masks through the volume and collect predictions.
         """
         seg_predictions = {}
-        for out_frame_idx, out_obj_ids, out_mask_logits in predictor.propagate_in_video_fate(
+        for out_frame_idx, out_obj_ids, out_mask_logits in sam2_predictor_fate.propagate_in_video_fate(
                 inference_state, similarity_results, start_frame_idx=start_frame_idx + offset, reverse=reverse):
             seg_predictions[out_frame_idx] = {
                 out_obj_id: (out_mask_logits[x] > 0.0).cpu().numpy() for x, out_obj_id in enumerate(out_obj_ids)
@@ -247,22 +237,30 @@ def run_from_inference_state(
 
 #Full pipeline for running inference on one query image using support images and labels.
 def run_single_image_inference(
+    sam2_predictor,
+    sam2_predictor_fate,
     query_image,
     support_images,
     support_labels,
-    prompts=None
+    points=None,
+    labels=None,
+    top_n=5
 ):
 
     inference_state, similarity_results = prepare_inference_state(
+        sam2_predictor=sam2_predictor,
         query_image=query_image,
         support_images=support_images,
         support_labels=support_labels,
+        top_n=top_n
     )
     
     query_frame_prediction = run_from_inference_state(
+        sam2_predictor_fate=sam2_predictor_fate,
         inference_state=inference_state,
         similarity_results=similarity_results,
-        prompts=prompts,
+        points=points,
+        labels=labels,
         prompt_input_hw=np.asarray(query_image).shape[:2],
     )
 

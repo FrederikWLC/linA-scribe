@@ -1,71 +1,39 @@
-from __future__ import annotations
-
 import asyncio
 import os
 import sys
 import threading
-import urllib.request
-from pathlib import Path, PurePosixPath
-
+from pathlib import Path
+from scribe.prompts import PointPromptList
+from scribe.baselines.sam import SAMConfiguration, get_all_sam_configurations, get_all_tunable_sam_configurations, get_best_sam_configuration
 import modal
+from scribe.tunable import Tunable
 
 
-APP_NAME = os.getenv("MOBILE_SAM_MODAL_APP_NAME", "MobileSAM")
-START_TIMEOUT_SECONDS = int(os.getenv("MOBILE_SAM_MODAL_START_TIMEOUT_SECONDS", "900"))
+APP_NAME = os.getenv("MODAL_APP_NAME", "SAM")
+GPU = os.getenv("MODAL_GPU", "T4")
+START_TIMEOUT_SECONDS = int(os.getenv("SAM_MODAL_START_TIMEOUT_SECONDS", "900"))
 
 REMOTE_SRC_ROOT = "/root/src"
-REMOTE_SCRIBE_ROOT = f"{REMOTE_SRC_ROOT}/scribe"
-REMOTE_CONFIG_PATH = f"{REMOTE_SRC_ROOT}/config.py"
-
 LOCAL_SRC_ROOT = Path(__file__).resolve().parents[1]
-LOCAL_SCRIBE_ROOT = LOCAL_SRC_ROOT / "scribe"
 
-for candidate in (LOCAL_SRC_ROOT, Path(REMOTE_SRC_ROOT)):
-    if (candidate / "config.py").exists() and str(candidate) not in sys.path:
-        sys.path.insert(0, str(candidate))
+if str(LOCAL_SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(LOCAL_SRC_ROOT))
 
-from config import config  # noqa: E402
-
-CHECKPOINT_LOCAL_DIR = config.MOBILESAM_CHECKPOINT_PATH.parent
-CHECKPOINT_LOCAL_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def _download_mobilesam_checkpoint_remote() -> Path:
-    remote_checkpoint_path = Path(REMOTE_SRC_ROOT) / "checkpoints" / config.MOBILESAM_CHECKPOINT
-    if remote_checkpoint_path.exists():
-        return remote_checkpoint_path
-
-    checkpoint_url = os.environ.get(
-        "MOBILESAM_CHECKPOINT_URL",
-        "https://huggingface.co/dhkim2810/MobileSAM/resolve/main/mobile_sam.pt",
-    ).strip()
-    if not checkpoint_url:
-        raise FileNotFoundError(
-            f"remote checkpoint {remote_checkpoint_path} does not exist and MOBILESAM_CHECKPOINT_URL is not configured."
-        )
-
-    remote_checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = remote_checkpoint_path.with_suffix(remote_checkpoint_path.suffix + ".download")
-    try:
-        with urllib.request.urlopen(checkpoint_url, timeout=300) as response, open(tmp_path, "wb") as out_file:
-            out_file.write(response.read())
-        tmp_path.replace(remote_checkpoint_path)
-    except Exception as exc:
-        if tmp_path.exists():
-            tmp_path.unlink()
-        raise RuntimeError(
-            f"Failed to download MobileSAM checkpoint from {checkpoint_url}: {exc}"
-        ) from exc
-
-    return remote_checkpoint_path
-
-
-REMOTE_CHECKPOINT_PATH = PurePosixPath(REMOTE_SRC_ROOT) / "checkpoints" / config.MOBILESAM_CHECKPOINT
+CHECKPOINT_LOCAL_DIR = LOCAL_SRC_ROOT / "checkpoints"
 
 _modal_app_started = False
 _modal_app_thread: threading.Thread | None = None
 _modal_app_start_event = threading.Event()
 _modal_app_start_error: BaseException | None = None
+
+
+
+def _validate_checkpoint(checkpoint_path: str) -> None:
+    path = Path(checkpoint_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Checkpoint is missing: {path}")
+    if path.stat().st_size <= 0:
+        raise FileNotFoundError(f"Checkpoint is empty: {path}")
 
 
 image = (
@@ -76,16 +44,20 @@ image = (
             "numpy==1.26.4",
             "opencv-python-headless==4.11.0.86",
             "optuna==4.8.0",
+            "hydra-core==1.3.2",
+            "omegaconf==2.3.0",
             "pillow==11.2.1",
             "timm==0.9.16",
-            "torch==2.2.2",
-            "torchvision==0.17.2",
+            "torch==2.5.1",
+            "torchvision==0.20.1",
+            "git+https://github.com/facebookresearch/segment-anything.git",
             "git+https://github.com/ChaoningZhang/MobileSAM.git",
         ]
     )
-    .add_local_file(local_path=str(config.CONFIG_LOCAL_PATH), remote_path=REMOTE_CONFIG_PATH)
-    .add_local_dir(local_path=str(CHECKPOINT_LOCAL_DIR), remote_path=f"{REMOTE_SRC_ROOT}/checkpoints")
-    .add_local_dir(local_path=str(LOCAL_SCRIBE_ROOT), remote_path=REMOTE_SCRIBE_ROOT)
+    .run_commands("SAM2_BUILD_CUDA=0 pip install --no-cache-dir git+https://github.com/facebookresearch/sam2.git")
+    .env({"PYTHONPATH": f"{REMOTE_SRC_ROOT}"})
+    .add_local_dir(str(LOCAL_SRC_ROOT), f"{REMOTE_SRC_ROOT}")
+    .add_local_dir(str(CHECKPOINT_LOCAL_DIR), f"{REMOTE_SRC_ROOT}/checkpoints")
 )
 
 app = modal.App(APP_NAME)
@@ -122,160 +94,133 @@ def _ensure_modal_app_started() -> None:
         _modal_app_thread.start()
 
     if not _modal_app_start_event.wait(timeout=START_TIMEOUT_SECONDS):
-        raise RuntimeError("Timed out waiting for Modal MobileSAM app to start.")
+        raise RuntimeError("Timed out waiting for Modal SAM app to start.")
     if _modal_app_start_error is not None:
         if isinstance(_modal_app_start_error, modal.exception.InvalidError) and "already running" in str(_modal_app_start_error):
             _modal_app_started = True
             return
-        raise RuntimeError("Failed to start Modal MobileSAM app") from _modal_app_start_error
+        raise RuntimeError("Failed to start Modal SAM app") from _modal_app_start_error
 
     _modal_app_started = True
 
 
-def _setup_runtime_env() -> None:
-    import sys
+@app.cls(image=image, gpu=GPU, timeout=START_TIMEOUT_SECONDS)
+class SAMInterface:
+    sam_type: str = modal.parameter()
+    use_bilateral_filter: bool = modal.parameter()
+    use_autopoints: bool = modal.parameter()
 
-    for path in (REMOTE_SRC_ROOT, REMOTE_SCRIBE_ROOT):
-        if path not in sys.path:
-            sys.path.insert(0, path)
-
-    os.environ.setdefault("SAM_BACKEND", "mobile")
-    os.environ.setdefault("SAM_MODEL_TYPE", config.MOBILESAM_MODEL_TYPE)
-    os.environ.setdefault("SAM_CHECKPOINT", config.MOBILESAM_CHECKPOINT)
-
-
-def _serialize_point_prompts(prompts) -> list[dict[str, int]]:
-    return [
-        {
-            "x": int(prompt.x),
-            "y": int(prompt.y),
-            "label": int(prompt.label),
-        }
-        for prompt in (prompts or [])
-    ]
-
-
-@app.cls(image=image, gpu="T4", timeout=30 * 60)
-class BestMobileSAMv2Interface:
     @modal.enter()
     def setup(self) -> None:
-        _download_mobilesam_checkpoint_remote()
-        _setup_runtime_env()
+        for path in (REMOTE_SRC_ROOT, f"{REMOTE_SRC_ROOT}/scribe"):
+            if path not in sys.path:
+                sys.path.insert(0, path)
+        self.setup_model()
 
-        from scribe.baselines.sam import BestMobileSAMv2Implementation
+    def setup_model(self) -> None:
+        from scribe.baselines.sam import SAMConfiguration, build_from_sam_configuration
+        sam_configuration = SAMConfiguration(
+            sam_type=self.sam_type,
+            use_bilateral_filter=self.use_bilateral_filter,
+            use_autopoints=self.use_autopoints,
+        )
+        _validate_checkpoint(sam_configuration.checkpoint_path)
+        self._model = build_from_sam_configuration(sam_configuration)
 
-        self.model = BestMobileSAMv2Implementation()
-        self.image = None
-
+    def model(self):
+        return self._model
+    
+    @modal.method()
     def get_model(self):
-        if getattr(self, "model", None) is None:
-            self.setup()
-        return self.model
+        return self._model
 
     @modal.method()
-    def setImage(self, image) -> dict[str, object]:
-        import numpy as np
-
-        model = self.get_model()
-        self.image = np.asarray(image)
-        autoseed_prompts = _serialize_point_prompts(model.autoprompt(self.image))
-        return {
-            "status": "ok",
-            "output_hw": [int(x) for x in self.image.shape[:2]],
-            "autoseed_prompts": autoseed_prompts,
-        }
+    def setImage(self, image):
+        model = self.model()
+        model.set_image(image)
 
     @modal.method()
-    def autoseed(self, image=None) -> list[dict[str, int]]:
-        import numpy as np
-
+    def autoprompt(self, image=None) -> tuple[None,PointPromptList]:
         if image is None:
-            if self.image is None:
-                raise RuntimeError("No image is set. Call setImage(image) before autoseed().")
-            image = self.image
-
-        return _serialize_point_prompts(self.get_model().autoprompt(np.asarray(image)))
+            raise RuntimeError("No image is given. Call autoprompt with image.")
+        return self.model().autoprompt(image)
 
     @modal.method()
-    def decode_mask_image(self, prompts=None):
-        if self.image is None:
-            raise RuntimeError("No image is set. Call setImage(image) before decode_mask_image(...).")
-        return self._predict_image(self.image, prompts=prompts, autoprompt=False)
+    def decode_mask(self, prompts=None):
+        if not self.get_model().has_image():
+            raise RuntimeError("No image is set. Call setImage(image) before decode_mask(...).")
+        return self.model().decode_mask(prompts)
 
     @modal.method()
     def predict(self, image, prompts=None):
-        import numpy as np
-
-        return self._predict_image(np.asarray(image), prompts=prompts, autoprompt=not prompts)
-
-    def _predict_image(self, image, prompts=None, autoprompt=False):
-        model = self.get_model()
-        normalized_prompts = None if not prompts else prompts
-        mask = model.predict(
+        mask = self.model().predict(
             image,
-            prompts=normalized_prompts,
-            autoprompt=bool(autoprompt),
+            prompts=prompts
         )
-        return mask.to_image()
+        return mask
+    
+    @modal.method()
+    def hyperparameter_values(self) -> dict:
+        return self.model().hyperparameter_values
 
     @modal.method()
-    def mask_stats(self, prompts=None) -> dict[str, object]:
-        import numpy as np
-
-        if self.image is None:
-            raise RuntimeError("No image is set. Call setImage(image) before mask_stats(...).")
-
-        image = self._predict_image(self.image, prompts=prompts, autoprompt=False)
-        foreground = image == 0
-        return {
-            "shape": [int(x) for x in image.shape[:2]],
-            "foreground_pixels": int(np.count_nonzero(foreground)),
-            "total_pixels": int(foreground.size),
-            "foreground_ratio": float(np.mean(foreground)),
-            "unique_values": [int(x) for x in np.unique(image)],
-        }
+    def set_hyperparameters(self, hyperparameters: dict) -> dict:
+        model = self.model()
+        model.set_hyperparameters(**hyperparameters)
 
     @modal.method()
     def smoke(self) -> dict[str, str]:
-        self.get_model()
-        return {"status": "ok", "message": "BestMobileSAMv2Implementation loaded on Modal"}
+        return {"status": "ok", "message": f"{self.model().name} loaded on Modal"}
 
 
-class ModalBestMobileSAMv2Implementation:
-    NAME = "BestMobileSAMv2Implementation"
-    SHORT_NAME = "mSAM+pts"
-    prefers_predict_with_image = True
+class ModalSAM(Tunable):
 
-    def __init__(self):
+    def __init__(
+        self,
+        configuration: SAMConfiguration
+    ):
+        super().__init__(configuration=configuration)
+
         _ensure_modal_app_started()
-        self.interface = BestMobileSAMv2Interface()
-
-    @property
-    def name(self) -> str:
-        return self.NAME
-
-    @property
-    def short_name(self) -> str:
-        return self.SHORT_NAME
+        self.interface = SAMInterface(
+            sam_type=str(configuration.sam_type),
+            use_bilateral_filter=bool(configuration.use_bilateral_filter),
+            use_autopoints=bool(configuration.use_autopoints),
+        )
 
     def setImage(self, image):
-        return self.interface.setImage.remote(image=image)
+        self.interface.setImage.remote(image=image)
+        return self
 
-    def autoseed(self, image=None):
-        return self.interface.autoseed.remote(image=image)
+    def autoprompt(self, image=None):
+        return self.interface.autoprompt.remote(image=image)
 
     def decode_mask(self, prompts=None):
-        from scribe.binary_mask import BinaryMask
-
-        return BinaryMask.from_image(self.interface.decode_mask_image.remote(prompts=prompts))
-
-    def decode_mask_image(self, prompts=None):
-        return self.interface.decode_mask_image.remote(prompts=prompts)
-
-    def mask_stats(self, prompts=None):
-        return self.interface.mask_stats.remote(prompts=prompts)
+        return self.interface.decode_mask.remote(prompts=prompts)
 
     def predict(self, image, prompts=None):
-        from scribe.binary_mask import BinaryMask
+        return self.interface.predict.remote(image=image, prompts=prompts)
+    
+    @property
+    def hyperparameter_values(self) -> dict:
+        return self.interface.hyperparameter_values.remote()
 
-        return BinaryMask.from_image(self.interface.predict.remote(image=image, prompts=prompts))
+    def set_hyperparameters(self, **kwargs) -> dict:
+        self.interface.set_hyperparameters.remote(hyperparameters=kwargs)
+        return self
+
+    
+def build_all_modal_sam_variants():
+    configurations = get_all_sam_configurations()
+    variants = [ModalSAM(configuration=conf) for conf in configurations]
+    return variants
+
+def build_all_tunable_modal_sam_variants():
+    configurations = get_all_tunable_sam_configurations()
+    variants = [ModalSAM(configuration=conf) for conf in configurations]
+    return variants
+
+def build_best_modal_sam_variant():
+    configuration = get_best_sam_configuration()
+    variant = ModalSAM(configuration=configuration)
+    return variant

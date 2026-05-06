@@ -9,17 +9,16 @@
   import StatusBar from '../components/StatusBar.svelte';
 
   export let token = '';
-  export let initialModelKey = '';
+  export let routeModelID = '';
   export let onRouteChange = () => {};
 
   let fileInput;
 
   const toolPage = createToolPageController({
     getAuthHeaders: () => (token ? { Authorization: `Bearer ${token}` } : {}),
-    initialModelKey,
     onModelSelected: (modelKey) => {
       const route =
-        modelKey === 'modal-mobilesam'
+        modelKey === 'sam'
           ? '/tool/sam'
           : modelKey === 'gaussian'
           ? '/tool/gaussian'
@@ -30,6 +29,7 @@
       }
     }
   });
+
   const {
     selectedModel,
     acceptsPrompts,
@@ -50,8 +50,13 @@
     isSettingImage,
     canRunPredict,
     foregroundCount,
-    backgroundCount
+    backgroundCount,
+    selectModel
   } = toolPage;
+
+  $: if (routeModelID && $selectedModel?.id !== routeModelID) {
+    selectModel(routeModelID);
+  }
 
   let isSidebarOpen = false;
 
@@ -64,7 +69,7 @@
   }
 
   onMount(async () => {
-    await toolPage.warmupModels();
+    await toolPage.warmupSAMForUser();
     return toolPage.bindToolPageShortcuts();
   });
 </script>
@@ -96,7 +101,7 @@
       onToggleSidebar={toggleSidebar}
       closeSidebar={closeSidebar}
       acceptsPrompts={$acceptsPrompts}
-      promptControlsEnabled={$acceptsPrompts && (!$selectedModel.requiresSetImage || $isImageSet) && $activeImageMode === 'raw'}
+      promptControlsEnabled={$acceptsPrompts && ((!$selectedModel || !$selectedModel.requiresSetImage) || $isImageSet) && $activeImageMode === 'raw'}
       pointMode={$pointMode}
       points={$points}
       boxes={$boxes}
@@ -123,7 +128,7 @@
       backgroundCount={$backgroundCount}
       importMessage={$importMessage}
       activeImageMode={$activeImageMode}
-      selectedModelLabel={$selectedModel.label}
+      selectedModelLabel={$selectedModel?.label || ''}
     />
 
     {#if $runMessage}

@@ -336,9 +336,11 @@ Here, the interactivity and quality of human-guided SAM (and GrabCut for compari
 
 \noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 \subsection{Export to Krita}
-\note{It is indeed possible via the Krita Python API to export the predicted segmentation masks as Krita layers, which can then be further edited by hand by a user.
-The question is only if I want to do so via the API (requires Krita installed), or via a Python export script.
-Krita's file format is open, so both are possible.}
+When the segmentation is complete, the tool allows for export to JPEG, PNG, or OpenRaster (.ora) format.
+The latter is an open file format that like Krita (.kra) files consists of a ZIP file with an XML document describing the layer structure, and a PNG or SVG image for each raster or vector layer, respectively.
+This is simpler in structure and easier to read and write for external programs than the .kra format, as it was specificially designed as an open exchange format between graphics editors.
+It is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly imported into Krita for further manual editing and annotation just by opening the file.
+
 \subsection{Definition of workflow efficiency metrics}
 \subsection{Experimental design of the user study}
 \subsection{Analysis of results}

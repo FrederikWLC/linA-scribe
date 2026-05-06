@@ -2,11 +2,11 @@ import { derived, get, writable } from 'svelte/store';
 import { emptyBounds, calculateImageBoundsFromEvent } from './imageBounds.js';
 import { getPromptPointFromClick } from './prompts.js';
 import {
-  predictClassical,
-  predictSAMwithSetImage,
-  warmupModels as warmupBackendModels
+  predictWithClassical,
+  predictWithSAM,
+  warmupSAMForUser as warmupSAMForUserAPI
 } from './api.js';
-import { modelOptions, resolveInitialModelKey } from './modelConfig.js';
+import { modelOptions } from './modelConfig.js';
 import {
   createPointerSession,
   capturePointer,
@@ -22,10 +22,9 @@ import { createImageLoader, revokeSegmentationImageUrl } from './imageLoader.js'
 
 export function createToolPageController(options = {}) {
   const getAuthHeaders = options.getAuthHeaders || (() => ({}));
-  const initialModelKey = options.initialModelKey;
   const onModelSelected = options.onModelSelected;
 
-  const selectedModelKey = writable(resolveInitialModelKey(initialModelKey));
+  const selectedModelID = writable(null);
   const imageFile = writable(null);
   const imageUrl = writable('');
   const imageName = writable('');
@@ -76,11 +75,11 @@ export function createToolPageController(options = {}) {
     }
   });
 
-  const selectedModel = derived(selectedModelKey, ($selectedModelKey) =>
-    modelOptions.find((model) => model.key === $selectedModelKey) || modelOptions[0]
+  const selectedModel = derived(selectedModelID, ($selectedModelID) =>
+    modelOptions.find((model) => model.id === $selectedModelID) || null
   );
-  const acceptsPrompts = derived(selectedModel, ($selectedModel) => $selectedModel.acceptsPrompts);
-  const requiresSetImage = derived(selectedModel, ($selectedModel) => $selectedModel.requiresSetImage);
+  const acceptsPrompts = derived(selectedModel, ($selectedModel) => $selectedModel?.acceptsPrompts ?? false);
+  const requiresSetImage = derived(selectedModel, ($selectedModel) => $selectedModel?.requiresSetImage ?? false);
 
   const {
     loadImageFile: loadImageFileRaw,
@@ -90,7 +89,7 @@ export function createToolPageController(options = {}) {
   } = createImageLoader({
     get,
     getAuthHeaders,
-    selectedModelKey,
+    selectedModelID,
     requiresSetImage,
     imageFile,
     imageUrl,
@@ -135,9 +134,10 @@ export function createToolPageController(options = {}) {
   }
 
   const canRunPredict = derived(
-    [imageUrl, isImageSet, isSettingImage, requiresSetImage],
-    ([$imageUrl, $isImageSet, $isSettingImage, $requiresSetImage]) =>
+    [imageUrl, isImageSet, isSettingImage, requiresSetImage, selectedModel],
+    ([$imageUrl, $isImageSet, $isSettingImage, $requiresSetImage, $selectedModel]) =>
       !!$imageUrl &&
+      !!$selectedModel &&
       !$isSettingImage &&
       (!$requiresSetImage || $isImageSet)
   );
@@ -275,12 +275,12 @@ export function createToolPageController(options = {}) {
     }
   }
 
-  async function selectModel(modelKey) {
-    if (modelKey === get(selectedModelKey)) {
+  async function selectModel(modelID) {
+    if (modelID === get(selectedModelID)) {
       return;
     }
 
-    selectedModelKey.set(modelKey);
+    selectedModelID.set(modelID);
     revokeSegmentationImageUrl(get(segmentationImageUrl), get(imageUrl));
     segmentationImageUrl.set('');
     activeImageMode.set('raw');
@@ -296,7 +296,11 @@ export function createToolPageController(options = {}) {
       await syncModelImageIfNeeded();
     }
 
-    onModelSelected?.(modelKey);
+    onModelSelected?.(modelID);
+  }
+
+  async function warmupSAMForUser() {
+    return warmupSAMForUserAPI(getAuthHeaders);
   }
 
   async function runPrompt() {
@@ -321,10 +325,10 @@ export function createToolPageController(options = {}) {
 
     try {
       const result = get(requiresSetImage)
-        ? await predictSAMwithSetImage(get(selectedModelKey), getAuthHeaders, promptPoints, currentBoxes)
-        : await predictClassical(get(imageFile), get(selectedModelKey), getAuthHeaders);
+        ? await predictWithSAM(get(selectedModelID), getAuthHeaders, promptPoints, currentBoxes)
+        : await predictWithClassical(get(imageFile), get(selectedModelID), getAuthHeaders);
       console.log('runPrompt result', {
-        model: get(selectedModelKey),
+        model: get(selectedModelID),
         requiresSetImage: get(requiresSetImage),
         maskBlobSize: result.maskBlob?.size,
       });
@@ -359,7 +363,7 @@ export function createToolPageController(options = {}) {
     imageUrl,
     imageName,
     modelOptions,
-    selectedModelKey,
+    selectedModelID,
     selectedModel,
     acceptsPrompts,
     requiresSetImage,
@@ -391,7 +395,7 @@ export function createToolPageController(options = {}) {
     showRawImage,
     showSegmentationImage,
     selectModel,
-    warmupModels: warmupBackendModels,
+    warmupSAMForUser,
     runPrompt,
     bindToolPageShortcuts
   };

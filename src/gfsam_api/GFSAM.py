@@ -4,11 +4,13 @@ from argparse import Namespace
 from pathlib import Path
 import sys
 
-
 import cv2
 import torch
 import torchvision.transforms as transforms
 import torch.nn.functional as F
+
+from data.split import get_support_data
+from scribe.base import BaseScribe, ModelConfiguration
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 if str(PACKAGE_ROOT) not in sys.path:
@@ -16,10 +18,55 @@ if str(PACKAGE_ROOT) not in sys.path:
 
 from matcher.GFSAM import build_model
 import numpy as np
-from scribe.base import Named
 from scribe.binary_mask import BinaryMask
+from config import config
 
-class GFSAM(Named):
+class GFSAMConfiguration(ModelConfiguration):
+    def __init__(
+        self,
+        support_data_root: str = config.DATA_DIR,
+        dinov2_weights: str | Path = "/root/models/dinov2_vitl14_pretrain.pth",
+        sam_weights: str | Path = "/root/models/sam_vit_h_4b8939.pth",
+        dinov2_size: str = "vit_large",
+        sam_size: str = "vit_h",
+        img_size: int = 1024,
+        device=None
+    ):
+        self.support_data_root = support_data_root
+        self.dinov2_weights = dinov2_weights
+        self.sam_weights = sam_weights
+        self.dinov2_size = dinov2_size
+        self.sam_size = sam_size
+        self.img_size = img_size
+        self.device = device
+
+        super().__init__(
+            name="GFSAM",
+            short_name="GFSAM"
+        )
+
+    def get_support_data(self):
+        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root)
+        return support_images, support_labels
+
+def build_from_gfsam_configuration(configuration: GFSAMConfiguration) -> GFSAM:
+    return GFSAM(configuration)
+
+def get_gfsam_configuration():
+    return GFSAMConfiguration(
+        support_data_root=config.DATA_DIR,
+        dinov2_weights="/root/models/dinov2_vitl14_pretrain.pth",
+        sam_weights="/root/models/sam_vit_h_4b8939.pth",
+        img_size=1024,
+        dinov2_size="vit_large",
+        sam_size="vit_h",
+        device=None,
+)
+
+def build_gfsam() -> GFSAM:
+    return build_from_gfsam_configuration(get_gfsam_configuration())
+
+class GFSAM(BaseScribe):
     """GF-SAM wrapper with automatic single-support selection.
 
     A support set is supplied at construction time. For each query image, the
@@ -27,26 +74,16 @@ class GFSAM(Named):
     then GF-SAM predicts from that selected support image and mask.
     """
 
-    NAME = "GFSAM"
-    SHORT_NAME = "GFSAM"
-
     def __init__(
         self,
-        support_images,
-        support_labels,
-        dinov2_weights: str | Path,
-        sam_weights: str | Path,
-        img_size: int = 1024,
-        dinov2_size: str = "vit_large",
-        sam_size: str = "vit_h",
-        device=None,
+        configuration: GFSAMConfiguration
     ):
-        self.dinov2_weights = str(dinov2_weights)
-        self.sam_weights = str(sam_weights)
-        self.img_size = int(img_size)
-        self.dinov2_size = dinov2_size
-        self.sam_size = sam_size
-        self.device = device
+        self.dinov2_weights = str(configuration.dinov2_weights)
+        self.sam_weights = str(configuration.sam_weights)
+        self.img_size = int(configuration.img_size)
+        self.dinov2_size = configuration.dinov2_size
+        self.sam_size = configuration.sam_size
+        self.device = configuration.device
 
         self.model = None
         self.transform = None
@@ -56,6 +93,12 @@ class GFSAM(Named):
         self.selected_support_score = None
         self.support_embeddings = None
 
+        support_images, support_labels = configuration.get_support_data()
+        if not support_images:
+            raise RuntimeError(
+                f"No GFSAM support images found in {configuration.support_data_root}. "
+                "Expected images under raw/easy, raw/medium, or raw/hard."
+            )
         self.support_images = [to_rgb_image(image) for image in support_images]
         self.support_labels = [BinaryMask.from_image(label) for label in support_labels]
         self.support_embeddings = None

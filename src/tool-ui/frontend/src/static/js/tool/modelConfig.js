@@ -1,15 +1,9 @@
 export const modelOptions = [
   {
-    key: 'modal-mobilesam',
-    label: 'BestMobileSAMv2Implementation',
+    id: 'sam',
+    label: 'SAM',
     requiresSetImage: true,
     acceptsPrompts: true
   },
-  { key: 'gaussian', label: 'Gaussian', requiresSetImage: false, acceptsPrompts: false }
+  { id: 'gaussian', label: 'Gaussian', requiresSetImage: false, acceptsPrompts: false }
 ];
-
-export function resolveInitialModelKey(initialModelKey) {
-  return modelOptions.some((model) => model.key === initialModelKey)
-    ? initialModelKey
-    : 'modal-mobilesam';
-}
