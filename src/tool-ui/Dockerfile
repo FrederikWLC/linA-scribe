@@ -33,6 +33,7 @@ import urllib.request
 urls = {
     'mobile_sam.pt': 'https://github.com/ultralytics/assets/releases/download/v8.4.0/mobile_sam.pt',
     'sam_vit_h_4b8939.pth': 'https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth',
+    'sam2.1_hiera_large.pt': 'https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt',
 }
 root = pathlib.Path('/workspace/src/checkpoints')
 root.mkdir(parents=True, exist_ok=True)
