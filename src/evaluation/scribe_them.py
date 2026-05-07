@@ -15,7 +15,10 @@ output_folder = Path("data/results/scribed")
 
 def get_models_to_be_scribed():
     return [
-        build_default_modal_fatesam2d()
+        build_cannyfill(),
+        build_gaussian(),
+        build_otsu(),
+        build_default_modal_fatesam2d(),
     ] 
 
 def perform_comparison(models, raw_images, labels):

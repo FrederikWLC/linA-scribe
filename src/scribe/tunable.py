@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from optuna import Trial
 from scribe.base import BaseScribe, ModelConfiguration
-from config import config
 
 class HyperparameterSpec:
     def __init__(self, name,default,suggest):

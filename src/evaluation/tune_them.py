@@ -1,12 +1,10 @@
 from pathlib import Path
 import optuna
 from optuna.samplers import TPESampler
-import pandas as pd
 from data.split import get_val_data
 from fatesam2d_api.ModalFATESAM2D import build_all_tunable_modal_fatesam2d_variants
 from scribe.baselines.canny_fill import build_cannyfill
 from scribe.baselines.gaussian import build_gaussian
-from scribe.baselines.grabcut import build_grabcut
 from scribe.baselines.otsu import build_otsu
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model
 from evaluation.utils.tuning import save_tuned_hyperparameters
@@ -20,7 +18,6 @@ def get_models_to_be_tuned():
         build_cannyfill(),
         build_gaussian(),
         build_otsu(),
-        build_grabcut()
     ] + build_all_tunable_modal_sam_variants() + build_all_tunable_modal_fatesam2d_variants()
 
 
@@ -52,6 +49,9 @@ def perform_tuning(n_trials=100):
         df_trials = study.trials_dataframe()
         df_trials.to_csv(model_output_dir / "trials.csv", index=False)
 
+        model.set_hyperparameters(**study.best_params) # set the model's hyperparameters to the best found values for future use
+        model.save_hyperparameters() # save the best hyperparameters to a dataframe file for future loading
+
         # Store best results in csv for documentation
         save_tuned_hyperparameters(
             model=model,
@@ -60,7 +60,6 @@ def perform_tuning(n_trials=100):
             hyperparameters=study.best_params,
             n_trials=n_trials,
         )
-
 
 
 
