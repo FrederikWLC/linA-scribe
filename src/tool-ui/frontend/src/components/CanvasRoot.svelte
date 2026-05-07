@@ -8,6 +8,7 @@
   export let imageName = '';
   export let isSegmentationActive = false;
   export let activeImageMode = 'raw';
+  export let selectedModelID = '';
   export let acceptsPrompts = false;
   export let promptControlsEnabled = true;
   export let pointMode = 'foreground';
@@ -39,15 +40,17 @@
 </script>
 
 <div class="canvas-root">
-  <SideToolbar
-    promptControlsEnabled={promptControlsEnabled}
-    pointMode={pointMode}
-    points={points}
-    boxes={boxes}
-    setPointMode={setPointMode}
-    undoPoint={undoPoint}
-    clearPoints={clearPoints}
-  />
+  {#if selectedModelID === 'sam'}
+    <SideToolbar
+      promptControlsEnabled={promptControlsEnabled}
+      pointMode={pointMode}
+      points={points}
+      boxes={boxes}
+      setPointMode={setPointMode}
+      undoPoint={undoPoint}
+      clearPoints={clearPoints}
+    />
+  {/if}
   <div class="canvas-frame">
     {#if displayedImageUrl}
       <button

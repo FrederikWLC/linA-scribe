@@ -14,6 +14,7 @@
   let token = '';
   let route = '/login';
   let selectedRouteModelID = '';
+  let requestedToolRoute = '';
   let status = '';
 
   function routeFromPathname(pathname) {
@@ -49,6 +50,7 @@
     const normalized = routeFromPathname(pathname);
 
     if (normalized.startsWith('/tool') && !currentUser) {
+      requestedToolRoute = normalized;
       status = 'Please login first';
       goTo('/login', true);
       return;
@@ -88,7 +90,8 @@
       localStorage.setItem('token', token);
       password = '';
       status = `Logged in as ${currentUser}`;
-      goTo('/tool', true);
+      goTo(requestedToolRoute || '/tool', true);
+      requestedToolRoute = '';
     } catch (err) {
       status = err instanceof Error ? err.message : String(err);
       currentUser = '';
@@ -101,6 +104,7 @@
     token = '';
     localStorage.removeItem('username');
     localStorage.removeItem('token');
+    requestedToolRoute = '';
     goTo('/login', true);
     status = 'Logged out';
   }

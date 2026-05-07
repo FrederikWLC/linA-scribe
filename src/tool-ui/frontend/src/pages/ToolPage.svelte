@@ -32,6 +32,7 @@
 
   const {
     selectedModel,
+    selectedModelID,
     acceptsPrompts,
     imageUrl,
     imageName,
@@ -54,9 +55,22 @@
     selectModel
   } = toolPage;
 
+  let hasWarmedSAM = false;
+
+  async function warmupSAMIfSelected() {
+    if (hasWarmedSAM || $selectedModel?.id !== 'sam') {
+      return;
+    }
+
+    hasWarmedSAM = true;
+    await toolPage.warmupSAMForUser();
+  }
+
   $: if (routeModelID && $selectedModel?.id !== routeModelID) {
     selectModel(routeModelID);
   }
+
+  $: warmupSAMIfSelected();
 
   let isSidebarOpen = false;
 
@@ -68,8 +82,7 @@
     isSidebarOpen = false;
   }
 
-  onMount(async () => {
-    await toolPage.warmupSAMForUser();
+  onMount(() => {
     return toolPage.bindToolPageShortcuts();
   });
 </script>
@@ -100,6 +113,7 @@
       isSidebarOpen={isSidebarOpen}
       onToggleSidebar={toggleSidebar}
       closeSidebar={closeSidebar}
+      selectedModelID={$selectedModelID}
       acceptsPrompts={$acceptsPrompts}
       promptControlsEnabled={$acceptsPrompts && ((!$selectedModel || !$selectedModel.requiresSetImage) || $isImageSet) && $activeImageMode === 'raw'}
       pointMode={$pointMode}
