@@ -15,11 +15,12 @@ METRIC_NAME = list(METRIC.keys())[0]
 
 def get_models_to_be_tuned():
     return [
-        build_cannyfill(),
-        build_gaussian(),
-        build_otsu(),
+        #build_cannyfill(),
+        #build_gaussian(),
+        #build_otsu(),
     ] + build_all_tunable_modal_sam_variants() + build_all_tunable_modal_fatesam2d_variants()
 
+# NOTE: WRITE IT BACK BEFORE COMMIT!
 
 def evaluation_trial(trial, model, images, ground_truths):
     # set hyperparameters according to trial's suggestions
@@ -48,9 +49,6 @@ def perform_tuning(n_trials=100):
         # Store study results in csv for documentation
         df_trials = study.trials_dataframe()
         df_trials.to_csv(model_output_dir / "trials.csv", index=False)
-
-        model.set_hyperparameters(**study.best_params) # set the model's hyperparameters to the best found values for future use
-        model.save_hyperparameters() # save the best hyperparameters to a dataframe file for future loading
 
         # Store best results in csv for documentation
         save_tuned_hyperparameters(
