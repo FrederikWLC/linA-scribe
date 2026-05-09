@@ -31,9 +31,9 @@ class ScribeService:
         self.sam_images_by_user: dict[str, np.ndarray] = {}
         self.sam_image_hw_by_user: dict[str, tuple[int, int]] = {}
 
-    def predict_with_classical(self, image: np.ndarray) -> np.ndarray:
-        return self.classical_model.predict(image)
-    
+    def predict_with_classical(self, image: np.ndarray, granularity: int = 0) -> np.ndarray:
+        return self.classical_model.predict_with_granularity(image, granularity=granularity)
+
     def set_image_for_sam(self, username: str, image: np.ndarray) -> None:
         sam_instance = self.get_sam_instance_for_user(username)
         sam_instance.setImage(image)

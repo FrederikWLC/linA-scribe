@@ -40,5 +40,15 @@ class Gaussian(Scribe, BilateralTunable):
         # having 1 as foreground (ink), and 0 as background
         return BinaryMask.from_image(thresholded)
 
+    # allows for adjusting granularity by modifying kernel size with a derived delta
+    def predict_with_granularity(self, image: np.ndarray, granularity: int) -> BinaryMask:
+        baseline_d_gaussian = self.configuration.get_value("d_gaussian")
+        delta_d_gaussian = int(granularity/5)*2 # to keep it odd
+        scaled_d_gaussian = max(5, baseline_d_gaussian + delta_d_gaussian)
+        self.configuration.set_hyperparameters(d_gaussian=scaled_d_gaussian)
+        mask = self.predict(image)
+        self.configuration.set_hyperparameters(d_gaussian=baseline_d_gaussian) # reset to baseline after prediction
+        return mask
+    
 def build_gaussian():
     return Gaussian(GaussianConfiguration())

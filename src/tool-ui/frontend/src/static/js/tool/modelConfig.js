@@ -5,5 +5,5 @@ export const modelOptions = [
     requiresSetImage: true,
     acceptsPrompts: true
   },
-  { id: 'gaussian', label: 'Gaussian', requiresSetImage: false, acceptsPrompts: false }
+  { id: 'classic', label: 'Classic', requiresSetImage: false, acceptsPrompts: false }
 ];

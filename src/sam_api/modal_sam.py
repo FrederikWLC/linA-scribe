@@ -147,7 +147,7 @@ class SAMInterface:
 
     @modal.method()
     def decode_mask(self, prompts=None):
-        if not self.get_model().has_image():
+        if not self.model().has_image():
             raise RuntimeError("No image is set. Call setImage(image) before decode_mask(...).")
         return self.model().decode_mask(prompts)
 

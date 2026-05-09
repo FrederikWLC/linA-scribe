@@ -1,4 +1,5 @@
 <script>
+  import { classicGranularity } from '../static/js/tool/classicGranularity.js';
   export let acceptsPrompts = false;
   export let foregroundCount = 0;
   export let backgroundCount = 0;
@@ -12,7 +13,7 @@
     {#if acceptsPrompts}
       <strong>{foregroundCount}</strong> foreground / <strong>{backgroundCount}</strong> background
     {:else}
-      Prompts disabled for {selectedModelLabel}
+      Granularity: {#if $classicGranularity === 0}Default{:else}<strong>{#if $classicGranularity > 0}+{/if}{$classicGranularity}</strong> / 100{/if}
     {/if}
   </p>
   <p>

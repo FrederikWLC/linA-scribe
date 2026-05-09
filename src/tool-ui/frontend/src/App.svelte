@@ -5,7 +5,7 @@
 
   const ROUTE_FOR_MODEL_ID = {
     sam: '/tool/sam',
-    gaussian: '/tool/gaussian'
+    classic: '/tool/classic'
   };
 
   let username = '';
@@ -23,7 +23,7 @@
       return '/tool';
     }
 
-    const match = clean.match(/^\/tool\/(sam|gaussian)$/);
+    const match = clean.match(/^\/tool\/(sam|classic)$/);
     if (match) {
       return `/tool/${match[1]}`;
     }
@@ -32,7 +32,7 @@
   }
 
   function modelIDFromRoute(routePath) {
-    const match = routePath.match(/^\/tool\/(sam|gaussian)$/);
+    const match = routePath.match(/^\/tool\/(sam|classic)$/);
     return match ? match[1] : '';
   }
 
@@ -140,7 +140,7 @@
       <p>Select one of the two available models.</p>
       <div class="tool-selection-buttons">
         <button type="button" on:click={() => pickTool('/tool/sam')}>SAM</button>
-        <button type="button" on:click={() => pickTool('/tool/gaussian')}>Gaussian</button>
+        <button type="button" on:click={() => pickTool('/tool/classic')}>Classic</button>
       </div>
     </section>
   {:else}

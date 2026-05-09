@@ -41,6 +41,9 @@ class TunableConfiguration(ModelConfiguration):
     def is_tunable(self):
         return len(self.hyperparameter_specs) > 0
     
+    def restore_default_hyperparameters(self):
+        for spec in self.hyperparameter_specs:
+            self.hyperparameter_values[spec.name] = spec.default
 class Tunable(BaseScribe, ABC):
 
     configuration: TunableConfiguration
@@ -66,8 +69,6 @@ class Tunable(BaseScribe, ABC):
     @property
     def hyperparameter_values(self) -> dict:
         return self.configuration.hyperparameter_values
-    
-    
     
 class BilateralTunable(Tunable, ABC):
 

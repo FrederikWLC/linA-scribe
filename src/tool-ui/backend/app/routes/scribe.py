@@ -1,7 +1,7 @@
 import base64
 import json
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 import cv2
 import numpy as np
@@ -134,10 +134,12 @@ def predict_with_sam(
 @router.post("/scribe/predict-with-classical")
 async def predict_with_classical(
     file: UploadFile = File(...),
+    granularity: int = Form(0),
     session: dict[str, str] = Depends(require_session),
 ) -> Response:
     image = await _read_upload_as_grayscale(file)
-    mask = scribe_service.predict_with_classical(image)
+    granularity = max(-100, min(100, granularity))
+    mask = scribe_service.predict_with_classical(image, granularity=granularity)
     return _get_predict_response_from_output_png(_mask_to_png(mask))
 
 

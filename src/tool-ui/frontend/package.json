@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@skeletonlabs/skeleton": "^4.15.2",
+    "@skeletonlabs/skeleton-svelte": "^4.15.2",
     "jszip": "^3.10.1",
     "konva": "^10.0.0",
     "svelte-konva": "^1.0.1",

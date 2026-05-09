@@ -2,8 +2,8 @@
   import ImageLayer from './ImageLayer.svelte';
   import PointsLayer from './PointsLayer.svelte';
   import BoxesLayer from './BoxesLayer.svelte';
-  import SideToolbar from './SideToolbar.svelte';
-
+  import SideToolbarSAM from './SideToolbarSAM.svelte';
+  import SideToolbarClassic from './SideToolbarClassic.svelte';
   export let displayedImageUrl = '';
   export let imageName = '';
   export let isSegmentationActive = false;
@@ -24,6 +24,7 @@
   export let onPointerUp = () => {};
   export let onDrop = () => {};
   export let onImageLoad = () => {};
+  export let onClassicGranularityChange = () => {};
   export let fileInput;
 
   function clampPercent(value) {
@@ -41,7 +42,7 @@
 
 <div class="canvas-root">
   {#if selectedModelID === 'sam'}
-    <SideToolbar
+    <SideToolbarSAM
       promptControlsEnabled={promptControlsEnabled}
       pointMode={pointMode}
       points={points}
@@ -49,6 +50,11 @@
       setPointMode={setPointMode}
       undoPoint={undoPoint}
       clearPoints={clearPoints}
+    />
+  {:else}
+    <SideToolbarClassic
+      sliderControlEnabled={activeImageMode === 'segmentation'}
+      onGranularityChange={isSegmentationActive ? onClassicGranularityChange : () => {}}
     />
   {/if}
   <div class="canvas-frame">

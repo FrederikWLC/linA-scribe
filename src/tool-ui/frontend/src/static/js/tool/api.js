@@ -1,3 +1,5 @@
+import { get } from 'svelte/store';
+import { classicGranularity } from './classicGranularity.js';
 import { readErrorMessage } from './utils.js';
 import { buildBoxPayloads } from './prompts/prompts.js';
 
@@ -20,7 +22,7 @@ export async function setBackendImage(file, selectedModelID, getAuthHeaders) {
 }
 
 const SAM_MODEL_IDENTIFIER = 'sam';
-const CLASSICAL_MODEL_IDENTIFIER = 'gaussian';
+const CLASSICAL_MODEL_IDENTIFIER = 'classic';
 
 function isSAMModel(selectedModelID) {
   return SAM_MODEL_IDENTIFIER === selectedModelID;
@@ -86,6 +88,7 @@ export async function predictWithClassical(imageFile, selectedModelID, getAuthHe
   const params = new URLSearchParams({ model: selectedModelID });
   const formData = new FormData();
   formData.append('file', imageFile);
+  formData.append('granularity', String(get(classicGranularity)));
 
   const response = await fetch(`/api/scribe/predict-with-classical?${params.toString()}`, {
     method: 'POST',

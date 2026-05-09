@@ -16,12 +16,12 @@
 
   const toolPage = createToolPageController({
     getAuthHeaders: () => (token ? { Authorization: `Bearer ${token}` } : {}),
-    onModelSelected: (modelKey) => {
+    onModelSelected: (modelID) => {
       const route =
-        modelKey === 'sam'
+        modelID === 'sam'
           ? '/tool/sam'
-          : modelKey === 'gaussian'
-          ? '/tool/gaussian'
+          : modelID === 'classic'
+          ? '/tool/classic'
           : '/tool';
 
       if (window.location.pathname !== route) {
@@ -32,7 +32,6 @@
 
   const {
     selectedModel,
-    selectedModelID,
     acceptsPrompts,
     imageUrl,
     imageName,
@@ -55,34 +54,12 @@
     selectModel
   } = toolPage;
 
-  let hasWarmedSAM = false;
-
-  async function warmupSAMIfSelected() {
-    if (hasWarmedSAM || $selectedModel?.id !== 'sam') {
-      return;
-    }
-
-    hasWarmedSAM = true;
-    await toolPage.warmupSAMForUser();
-  }
-
   $: if (routeModelID && $selectedModel?.id !== routeModelID) {
     selectModel(routeModelID);
   }
 
-  $: warmupSAMIfSelected();
-
-  let isSidebarOpen = false;
-
-  function toggleSidebar() {
-    isSidebarOpen = !isSidebarOpen;
-  }
-
-  function closeSidebar() {
-    isSidebarOpen = false;
-  }
-
-  onMount(() => {
+  onMount(async () => {
+    await toolPage.warmupSAMForUser();
     return toolPage.bindToolPageShortcuts();
   });
 </script>
@@ -110,12 +87,10 @@
     />
 
     <CanvasRoot
-      isSidebarOpen={isSidebarOpen}
-      onToggleSidebar={toggleSidebar}
-      closeSidebar={closeSidebar}
-      selectedModelID={$selectedModelID}
+      sliderControlEnabled={$activeImageMode === 'segmentation'}
+      selectedModelID={$selectedModel?.id || routeModelID}
       acceptsPrompts={$acceptsPrompts}
-      promptControlsEnabled={$acceptsPrompts && ((!$selectedModel || !$selectedModel.requiresSetImage) || $isImageSet) && $activeImageMode === 'raw'}
+      promptControlsEnabled={$acceptsPrompts && $isImageSet && $activeImageMode === 'raw'}
       pointMode={$pointMode}
       points={$points}
       boxes={$boxes}
@@ -133,6 +108,7 @@
       onPointerUp={toolPage.endPointSession}
       onDrop={toolPage.handleDrop}
       onImageLoad={toolPage.updateImageBounds}
+      onClassicGranularityChange={toolPage.runPrompt}
       {fileInput}
     />
 
