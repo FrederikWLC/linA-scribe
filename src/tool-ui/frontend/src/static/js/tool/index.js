@@ -1,6 +1,6 @@
+import * as twemoji from 'twemoji';
 import { derived, get, writable } from 'svelte/store';
 import { emptyBounds, calculateImageBoundsFromEvent } from './imageBounds.js';
-import { getPromptPointFromClick } from './prompts.js';
 import {
   predictWithClassical,
   predictWithSAM,
@@ -11,14 +11,20 @@ import {
   createPointerSession,
   capturePointer,
   releasePointer,
-  getPointsWithinDistance,
-  getClosestPointIndex,
   processPointerEvent,
   updatePreviewBox
-} from './pointerSession.js';
-import { createSessionHistoryAction, undoAction, undoBoxAction } from './actionHistory.js';
+} from './prompts/pointerSession.js';
+import { createSessionHistoryAction, undoAction, addSessionAction } from './prompts/actionHistory.js';
 import { bindToolPageShortcuts as bindKeyShortcuts } from './shortcuts.js';
 import { createImageLoader, revokeSegmentationImageUrl } from './imageLoader.js';
+
+const twemojiParser = twemoji.default ?? twemoji;
+const twemojiBase = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg';
+
+export const emojiUrl = (emoji) => { // for stable emoji icons in UI, independt of platform support
+  const codePoint = twemojiParser.convert.toCodePoint(emoji);
+  return `${twemojiBase}/${codePoint}.svg`;
+};
 
 export function createToolPageController(options = {}) {
   const getAuthHeaders = options.getAuthHeaders || (() => ({}));
@@ -154,23 +160,11 @@ export function createToolPageController(options = {}) {
       $activeImageMode === 'segmentation' && !!$segmentationImageUrl
   );
   const foregroundCount = derived(points, ($points) =>
-    $points.filter((point) => point.kind === 'foreground').length
+    $points.filter((point) => point && point.kind === 'foreground').length
   );
   const backgroundCount = derived(points, ($points) =>
-    $points.filter((point) => point.kind === 'background').length
+    $points.filter((point) => point && point.kind === 'background').length
   );
-
-  function addSessionAction(action) {
-    if (!pointerSession) {
-      return;
-    }
-
-    if (Array.isArray(action)) {
-      pointerSession.actions.push(...action);
-    } else {
-      pointerSession.actions.push(action);
-    }
-  }
 
   function processPointEvent(event) {
     processPointerEvent({
@@ -188,7 +182,7 @@ export function createToolPageController(options = {}) {
       pendingBoxCorner,
       setPendingBoxCorner: (value) => { pendingBoxCorner = value; },
       setPreviewBox: (value) => previewBox.set(value),
-      addSessionAction,
+      addSessionAction: (action) => addSessionAction(pointerSession, action),
       setRunMessage,
       pointsUpdate: (fn) => points.update(fn),
       boxesUpdate: (fn) => boxes.update(fn)
@@ -207,11 +201,7 @@ export function createToolPageController(options = {}) {
       return;
     }
 
-    if (!pointerSession) {
-      return;
-    }
-
-    if (pointerSession.mode === 'box') {
+    if (!pointerSession || pointerSession.mode !== 'delete') {
       return;
     }
 
@@ -256,8 +246,12 @@ export function createToolPageController(options = {}) {
 
     const lastAction = history[history.length - 1];
     actionHistory.update(($history) => $history.slice(0, -1));
-    points.update(($points) => undoAction(lastAction, $points));
-    boxes.update(($boxes) => undoBoxAction(lastAction, $boxes));
+    const nextPrompts = undoAction(lastAction, {
+      points: get(points),
+      boxes: get(boxes)
+    });
+    points.set(nextPrompts.points);
+    boxes.set(nextPrompts.boxes);
     setRunMessage('');
   }
 
@@ -345,6 +339,7 @@ export function createToolPageController(options = {}) {
     const disposeShortcuts = bindKeyShortcuts({
       acceptsPrompts,
       points,
+      boxes,
       loadImageFile,
       undoPoint
     });

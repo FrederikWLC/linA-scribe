@@ -1,6 +1,6 @@
 import { getPromptPointFromClick, createBoxFromCorners } from './prompts.js';
 
-export const pointDragThreshold = 0.25;
+const pointDragThreshold = 0.25;
 
 export function createPointerSession(mode) {
   return {
@@ -23,7 +23,7 @@ export function releasePointer(event) {
   }
 }
 
-export function shouldProcessPoint(point, mode, pointerSession, threshold = pointDragThreshold) {
+function shouldProcessPoint(point, mode, pointerSession, threshold = pointDragThreshold) {
   if (mode === 'delete') {
     return true;
   }
@@ -37,7 +37,7 @@ export function shouldProcessPoint(point, mode, pointerSession, threshold = poin
   return dx * dx + dy * dy >= threshold * threshold;
 }
 
-export function getPointsWithinDistance(event, currentPoints, imageBounds, maxDistance = 3) {
+function getPointsWithinDistance(event, currentPoints, imageBounds, maxDistance = 3) {
   const clickPoint = getPromptPointFromClick(event, imageBounds);
   if (!clickPoint || currentPoints.length === 0) {
     return [];
@@ -53,7 +53,7 @@ export function getPointsWithinDistance(event, currentPoints, imageBounds, maxDi
     .sort((a, b) => a.distanceSq - b.distanceSq);
 }
 
-export function isPointInsideBox(point, box) {
+function isPointInsideBox(point, box) {
   return (
     point.x >= box.x1 &&
     point.x <= box.x2 &&
@@ -62,40 +62,15 @@ export function isPointInsideBox(point, box) {
   );
 }
 
-export function getBoxesUnderPoint(point, currentBoxes) {
+function getBoxesUnderPoint(point, currentBoxes) {
   return currentBoxes
     .map((box, index) => ({ box, index }))
     .filter(({ box }) => isPointInsideBox(point, box));
 }
 
-export function getTopBoxUnderPoint(point, currentBoxes) {
+function getTopBoxUnderPoint(point, currentBoxes) {
   const hits = getBoxesUnderPoint(point, currentBoxes);
-  if (hits.length === 0) {
-    return null;
-  }
-  return hits[hits.length - 1];
-}
-
-export function getClosestPointIndex(event, currentPoints, imageBounds, maxDistance = 3) {
-  const clickPoint = getPromptPointFromClick(event, imageBounds);
-  if (!clickPoint || currentPoints.length === 0) {
-    return -1;
-  }
-
-  let bestIndex = -1;
-  let bestDistance = Infinity;
-
-  currentPoints.forEach((point, index) => {
-    const dx = point.x - clickPoint.x;
-    const dy = point.y - clickPoint.y;
-    const distanceSq = dx * dx + dy * dy;
-    if (distanceSq < bestDistance) {
-      bestDistance = distanceSq;
-      bestIndex = index;
-    }
-  });
-
-  return bestDistance <= maxDistance * maxDistance ? bestIndex : -1;
+  return hits.length === 0 ? null : hits[hits.length - 1];
 }
 
 export function updatePreviewBox(event, pendingBoxCorner, imageBounds, setPreviewBox) {

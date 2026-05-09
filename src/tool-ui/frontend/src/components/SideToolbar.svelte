@@ -1,4 +1,6 @@
 <script>
+  import { emojiUrl } from '../static/js/tool/index.js';
+
   export let promptControlsEnabled = true;
   export let pointMode = 'box';
   export let points = [];
@@ -9,7 +11,7 @@
 </script>
 
 <aside class="side-toolbar" aria-hidden="false">
-<button
+  <button
     type="button"
     class="tool-panel-button {pointMode === 'box' ? 'active' : ''}"
     on:click={() => setPointMode('box')}
@@ -18,8 +20,9 @@
     aria-label="Box"
     title="Box"
   >
-    🟦
+    <img src={emojiUrl('🟦')} alt="" class="tool-icon" />
   </button>
+
   <button
     type="button"
     class="tool-panel-button {pointMode === 'foreground' ? 'active' : ''}"
@@ -29,8 +32,9 @@
     aria-label="Foreground point"
     title="Foreground"
   >
-    🟢
+    <img src={emojiUrl('🟢')} alt="" class="tool-icon" />
   </button>
+
   <button
     type="button"
     class="tool-panel-button {pointMode === 'background' ? 'active' : ''}"
@@ -40,8 +44,9 @@
     aria-label="Background point"
     title="Background"
   >
-    🔴
+    <img src={emojiUrl('🔴')} alt="" class="tool-icon" />
   </button>
+
   <button
     type="button"
     class="tool-panel-button {pointMode === 'delete' ? 'active' : ''}"
@@ -51,8 +56,9 @@
     aria-label="Delete point"
     title="Delete"
   >
-    🧼
+    <img src={emojiUrl('🧼')} alt="" class="tool-icon" />
   </button>
+
   <button
     type="button"
     class="tool-panel-button"
@@ -61,8 +67,9 @@
     aria-label="Undo point"
     title="Undo"
   >
-    ↩️
+    <img src={emojiUrl('↩')} alt="" class="tool-icon" />
   </button>
+
   <button
     type="button"
     class="tool-panel-button"
@@ -71,6 +78,6 @@
     aria-label="Clear points"
     title="Clear"
   >
-    🗑️
+    <img src={emojiUrl('🗑')} alt="" class="tool-icon" />
   </button>
 </aside>

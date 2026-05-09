@@ -13,10 +13,12 @@
     const height = clampPercent(((box.y2 - box.y1) / 100) * imageBounds.height);
     return `left: ${left}%; top: ${top}%; width: ${width}%; height: ${height}%;`;
   }
+
+  $: visibleBoxes = boxes.filter(Boolean);
 </script>
 
 {#if imageBounds.width > 0 && imageBounds.height > 0}
-  {#each boxes as box (box.id)}
+  {#each visibleBoxes as box (box.id)}
     <span class="box" style={boxStyle(box)} title="Box prompt"></span>
   {/each}
 {/if}

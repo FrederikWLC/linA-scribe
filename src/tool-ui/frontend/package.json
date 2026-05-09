@@ -12,7 +12,8 @@
     "@skeletonlabs/skeleton": "^4.15.2",
     "jszip": "^3.10.1",
     "konva": "^10.0.0",
-    "svelte-konva": "^1.0.1"
+    "svelte-konva": "^1.0.1",
+    "twemoji": "^14.0.2"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.4",

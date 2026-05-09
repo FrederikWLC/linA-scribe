@@ -28,6 +28,7 @@ class ScribeService:
     def __init__(self):
         self.classical_model = build_gaussian()
         self.sam_model_instances = {}
+        self.sam_images_by_user: dict[str, np.ndarray] = {}
         self.sam_image_hw_by_user: dict[str, tuple[int, int]] = {}
 
     def predict_with_classical(self, image: np.ndarray) -> np.ndarray:
@@ -36,16 +37,24 @@ class ScribeService:
     def set_image_for_sam(self, username: str, image: np.ndarray) -> None:
         sam_instance = self.get_sam_instance_for_user(username)
         sam_instance.setImage(image)
+        self.sam_images_by_user[username] = image.copy()
         self.sam_image_hw_by_user[username] = (int(image.shape[0]), int(image.shape[1]))
 
     def get_sam_image_hw(self, username: str) -> tuple[int, int] | None:
         return self.sam_image_hw_by_user.get(username)
     
-    def predict_with_sam(self, username: str, image: np.ndarray, prompts=None) -> np.ndarray:
+    def predict_with_sam(self, username: str, prompts=None) -> np.ndarray:
         sam_instance = self.get_sam_instance_for_user(username)
         if prompts is None:
             prompts = ([], PointPromptList([]))
-        return sam_instance.predict(image, prompts=prompts)
+        try:
+            return sam_instance.decode_mask(prompts=prompts)
+        except RuntimeError as exc: # In case the ModalSAM forgets the image for some reason
+            image = self.sam_images_by_user.get(username)
+            if image is None:
+                raise RuntimeError("No image is set. Upload an image before running SAM.") from exc
+            sam_instance.setImage(image)
+            return sam_instance.decode_mask(prompts=prompts)
 
     def predict_with_sam_with_raw_prompts(
         self,
@@ -71,7 +80,8 @@ class ScribeService:
             coordinate_space=coordinate_space,
             image_hw=(image.shape[0], image.shape[1])
         )
-        return self.predict_with_sam(username, image, prompts=prompts)
+        self.set_image_for_sam(username, image)
+        return self.predict_with_sam(username, prompts=prompts)
     
     def get_sam_instance_for_user(self, username: str) -> ModalSAM | None:
         model = self.sam_model_instances.get(username)

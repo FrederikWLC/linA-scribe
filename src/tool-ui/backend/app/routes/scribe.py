@@ -127,7 +127,7 @@ def predict_with_sam(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    mask = scribe_service.predict_with_sam(session["username"], None, prompts=prompts)
+    mask = scribe_service.predict_with_sam(session["username"], prompts=prompts)
     return _get_predict_response_from_output_png(_mask_to_png(mask))
 
 

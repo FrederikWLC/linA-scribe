@@ -1,5 +1,5 @@
 import { readErrorMessage } from './utils.js';
-import { buildBoxPayloads } from './prompts.js';
+import { buildBoxPayloads } from './prompts/prompts.js';
 
 export async function setBackendImage(file, selectedModelID, getAuthHeaders) {
   const formData = new FormData();

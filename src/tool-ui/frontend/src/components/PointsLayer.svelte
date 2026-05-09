@@ -13,10 +13,12 @@
     const top = clampPercent(imageBounds.top + (point.y / 100) * imageBounds.height);
     return `left: ${left}%; top: ${top}%; width: ${pointSize}rem; height: ${pointSize}rem;`;
   }
+
+  $: visiblePoints = points.filter(Boolean);
 </script>
 
 {#if imageBounds.width > 0 && imageBounds.height > 0}
-  {#each points as point, index (point.id)}
+  {#each visiblePoints as point (point.id)}
     <span
       class:foreground={point.kind === 'foreground'}
       class:background={point.kind === 'background'}

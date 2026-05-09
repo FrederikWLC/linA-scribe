@@ -1,9 +1,9 @@
 import { get } from 'svelte/store';
 
-export function bindToolPageShortcuts({ acceptsPrompts, points, loadImageFile, undoPoint }) {
+export function bindToolPageShortcuts({ acceptsPrompts, points, boxes, loadImageFile, undoPoint }) {
   const onKeyDown = (event) => {
     const isUndo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z';
-    if (!isUndo || !get(acceptsPrompts) || get(points).length === 0) {
+    if (!isUndo || !get(acceptsPrompts) || (get(points).length === 0 && get(boxes).length === 0)) {
       return;
     }
 
