@@ -195,8 +195,14 @@ def build_sam_variant(sam_type, use_bilateral_filter, use_autopoints):
 def get_all_sam_configurations():
     configurations = []
     for sam_type in SAM_PRESETS.keys(): # 3 *
+        if sam_type == "SAM2": # NOTE: REMOVE THIS AFTER TUNING
+            continue
         for use_bilateral_filter in [False, True]: # 2 *
+
             for use_autopoints in [False, True]: # 2 = 12 total configurations
+                if sam_type == "SAM" and use_autopoints and (not use_bilateral_filter): # NOTE: REMOVE THIS AFTER TUNING
+                    continue
+                
                 configuration = SAMConfiguration(sam_type, use_bilateral_filter, use_autopoints)
                 configurations.append(configuration)
     return configurations
