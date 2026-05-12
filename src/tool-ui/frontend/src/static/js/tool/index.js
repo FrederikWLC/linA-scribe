@@ -318,7 +318,7 @@ export function createToolPageController(options = {}) {
     }
 
     isDecodingMask.set(true);
-    setRunMessage('');
+    setRunMessage('Decoding mask...');
     const promptPoints = get(acceptsPrompts) ? get(points) : [];
     const currentBoxes = get(acceptsPrompts) ? get(boxes) : [];
 

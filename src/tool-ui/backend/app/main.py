@@ -9,7 +9,7 @@ from app.routes.auth import router as auth_router
 from app.routes.health import router as health_router
 from app.routes.scribe import router as scribe_router
 
-app = FastAPI(title="FastAPI + Svelte Demo")
+app = FastAPI(title="Scribe", version="1.0")
 logger = logging.getLogger(__name__)
 
 # Keep CORS open for local development and containerized previews.
