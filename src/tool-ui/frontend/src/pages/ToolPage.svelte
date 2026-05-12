@@ -48,6 +48,7 @@
     importMessage,
     isImageSet,
     isSettingImage,
+    isDecodingMask,
     canRunPredict,
     foregroundCount,
     backgroundCount,
@@ -83,6 +84,7 @@
       canRunPredict={$canRunPredict}
       canRunExport={$isSegmentationActive}
       isSettingImage={$isSettingImage}
+      isDecodingMask={$isDecodingMask}
       bind:fileInput={fileInput}
     />
 

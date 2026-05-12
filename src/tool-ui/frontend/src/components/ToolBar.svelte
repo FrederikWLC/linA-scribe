@@ -13,6 +13,7 @@
   export let canRunPredict = false;
   export let canRunExport = false;
   export let isSettingImage = false;
+  export let isDecodingMask = false;
   export let fileInput;
 
   let isExportMenuOpen = false;
@@ -57,8 +58,20 @@
 
   <span class="toolbar-spacer"></span>
 
-  <button type="button" class="run-button" on:click={runPrompt} disabled={!canRunPredict}>
-    {isSettingImage ? 'Setting image...' : 'Run'}
+  <button
+    type="button"
+    class="run-button"
+    class:loading={isDecodingMask}
+    on:click={runPrompt}
+    disabled={!canRunPredict}
+    aria-label={isDecodingMask ? 'Decoding mask' : 'Run'}
+    aria-busy={isDecodingMask}
+  >
+    {#if isDecodingMask}
+      <span class="run-loader" aria-hidden="true"></span>
+    {:else}
+      {isSettingImage ? 'Setting image...' : 'Run'}
+    {/if}
   </button>
   <div class="export-dropdown">
     <button

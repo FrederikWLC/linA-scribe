@@ -4,6 +4,7 @@ from scribe.baselines.gaussian import build_gaussian
 from scribe.baselines.sam import SAMConfiguration
 from scribe.prompts import BoxPrompt, PointPrompt, PointPromptList
 from sam_api.modal_sam import ModalSAM
+from evaluation.utils.tuning import set_tuned_hyperparameters
 
 
 MODEL_OPTIONS: dict[str, dict[str, object]] = {
@@ -26,7 +27,9 @@ MODEL_OPTIONS: dict[str, dict[str, object]] = {
 # Scribe service class holding classical model and per-user SAM instances, and methods to interact with them.
 class ScribeService:
     def __init__(self):
-        self.classical_model = build_gaussian()
+        gaussian = build_gaussian() # we store one gaussian instance (as it does not require set image nor per user state)
+        set_tuned_hyperparameters(gaussian) # and we apply tuned hyperparameters 
+        self.classical_model = gaussian
         self.sam_model_instances = {}
         self.sam_images_by_user: dict[str, np.ndarray] = {}
         self.sam_image_hw_by_user: dict[str, tuple[int, int]] = {}
@@ -89,8 +92,11 @@ class ScribeService:
 
     def create_sam_instance_for_user(self, username: str) -> ModalSAM:
         if username not in self.sam_model_instances:
-            configuration = SAMConfiguration("SAM2", use_bilateral_filter=True, use_autopoints=False)
-            self.sam_model_instances[username] = ModalSAM(configuration=configuration)
+            configuration = SAMConfiguration("SAM2", use_bilateral_filter=False, use_autopoints=False)
+            sam_model = ModalSAM(configuration=configuration)
+            # without autopoint or bilateral filter, SAM has no hyperparams
+            #set_tuned_hyperparameters(sam_model) # apply tuned hyperparameters
+            self.sam_model_instances[username] = sam_model
         return self.sam_model_instances[username]
 
 def build_sam_prompts_from_raw(

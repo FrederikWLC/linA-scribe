@@ -12,9 +12,11 @@ export function bindToolPageShortcuts({ acceptsPrompts, points, boxes, loadImage
   };
 
   const onPaste = (event) => {
+    const files = Array.from(event.clipboardData?.files || []);
+    const imageFile = files.find((file) => file.type.startsWith('image/'));
     const items = Array.from(event.clipboardData?.items || []);
     const imageItem = items.find((item) => item.type.startsWith('image/'));
-    const file = imageItem?.getAsFile();
+    const file = imageFile || imageItem?.getAsFile();
 
     if (!file) {
       return;

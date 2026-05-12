@@ -49,6 +49,7 @@ export function createToolPageController(options = {}) {
   let runMessageTimeout = null;
   const isImageSet = writable(false);
   const isSettingImage = writable(false);
+  const isDecodingMask = writable(false);
   let pendingBoxCorner = null;
 
   function setRunMessage(value, temporary = false) {
@@ -140,11 +141,12 @@ export function createToolPageController(options = {}) {
   }
 
   const canRunPredict = derived(
-    [imageUrl, isImageSet, isSettingImage, requiresSetImage, selectedModel],
-    ([$imageUrl, $isImageSet, $isSettingImage, $requiresSetImage, $selectedModel]) =>
+    [imageUrl, isImageSet, isSettingImage, isDecodingMask, requiresSetImage, selectedModel],
+    ([$imageUrl, $isImageSet, $isSettingImage, $isDecodingMask, $requiresSetImage, $selectedModel]) =>
       !!$imageUrl &&
       !!$selectedModel &&
       !$isSettingImage &&
+      !$isDecodingMask &&
       (!$requiresSetImage || $isImageSet)
   );
   const displayedImageUrl = derived(
@@ -308,12 +310,15 @@ export function createToolPageController(options = {}) {
       setStatusMessage(
         get(isSettingImage)
           ? 'Image is still being set.'
+          : get(isDecodingMask)
+          ? 'Mask is still decoding.'
           : 'Set the image before running.'
       );
       return;
     }
 
-    setStatusMessage('Running segmentation...');
+    isDecodingMask.set(true);
+    setRunMessage('');
     const promptPoints = get(acceptsPrompts) ? get(points) : [];
     const currentBoxes = get(acceptsPrompts) ? get(boxes) : [];
 
@@ -332,6 +337,8 @@ export function createToolPageController(options = {}) {
       setTempStatusMessage('Segmentation completed.');
     } catch (err) {
       setRunMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      isDecodingMask.set(false);
     }
   }
 
@@ -375,6 +382,7 @@ export function createToolPageController(options = {}) {
     importMessage,
     isImageSet,
     isSettingImage,
+    isDecodingMask,
     canRunPredict,
     foregroundCount,
     backgroundCount,

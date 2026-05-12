@@ -27,11 +27,34 @@
 }
 
 .tool-page .run-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 5.5rem;
+  min-height: 2.35rem;
   border-color: #245f45;
   background: #245f45;
   color: #fff;
   font-weight: 700;
+}
+
+.tool-page .run-button.loading {
+  cursor: progress;
+}
+
+.tool-page .run-loader {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: run-loader-spin 0.75s linear infinite;
+}
+
+@keyframes run-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .tool-page .action-buttons {

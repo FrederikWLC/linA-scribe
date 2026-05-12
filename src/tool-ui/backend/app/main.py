@@ -8,7 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from app.routes.auth import router as auth_router
 from app.routes.health import router as health_router
 from app.routes.scribe import router as scribe_router
-from app.routes.storage import router as storage_router
 
 app = FastAPI(title="FastAPI + Svelte Demo")
 logger = logging.getLogger(__name__)
@@ -24,7 +23,6 @@ app.add_middleware(
 
 app.include_router(health_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
-app.include_router(storage_router, prefix="/api")
 app.include_router(scribe_router, prefix="/api")
 
 app_dir = Path(__file__).resolve().parent
