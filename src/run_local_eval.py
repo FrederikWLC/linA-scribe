@@ -50,7 +50,6 @@ def run_local(task: str, n_trials: int) -> None:
 
         run_autoprompt_export()
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run local evaluation workflows outside Docker.")
     parser.add_argument(

@@ -7,7 +7,12 @@ import modal
 from scribe.tunable import Tunable
 
 from config import config
-from fatesam2d_api.FATESAM2D import FATESAM2DConfiguration, get_all_fatesam2d_configurations, get_all_tunable_fatesam2d_configurations, get_default_fatesam2d_configuration
+from fatesam2d_api.configuration import (
+    FATESAM2DConfiguration,
+    get_all_fatesam2d_configurations,
+    get_all_tunable_fatesam2d_configurations,
+    get_default_fatesam2d_configuration,
+)
 
 
 APP_NAME = os.getenv("MODAL_APP_NAME", "FATESAM2D")
@@ -127,7 +132,7 @@ class FATESAM2DInterface:
     top_n_supports: int = modal.parameter(default=3)
 
     def _setup_model(self) -> None:
-        from fatesam2d_api.FATESAM2D import FATESAM2DConfiguration, build_from_fatesam_configuration
+        from fatesam2d_api.FATESAM2D import build_from_fatesam_configuration
 
         configuration = FATESAM2DConfiguration(
             support_data_root=self.support_data_root,

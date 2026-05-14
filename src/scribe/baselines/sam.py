@@ -28,7 +28,7 @@ SAM_PRESETS = {
         "VIT_TYPE": config.MOBILESAM_VIT_TYPE,
         "CHECKPOINT_PATH": config.MOBILESAM_CHECKPOINT_PATH,
         "ABBREVIATION": "mSAM",
-        "ABBREVIATION_SHORT": "mS"
+        "ABBREVIATION_SHORT": "M"
     }
 }
 
@@ -90,13 +90,8 @@ class SAMConfiguration(TunableConfiguration):
             mobilesam_model.to(device)
             return SamPredictor(mobilesam_model)
     
-class SAM(PointScribe, BilateralTunable):
-
-    def __init__(self, configuration: SAMConfiguration,
-                   **kwargs):
-        super().__init__(configuration,**kwargs) # allow for extensions to call
-        self.predictor = configuration.get_sam_predictor()
-        self._image_set = False
+# Basic mask decoding and prompt logic
+class SAMCore(PointScribe):
 
     # decode the mask
     def decode_mask(self, prompts: tuple[list[BoxPrompt], PointPromptList] | None = None) -> list[BinaryMask]:
@@ -108,6 +103,30 @@ class SAM(PointScribe, BilateralTunable):
             points, labels = point_prompt_list.to_arrays()
             mask = self.decode_mask_single(points=points, labels=labels)
         return mask
+    
+    # this is for the interactive SAM variant that makes use of several box prompts possible
+    def decode_mask_per_box_with_points(self, box_point_prompts: list[BoxPointPrompt]) -> BinaryMask:
+        masks = []
+        for box_point_prompt in box_point_prompts:
+            box, points, labels = box_point_prompt.to_arrays()
+            mask = self.decode_mask_single(box=box, points=points, labels=labels)
+            masks.append(mask)
+        return BinaryMask.from_union(*masks)
+    
+    # decode the masks with single run, given optional point prompts (and up to one box prompt)
+    def decode_mask_single(self,
+        box: np.ndarray = None,
+        points: np.ndarray = None,
+        labels: np.ndarray  = None) -> list[BinaryMask]:
+        pass
+
+class SAM(SAMCore, BilateralTunable):
+
+    def __init__(self, configuration: SAMConfiguration,
+                   **kwargs):
+        super().__init__(configuration,**kwargs) # allow for extensions to call
+        self.predictor = configuration.get_sam_predictor()
+        self._image_set = False
     
     # decode the masks with single run, given optional point prompts (and up to one box prompt)
     def decode_mask_single(
@@ -125,15 +144,6 @@ class SAM(PointScribe, BilateralTunable):
                 multimask_output=False
             )
         return BinaryMask(np.squeeze(mask))
-    
-    # this is for the interactive SAM variant that makes use of several box prompts possible
-    def decode_mask_per_box_with_points(self, box_point_prompts: list[BoxPointPrompt]) -> BinaryMask:
-        masks = []
-        for box_point_prompt in box_point_prompts:
-            box, points, labels = box_point_prompt.to_arrays()
-            mask = self.decode_mask_single(box=box, points=points, labels=labels)
-            masks.append(mask)
-        return BinaryMask.from_union(*masks)
     
     # prompts given are tuple of (box prompts, point prompts) as that's the easiest
     def segment(self, image: np.ndarray, prompts: tuple[list[BoxPrompt], PointPromptList] | None = None) -> BinaryMask:
@@ -195,14 +205,8 @@ def build_sam_variant(sam_type, use_bilateral_filter, use_autopoints):
 def get_all_sam_configurations():
     configurations = []
     for sam_type in SAM_PRESETS.keys(): # 3 *
-        if sam_type == "SAM2": # NOTE: REMOVE THIS AFTER TUNING
-            continue
         for use_bilateral_filter in [False, True]: # 2 *
-
             for use_autopoints in [False, True]: # 2 = 12 total configurations
-                if sam_type == "SAM" and use_autopoints and (not use_bilateral_filter): # NOTE: REMOVE THIS AFTER TUNING
-                    continue
-                
                 configuration = SAMConfiguration(sam_type, use_bilateral_filter, use_autopoints)
                 configurations.append(configuration)
     return configurations
@@ -213,8 +217,8 @@ def get_all_tunable_sam_configurations():
     return tunable_configurations
 
 # ======================================================================
-# The Best Mobile SAM variant configuration used in the RQ1 evaluation
+# The Best SAM variant configuration found in the RQ1 evaluation
 # ======================================================================
 
 def get_best_sam_configuration():
-    return SAMConfiguration("SAM2", use_bilateral_filter=True, use_autopoints=False)
+    return SAMConfiguration("MobileSAM", use_bilateral_filter=False, use_autopoints=True)

@@ -4,7 +4,6 @@ from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from scribe.baselines.canny_fill import build_cannyfill
 from scribe.baselines.gaussian import build_gaussian
 from scribe.baselines.otsu import build_otsu    
-from scribe.baselines.grabcut import build_grabcut
 from gfsam_api.ModalGFSAM import build_modal_gfsam
 from fatesam2d_api.ModalFATESAM2D import build_default_modal_fatesam2d
 from scribe.base import predict
@@ -19,10 +18,11 @@ def get_models_to_be_scribed():
         build_gaussian(),
         build_otsu(),
         build_default_modal_fatesam2d(),
+        build_best_modal_sam_variant(),
     ] 
 
 def perform_comparison(models, raw_images, labels):
-    #set_all_tuned_hyperparameters(models)
+    set_all_tuned_hyperparameters(models)
     for img, label in zip(raw_images, labels):
         img_name = f"{label}.jpg"
         print(f"\nSegmenting {img_name}...")

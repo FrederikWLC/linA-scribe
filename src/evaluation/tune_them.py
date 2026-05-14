@@ -15,9 +15,9 @@ METRIC_NAME = list(METRIC.keys())[0]
 
 def get_models_to_be_tuned():
     return [
-        #build_cannyfill(),
-        #build_gaussian(),
-        #build_otsu(),
+        build_cannyfill(),
+        build_gaussian(),
+        build_otsu(),
     ] + build_all_tunable_modal_sam_variants() + build_all_tunable_modal_fatesam2d_variants()
 
 # NOTE: WRITE IT BACK BEFORE COMMIT!

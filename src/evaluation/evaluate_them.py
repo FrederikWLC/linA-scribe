@@ -7,7 +7,6 @@ from scipy.stats import friedmanchisquare, shapiro, ttest_rel, wilcoxon, probplo
 from data.split import DIFFICULTIES, get_test_data_by_difficulty
 from scribe.baselines.canny_fill import build_cannyfill
 from scribe.baselines.gaussian import build_gaussian
-from scribe.baselines.grabcut import build_grabcut
 from scribe.baselines.otsu import build_otsu
 from sam_api.modal_sam import build_best_modal_sam_variant
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
@@ -24,7 +23,6 @@ def get_models_to_be_evaluated():
         build_cannyfill(),
         build_gaussian(),
         build_otsu(),
-        build_grabcut(),
         build_best_modal_sam_variant()
     ]
 
@@ -435,7 +433,7 @@ def do_preview(models, csv_path: str = "data/results/evaluation"):
 
 
 def run_full_evaluation(models, evaluation_data, csv_path: str = "data/results/evaluation"):
-    #do_preview(csv_path=csv_path, models=models) # ensure preview is up to date before starting evaluation
+    do_preview(csv_path=csv_path, models=models) # ensure preview is up to date before starting evaluation
     set_all_tuned_hyperparameters(models) # ensure all models have their tuned hyperparameters set before starting evaluation
     for difficulty in DIFFICULTIES:
         if difficulty not in evaluation_data:

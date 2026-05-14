@@ -1,3 +1,4 @@
+%!TEX root = ../Thesis.tex
 \chapter{Methodology}
 \section{Common methodology}
 \subsection{Development environment and tools}
@@ -41,9 +42,8 @@ The following subsections therefore document the configuration of the baseline a
 The baseline models against which the best \acs{SAM} implementation was evaluated (from simplest to most advanced) were:
 \begin{itemize}
     \item Global thresholding (Otsu's method)
-    \item Local adaptive thresholding (Gaussian) with bilateral pre-filtering
+    \item Local adaptive thresholding (Gaussian)
     \item Edge-based segmentation (Canny edge detection with region filling)
-    \item Energy-based segmentation (GrabCut with brushseeds)
 \end{itemize}
 Together, they cover a wide range of classic segmentation techniques that might be used for binary foreground extraction.
 What follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
@@ -144,56 +144,7 @@ This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} f
 \label{fig:hyperparameters_CannyFill}
 \end{figure}
 
-\subsubsection{Energy-based segmentation (GrabCut with brushseeds)}
-\label{subsubsec:grabcut_baseline}
-GrabCut \parencite{Rother2004GrabCut} is a classical interactive segmentation method, which makes for a good comparison to a deep learning interactive model like \acs{SAM}.
-It is good at producing spatially coherent masks with little large-grained noise, which is ideal for the images to be segmented.
-
-The algorithm is interactively initialized by the user, who traditionally provide a bounding box around the object of interest.
-Pixels outside this box are marked as definite background, while pixels inside it are marked as initially unknown.
-To further guide the segmentation, the user also has the option to provide an additional number of pixels as definite foreground ($B_n = 1$), and definite background ($B_n = 0$).
-
-As an energy-based segmentation method, optimal segmentation is achieved by minimizing a cost (energy) function $E$ that combines a data term $D$ and a smoothness term $S$, given an input image $I$, a binary segmentation mask $B$, and a set of parameters $\theta$:\footnote{This is a simplified version of the energy function that is used by GrabCut.}
-
-$$ E(B,I,\theta) = D(B,I,\theta) + S(B,I) $$
-
-The set of parameters $\theta$ then define two \textit{\acp{GMM}} (probabilistic models each consisting of a weighted sum of several Gaussian distributions) that over iterations will be tuned to model the foreground and background pixel distributions.
-These are used to compute the data term $D$ whose energy contribution decreases the better $B$ matches the \acsp{GMM} of foreground and background.
-The smoothness term $S$ then penalizes neighboring pixels that have different labels, encouraging spatial coherence in the segmentation.
-
-At last, the optimal segmentation $B^{*}$ is found iteratively, by alternating between optimizing the \acs{GMM} parameters $\theta$ to model $B$, and minimizing the energy function with respect to $B$:
-
-$$ B^{*} = \underset{B}{\arg \min} ~ E(B,I,\theta) $$
-
-The automatic brush seeds given to GrabCut (see \cref{fig:autoseed_GC} for a visual example) were derived from a Gaussian thresholded mask with bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}).
-The foreground of the mask came to represent sure foreground pixels, while an eroded version of the background (the inverse of the mask) represented sure background pixels.
-A probable background region was then filled in taking up the remaining space created from the eroded background.
-This gave in total 6 hyperparameters (see \cref{fig:hyperparameters_GC+brush} for a list of these).
-\begin{figure}
-\centering
-\figcross
-\begin{enumerate}
-    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline})
-    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian}$: the diameter of the kernel window for the Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{prb\_erosion}$: the diameter of the kernel window for the erosion of the sure background, filled in by probable background,
-    \item $iters$: the number of iterations for GrabCut to run.
-\end{enumerate}
-\caption{Hyperparameters for \acf{GC+brush}.}
-\label{fig:hyperparameters_GC+brush}
-\end{figure}
-\begin{figure}
-\centering
-    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoseed_displays/\exampleTabletName-GC+brush.jpg}}
-\caption{A visual example of seed distribution for \acf{GC+brush} on \displayexampleTabletName. 
-Green overlay represents sure foreground pixels, while red overlay represents sure background pixels, and white overlay represents probable background pixels.}
-\label{fig:autoseed_GC}
-\end{figure}
-
-\clearpage
-
-\subsection{State-of-the-art model configuration}
+\subsection{State-of-the-art}
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
 For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
 It is a lightweight version, which was designed to run more efficiently on mobile devices with a similar segmentation capability.
@@ -206,7 +157,7 @@ Specifically, automatic prompts, to make the non-interactive comparison to the b
 The main pipeline of \acs{mSAM} thus ended up consisting of segmentation of the raw image by \acl{mSAM} into a binary mask, preceded by automatic prompt generation.
 What follows is therefore a brief description of the model architecture, and the automatic prompt generation method used to adapt it to the domain.
 
-\subsubsection{Model architecture}
+\subsubsection{SAM architecture}
 \begin{figure}
 \centering
     \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
@@ -245,6 +196,12 @@ For single output masks, the mask is generated from a fourth output token.\footc
 \label{fig:SAM_mask_decoder}
 \end{figure}
 
+\subsubsection{SAM2}
+
+\subsubsection{FATESAM}
+
+\subsubsection{GFSAM}
+
 \subsubsection{Automatic prompting}
 Even though the \acl{mSAM} implementation already makes use of an automatic box prompt, it does so from a \acf{YOLO}\footcite{YOLO} model trained on a subset of the same dataset as \acs{SAM}, \acs{SA-1B}.\footcite{mobile_sam_v2}
 Those box prompts are generalized for and work best on natural images.
@@ -256,7 +213,7 @@ To perform a single ablation check of these automatic point prompts, two version
     \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent Just like in the case of \acs{GC+brush}, the automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from a thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+\noindent The automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from a thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
 This was done by randomly sampling a number of foreground and background pixels from the mask as prompts for \acs{mSAM+pts}.
 Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
 This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{mSAM+pts}.
@@ -279,7 +236,7 @@ This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \
 
 \begin{figure}
 \centering
-    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoseed_displays/\exampleTabletName-mSAM+pts.jpg}}
+    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-mSAM+pts-no-filter.jpg}}
 \caption{A visual example of prompt distribution for \acf{mSAM+pts}, overlayed on \displayexampleTabletName.
 Green points represent foreground point prompts, while red points represent background point prompts.}
 \label{fig:autoseed_mSAM}
@@ -325,14 +282,14 @@ And in case the normality assumption was violated, the non-parametric domain-spe
 
 
 \section{Interactive segmentation ability}
-Here, the interactivity and quality of human-guided SAM (and GrabCut for comparison?) will be evaluated against the initial segmentation results from Section \ref{Segmentation quality}.
-\noindent\note{Add some context of RQ2 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
+Here, the interactivity and quality of human-guided SAM were evaluated.
 
 \subsection{Interactive tool architecture}
 \subsection{Experimental design for automation evaluation}
 \subsection{Definition of automation metrics}
 
 \section{Workflow efficiency}
+
 
 \noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 \subsection{Export to Krita}
@@ -342,6 +299,8 @@ This is simpler in structure and easier to read and write for external programs 
 It is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly imported into Krita for further manual editing and annotation just by opening the file.
 
 \subsection{Definition of workflow efficiency metrics}
+Time.
 \subsection{Experimental design of the user study}
+
 \subsection{Analysis of results}
 

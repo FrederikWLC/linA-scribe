@@ -1,10 +1,11 @@
+%!TEX root = ../Thesis.tex
 \chapter{Results and Discussion}
 \section{Non-interactive segmentation performance}
 
 After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
 
 Meanwhile, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
-With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baselines, \acs{Gaussian} and \acs{GC+brush} that each yielded \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean} and \pgfmathprintnumber[fixed,precision=3]{\GCbrushmean}, respectively.
+With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
 
 The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{mSAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
 \subsection{SAM ablation}
@@ -29,9 +30,6 @@ This was also the one used for the main evaluation.
 \end{figure}
 
 Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pays to look at a visual example to see what is going on behind the scenes.
-In this instance, \acs{GC+brush} performs decently as well, but oversegments in a way that makes strokes a bit thicker than they should be.
-It compensates for this, however, by reducing noise.
-These phenomena are due to a combination of its smoothness term, and its probable background regions, which encourage spatially coherent masks while risking small-scale dilation of the mask (see \cref{subsubsec:grabcut_baseline}).
 
 \acs{CannyFill} also oversegments, due to its large kernel window size for morphological closing, which was necessary to fill in the gaps between edges, but gives a blocky look, and merges all nearby edges together.
 
@@ -45,7 +43,7 @@ And there is way less noise between them compared to the masks of the baselines,
 \centering
 \begin{subfigure}{0.29\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/medium/\exampleTabletName.jpg}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/\exampleTabletName.jpg}}
     \caption{Raw Image}
 \end{subfigure}
 \hfill
@@ -73,19 +71,14 @@ And there is way less noise between them compared to the masks of the baselines,
     \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{\exampleCannyFillScore}}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.29\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-GC+brush.jpg}}
-    \caption{GCbrush \pgfmathprintnumber[fixed,precision=3]{\exampleGCbrushScore}}
-\end{subfigure}
 \vspace{0.5em}
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-mSAM+pts-bilateral-filter-single.jpg}}
-    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\examplemSAMptsSingleScore}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-mSAM+pts-no-filter.jpg}}
+    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\examplemSAMptsScore}}
 \end{subfigure}
 
-\caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (medium), shown with \acs{Dice} scores next to the raw image and ground truth.}
+\caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
 \label{fig:model_comparison}
 
 \end{figure}
@@ -94,35 +87,35 @@ And there is way less noise between them compared to the masks of the baselines,
 
 \subsection{Statistical significance}
 As it was clear from the results, \acs{mSAM+pts} did not perform better than the best performing classical baseline.
-To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
+To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{Gaussian} and \acs{mSAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
 What follows is the documentation of that normality test, the paired t-test, and the results of both.
 
 \subsubsection{Normality of residuals}
 \label{subsubsec:normality_residuals}
-As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{GC+brush} and \acs{mSAM+pts} appeared to be approximately normally distributed.
-Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
+As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{Gaussian} and \acs{mSAM+pts} appeared to be approximately normally distributed.
+Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianmSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
 Thus, the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_GC+brush_vs_mSAM+pts}
-    \caption{QQplot of the residuals of the paired t-test comparing \acs{GC+brush} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
-    Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGrabCutSam} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
+    \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_Gaussian_vs_mSAM+pts-no-filter.png}
+    \caption{QQplot of the residuals of the paired t-test comparing \acs{Gaussian} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
+    Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianmSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
     \label{fig:qqplot}
 \end{figure}
 
 \subsubsection{Paired t-test}
-The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{GC+brush} and \acs{mSAM+pts}.
-The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{GC+brush} has a higher mean \acs{Dice} score than \acs{mSAM+pts}.
+The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{mSAM+pts}.
+The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{mSAM+pts}.
 
-Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{\tteststatGCmSAM}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGCmSAM}$.
-Thus, as $\pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGCmSAM} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{GC+brush} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
+Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{\tteststatGaussianmSAM}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianmSAM}$.
+Thus, as $\pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianmSAM} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
 Hence, it can be said that \acs{mSAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets, even when automatically prompted.
 
 \subsection{Fairness of the experiment}
 
 \subsubsection{Data}
 The dataset used for evaluation was the same as the one used for hyperparameter optimization of models, which could be seen as a potential source of bias.
-Additionally, the dataset of \numberofimages{} images is quite small, which makes it more susceptible to noise and outliers, although sufficiently sized to support the statistical analysis.
+Additionally, the dataset of 60 images is quite small, which makes it more susceptible to noise and outliers, although sufficiently sized to support the statistical analysis.
 Moreover, the ground truth annotations of the dataset were heavily biased, even as they were manually created and registered to the raw images.
 Therefore, \acs{Dice} scores obtained from the evaluation were unreasonably low, and the performance of the models is not properly reflected by these scores.
 However, for comparison between models, the relative differences in \acs{Dice} scores were still meaningful, as all models were evaluated on the same imperfectly aligned dataset.

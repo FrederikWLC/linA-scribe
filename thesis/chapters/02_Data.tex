@@ -1,6 +1,7 @@
+%!TEX root = ../Thesis.tex
 \chapter{Data}
 \section{Sources}
-The dataset used in this thesis was constructed from $\numberofimages$ images of raw Linear A inscriptions, and their corresponding ground truth annotations.
+The dataset used in this thesis was constructed from 60 images of raw Linear A inscriptions, and their corresponding ground truth annotations.
 \acs{Cefael} \parencite[see][]{EtudesCretoises21} was chosen as the source for raw document images, since it is the only online and widely publicly available source of the printed five volume corpus - \acf{GORILA}. 
 And as all raw document images on the pages of this corpus are accompanied by annotated drawings, an argument could be made to make use of those as ground truth annotations.
 But annotations provided by Ester Salgarella from SigLA \parencite[see][]{SalgarellaCastellanSigLA2020} were chosen instead, as they are more up to date, and are already in a binary mask format that is suitable for comparison with segmentation masks.
@@ -8,11 +9,12 @@ But annotations provided by Ester Salgarella from SigLA \parencite[see][]{Salgar
 What follows in this chapter is a detailed description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
 
 \section{Characteristics and construction}
-The dataset was made to consists of $\numberofimages$ chosen image pairs of raw documents and their corresponding ground truth annotations.
-No data split was made, as there otherwise would not be enough data for a meaningful evaluation.
-Thus, the dataset was used both for hyperparameter optimization and final evaluation of the models.
+The dataset was made to consists of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
+Each of these image pairs was categorized into one of three difficulty levels (easy, medium, hard) based on the visual quality of the inscriptions \cref{sec:difficulty_classification}.
+They were then split into a test set of 27 images, a validation set of 27 images, and a support set of 6 images, with each set containing an equal proportion of images from each of the three difficulty levels.
+
 Only inscriptions with clay as writing support were included, as they are the most common and representative of the Linear A corpus, and were the only ones for which SigLA ground truth annotations were already available.
-The raw document images from \acs{Cefael} are screenshots of grayscale images within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only widely publicly available images of the Linear A inscriptions.
+The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only widely publicly available images of the Linear A inscriptions.
 For an example of a raw document image and its corresponding ground truth annotation, see Figure \ref{fig:ht7b_example}.
 \begin{figure}[htbp]
 \centering
@@ -33,6 +35,7 @@ For an example of a raw document image and its corresponding ground truth annota
 \end{figure}
 
 \subsection{Difficulty classification}
+\label{sec:difficulty_classification}
 The dataset was categorized into three difficulty levels (easy, medium, hard) based on the visual quality of the raw images and the clarity of the inscriptions.
 This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
 The concrete criteria used to classify the difficulty sets were as follows:
@@ -94,9 +97,11 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 
 \subsection{Image registration and preprocessing}
 To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations had to be aligned and registered to each other.
-This was done manually in Krita by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
+This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
 
 
 \section{Limitations and biases}
 Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
 This misalignment is a source of noise in the evaluation.
+Ester's annotations were never constructed by overlaying them on the raw images, but rather by doing so on the accompanied corpus drawings, only using the raw images as reference.
+Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate this issue.

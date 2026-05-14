@@ -31,30 +31,12 @@
 \pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGaussian
 \edef\hyperparamNTrialsGaussian{\pgfplotsretval}
 
-\pgfplotstableread[col sep=comma]{../src/data/results/tuning/GC+brush/best.csv}\hyperparamtableGCbrush
-\pgfplotstablegetelem{0}{Dice}\of\hyperparamtableGCbrush
-\edef\hyperparamDiceGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableGCbrush
-\edef\hyperparamDBilateralGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtableGCbrush
-\edef\hyperparamSigmaBilateralGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{C}\of\hyperparamtableGCbrush
-\edef\hyperparamCGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableGCbrush
-\edef\hyperparamDGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{iters}\of\hyperparamtableGCbrush
-\edef\hyperparamItersGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_prb_erosion}\of\hyperparamtableGCbrush
-\edef\hyperparamDPrbErosionGCbrush{\pgfplotsretval}
-\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGCbrush
-\edef\hyperparamNTrialsGCbrush{\pgfplotsretval}
-
-\pgfplotstableread[col sep=comma]{../src/data/results/tuning/mSAM+pts/best.csv}\hyperparamtablemSAMpts
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/mSAM+pts-no-filter/best.csv}\hyperparamtablemSAMpts
 \pgfplotstablegetelem{0}{Dice}\of\hyperparamtablemSAMpts
 \edef\hyperparamDicemSAMpts{\pgfplotsretval}
 \pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtablemSAMpts
 \edef\hyperparamDBilateralmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma}\of\hyperparamtablemSAMpts
+\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtablemSAMpts
 \edef\hyperparamSigmamSAMpts{\pgfplotsretval}
 \pgfplotstablegetelem{0}{C}\of\hyperparamtablemSAMpts
 \edef\hyperparamCmSAMpts{\pgfplotsretval}
@@ -77,61 +59,73 @@
 
 % Single source of truth for the example tablet used in the thesis figures.
 % Edit this one line to switch all example-image references and scores.
-\newcommand{\exampleTabletName}{HT6b}
-\newcommand{\displayexampleTabletName}{\acs{HT}6b}
+\newcommand{\exampleTabletName}{HT7a}
+\newcommand{\displayexampleTabletName}{\acs{HT}7a}
 
-\newcommand{\exampleTabletRow}{}
+\newcommand{\exampleTabletRow}{0}
 \newcommand{\setExampleTabletRow}{%
 \ifstrequal{\exampleTabletName}{HT10a}{\def\exampleTabletRow{0}}{%
-\ifstrequal{\exampleTabletName}{HT118}{\def\exampleTabletRow{1}}{%
-\ifstrequal{\exampleTabletName}{HT12}{\def\exampleTabletRow{2}}{%
-\ifstrequal{\exampleTabletName}{HT17}{\def\exampleTabletRow{3}}{%
+\ifstrequal{\exampleTabletName}{HT131a}{\def\exampleTabletRow{1}}{%
+\ifstrequal{\exampleTabletName}{HT17}{\def\exampleTabletRow{2}}{%
+\ifstrequal{\exampleTabletName}{HT21}{\def\exampleTabletRow{3}}{%
 \ifstrequal{\exampleTabletName}{HT22}{\def\exampleTabletRow{4}}{%
-\ifstrequal{\exampleTabletName}{HT26a}{\def\exampleTabletRow{5}}{%
-\ifstrequal{\exampleTabletName}{HT7a}{\def\exampleTabletRow{6}}{%
-\ifstrequal{\exampleTabletName}{HT7b}{\def\exampleTabletRow{7}}{%
-\ifstrequal{\exampleTabletName}{KHWc2104}{\def\exampleTabletRow{8}}{%
-\ifstrequal{\exampleTabletName}{PH2}{\def\exampleTabletRow{9}}{\def\exampleTabletRow{5}}}}}}}}}}}
-}
+\ifstrequal{\exampleTabletName}{HT7a}{\def\exampleTabletRow{5}}{%
+\ifstrequal{\exampleTabletName}{MA9}{\def\exampleTabletRow{6}}{%
+\ifstrequal{\exampleTabletName}{PH2}{\def\exampleTabletRow{7}}{%
+\ifstrequal{\exampleTabletName}{PH31a}{\def\exampleTabletRow{8}}{%
+\ifstrequal{\exampleTabletName}{HT1}{\def\exampleTabletRow{9}}{%
+\ifstrequal{\exampleTabletName}{HT115b}{\def\exampleTabletRow{10}}{%
+\ifstrequal{\exampleTabletName}{HT122}{\def\exampleTabletRow{11}}{%
+\ifstrequal{\exampleTabletName}{HT140}{\def\exampleTabletRow{12}}{%
+\ifstrequal{\exampleTabletName}{HT3}{\def\exampleTabletRow{13}}{%
+\ifstrequal{\exampleTabletName}{HT30}{\def\exampleTabletRow{14}}{%
+\ifstrequal{\exampleTabletName}{HT8a}{\def\exampleTabletRow{15}}{%
+\ifstrequal{\exampleTabletName}{HT9b}{\def\exampleTabletRow{16}}{%
+\ifstrequal{\exampleTabletName}{KN1a}{\def\exampleTabletRow{17}}{%
+\ifstrequal{\exampleTabletName}{HT13}{\def\exampleTabletRow{18}}{%
+\ifstrequal{\exampleTabletName}{HT132}{\def\exampleTabletRow{19}}{%
+\ifstrequal{\exampleTabletName}{HT135a}{\def\exampleTabletRow{20}}{%
+\ifstrequal{\exampleTabletName}{HT154B}{\def\exampleTabletRow{21}}{%
+\ifstrequal{\exampleTabletName}{HT20}{\def\exampleTabletRow{22}}{%
+\ifstrequal{\exampleTabletName}{HT4}{\def\exampleTabletRow{23}}{%
+\ifstrequal{\exampleTabletName}{HT85b}{\def\exampleTabletRow{24}}{%
+\ifstrequal{\exampleTabletName}{HT90}{\def\exampleTabletRow{25}}{%
+\ifstrequal{\exampleTabletName}{PH31b}{\def\exampleTabletRow{26}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+
 \setExampleTabletRow
 
 % Number of images
 \pgfplotstablegetelem{0}{Dice_n}\of\resumetable
 \edef\numberofimages{\pgfplotsretval}
 
-% Shapiro-Wilk test for normality of residuals of paired t-test between GC+brush and mSAM+pts
-\pgfplotstablegetelem{8}{p_value}\of\shapirotable
-\edef\ShapiroPValueResidualGrabCutSam{\pgfplotsretval}
+% Shapiro-Wilk test for normality of residuals of paired t-test between Gaussian and mSAM+pts
+\pgfplotstablegetelem{4}{p_value}\of\shapirotable
+\edef\ShapiroPValueResidualGaussianmSAM{\pgfplotsretval}
 
-% Paired t-test between GC+brush and mSAM+pts
-\pgfplotstablegetelem{8}{p_value}\of\ttable
-\edef\ttestpvalueGCmSAM{\pgfplotsretval}
-\pgfplotstablegetelem{8}{statistic}\of\ttable
-\edef\tteststatGCmSAM{\pgfplotsretval}
+% Paired t-test between Gaussian and mSAM+pts
+\pgfplotstablegetelem{4}{p_value}\of\ttable
+\edef\ttestpvalueGaussianmSAM{\pgfplotsretval}
+\pgfplotstablegetelem{4}{statistic}\of\ttable
+\edef\tteststatGaussianmSAM{\pgfplotsretval}
 
-% Dice score means for GC+brush and, mSAM, and mSAM+pts, and mean residual
-\pgfplotstablegetelem{1}{Dice_mean}\of\resumetable
-\edef\GCbrushmean{\pgfplotsretval}
-\pgfplotstablegetelem{2}{Dice_mean}\of\resumetable
-\edef\Gaussianmean{\pgfplotsretval}
-\pgfplotstablegetelem{3}{Dice_mean}\of\resumetable
-\edef\Otsumean{\pgfplotsretval}
+% Dice score means for Gaussian and, mSAM, and mSAM+pts, and mean residual
 \pgfplotstablegetelem{0}{Dice_mean}\of\resumetable
 \edef\CannyFillmean{\pgfplotsretval}
+\pgfplotstablegetelem{1}{Dice_mean}\of\resumetable
+\edef\Gaussianmean{\pgfplotsretval}
+\pgfplotstablegetelem{2}{Dice_mean}\of\resumetable
+\edef\Otsumean{\pgfplotsretval}
 \pgfplotstablegetelem{4}{Dice_mean}\of\resumetable
-\edef\mSAMmean{\pgfplotsretval}
-\pgfplotstablegetelem{5}{Dice_mean}\of\resumetable
 \edef\mSAMptsmean{\pgfplotsretval}
-\pgfmathsetmacro{\deltameanGCmSAM}{\GCbrushmean - \mSAMptsmean}
+\pgfmathsetmacro{\deltameanGaussianmSAM}{\Gaussianmean - \mSAMptsmean}
 
 % Dice score of the selected example tablet for visual comparison.
 \pgfplotstablegetelem{\exampleTabletRow}{CannyFill}\of\rawpivot
 \edef\exampleCannyFillScore{\pgfplotsretval}
 \pgfplotstablegetelem{\exampleTabletRow}{Otsu}\of\rawpivot
 \edef\exampleOtsuScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{GC+brush}\of\rawpivot
-\edef\exampleGCbrushScore{\pgfplotsretval}
 \pgfplotstablegetelem{\exampleTabletRow}{Gaussian}\of\rawpivot
 \edef\exampleGaussianScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{mSAM+pts-bilateral-filter-single}\of\rawpivot
-\edef\examplemSAMptsSingleScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{mSAM+pts-no-filter}\of\rawpivot
+\edef\examplemSAMptsScore{\pgfplotsretval}

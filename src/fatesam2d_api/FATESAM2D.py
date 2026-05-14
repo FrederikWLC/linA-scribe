@@ -2,56 +2,19 @@ import copy
 import cv2
 import numpy as np
 from config import config
-from data.split import get_support_data
-from data.split import get_support_data
+from fatesam2d_api.configuration import FATESAM2DConfiguration
 from fatesam2d_api.predictor import prepare_inference_state, run_from_inference_state
 from fatesam2d_api.tensor_handling import images_to_tensor, labels_to_tensor
 from fatesam2d_api.sam2.build_sam import build_sam2_video_predictor, build_sam2_video_predictor_fate, device_setup
 from scribe.auto_prompts import auto_points
-from scribe.base import PointScribe
 from scribe.baselines.gaussian import build_gaussian
-from scribe.baselines.sam import AUTOPOINT_SPECS
 from scribe.binary_mask import BinaryMask
-from scribe.prompts import PointPrompt, PointPromptList
+from scribe.prompts import PointPrompt
 from scribe.tunable import BilateralTunable, TunableConfiguration
+from scribe.baselines.sam import SAMCore
 
-class FATESAM2DConfiguration(TunableConfiguration):
-    def __init__(self, support_data_root=config.DATA_DIR, top_n_supports=3, use_autopoints=False, is_blank=False):
-        
-        self.support_data_root = support_data_root
-        self.top_n_supports = top_n_supports
-        self.use_autopoints = use_autopoints
-        self.is_blank = is_blank
 
-        self.checkpoint_path = config.FATESAM_CHECKPOINT_PATH
-        self.config_file = config.FATESAM_CONFIG
-
-        name = "FATESAM2D+pts" if use_autopoints else "FATESAM2DBlank" if is_blank else "FATESAM2D"
-
-        short_name = "FATE+p" if use_autopoints else "FATEbl" if  is_blank else "FATE"
-
-        hyperparameter_specs = AUTOPOINT_SPECS if use_autopoints else []
-
-        super().__init__(
-            name=name,
-            short_name=short_name,
-            hyperparameter_specs=hyperparameter_specs
-        )
-
-    def get_support_data(self):
-        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root)
-        if self.is_blank: # We give blank supports to disable the few-shot effect.
-            rng = np.random.default_rng(42)
-            support_labels = [
-                np.where(
-                    rng.random(label.shape) < 0.05,
-                    0,
-                    255,
-                ).astype(np.uint8)
-                for label in support_labels
-            ]
-        return support_images, support_labels
-class FATESAM2D(PointScribe):
+class FATESAM2D(SAMCore):
     """2D pseudo-sequence adaptation of FATE-SAM.
 
     The query image is frame 0 and the selected support images are appended as
@@ -97,16 +60,12 @@ class FATESAM2D(PointScribe):
         )
         self._output_hw = image.shape[:2]
         return self
-
-    def decode_mask(self, prompts: tuple[list[PointPrompt], PointPromptList]) -> BinaryMask:
-        if not self.hasImage():
-            raise RuntimeError("No image is set. Call setImage(image) before decode_mask(...).")
-        _, point_prompt_list = prompts if prompts else (None, None)
-        points, labels = point_prompt_list.to_arrays() if point_prompt_list else (None, None)
+        
+    def decode_mask_single(self, box=None, points=None, labels=None) -> BinaryMask:
         frame_pred = run_from_inference_state(
             sam2_predictor_fate=self.sam2_predictor_fate,
-            inference_state=copy.deepcopy(self.inference_state),
-            similarity_results=copy.deepcopy(self.similarity_results),
+            inference_state=copy.deepcopy(self.inference_state), # we copy the inference state to avoid in-place modifications that could affect future predictions with the same image
+            similarity_results=copy.deepcopy(self.similarity_results), # same goes for the similarity results
             points=points,
             labels=labels,
             prompt_input_hw=self._output_hw,
@@ -177,16 +136,3 @@ def build_fatesam2d(support_data_root: str = config.DATA_DIR, top_n_supports: in
         is_blank=is_blank
     )
     return build_from_fatesam_configuration(configuration)
-
-def get_default_fatesam2d_configuration(support_data_root: str = config.DATA_DIR) -> FATESAM2DConfiguration:
-    return FATESAM2DConfiguration(support_data_root=support_data_root, top_n_supports=3, use_autopoints=False, is_blank=False)
-
-def get_all_fatesam2d_configurations(data_root: str = config.DATA_DIR) -> list[FATESAM2DConfiguration]:
-    return [
-        FATESAM2DConfiguration(support_data_root=data_root, top_n_supports=3, use_autopoints=False, is_blank=False),
-        FATESAM2DConfiguration(support_data_root=data_root, top_n_supports=3, use_autopoints=True, is_blank=False),
-        FATESAM2DConfiguration(support_data_root=data_root, top_n_supports=3, use_autopoints=False, is_blank=True)
-    ]
-
-def get_all_tunable_fatesam2d_configurations(data_root: str = config.DATA_DIR) -> list[FATESAM2DConfiguration]:
-    return [conf for conf in get_all_fatesam2d_configurations(data_root=data_root) if conf.is_tunable()]

@@ -1,0 +1,10 @@
+method,tablet,time1,time2
+manual,HT7a,0:0:0,0:2:00
+manual,HT4,0:0:0,0:2:00
+manual,HT30,0:0:0,0:2:00
+classic,HT7a,0:0:14,0:2:00
+classic,HT4,0:0:12,0:2:00
+classic,HT30,0:0:23,0:2:00
+SAM,HT7a,0:6:08,0:2:00
+SAM,HT4,0:4:17,0:2:00
+SAM,HT30,0:5:11,0:2:00

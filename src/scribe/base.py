@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import cv2
 import numpy as np
 from scribe.binary_mask import BinaryMask
-from scribe.prompts import PointPrompt, Prompt
+from scribe.prompts import PointPrompt, PointPromptList, Prompt
 from config import config
 class ModelConfiguration:
     def __init__(self, name: str = None, short_name: str = None):
@@ -57,7 +57,7 @@ class SeedableScribe(BaseScribe):
         return None
 
     @abstractmethod
-    def draw_prompt(self, image: np.ndarray, prompt) -> np.ndarray:
+    def draw_prompt(self, image: np.ndarray, prompts) -> np.ndarray:
         pass
 
     # method where the segmentation happens (returns a binary mask)
@@ -67,38 +67,12 @@ class SeedableScribe(BaseScribe):
 
 
 class PointScribe(SeedableScribe):
-    def draw_prompt(self, image: np.ndarray, point_prompts: list[PointPrompt]) -> np.ndarray:
+    def draw_prompt(self, image: np.ndarray, point_prompt_list: PointPromptList) -> np.ndarray:
         drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        for prompt in point_prompts:
+        for prompt in point_prompt_list.point_prompts:
             # green circles for fgd points, red circles for bgd points
             color = (0, 255, 0) if prompt.label == 1 else (0, 0, 255)
             cv2.circle(drawn, (prompt.x, prompt.y), 5, color, -1)
-        return drawn
-
-
-class BrushScribe(SeedableScribe):
-    def draw_prompt(self, image: np.ndarray, brush_mask: np.ndarray) -> np.ndarray:
-        drawn = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        brush_color_from_label = {
-            cv2.GC_BGD: (0, 0, 255),  # red for sure background
-            cv2.GC_PR_BGD: (255, 255, 255),  # white for probable background
-            cv2.GC_PR_FGD: (0, 0, 0),  # black for probable foreground
-            cv2.GC_FGD: (0, 255, 0),  # green for sure foreground
-        }
-        brush_alpha_from_label = {
-            cv2.GC_BGD: 0.4,  # transparent overlay for sure background
-            cv2.GC_FGD: 0.4,  # transparent overlay for sure foreground
-            cv2.GC_PR_BGD: 0.4,  # transparent overlay for probable background
-            cv2.GC_PR_FGD: 0.4,  # transparent overlay for probable foreground
-        }
-        for label in [cv2.GC_BGD, cv2.GC_FGD, cv2.GC_PR_BGD, cv2.GC_PR_FGD]:
-            label_mask = brush_mask == label
-            ys, xs = np.where(label_mask)
-            color = np.array(brush_color_from_label[label])
-            alpha = brush_alpha_from_label[label]
-            drawn[ys, xs] = (
-                (1 - alpha) * drawn[ys, xs] + alpha * color
-            ).astype(np.uint8)
         return drawn
 
 

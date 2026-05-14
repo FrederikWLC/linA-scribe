@@ -1,11 +1,7 @@
 metric,model1,model2,statistic,p_value,significant
-Dice,Otsu,Gaussian,0.0,1.4901161193847656e-08,True
-Dice,Otsu,CannyFill,135.0,0.2021402269601822,False
-Dice,Otsu,GC+brush,0.0,1.4901161193847656e-08,True
-Dice,Otsu,mSAM+pts-bilateral-filter-single,6.0,2.086162567138672e-07,True
-Dice,Gaussian,CannyFill,4.0,1.043081283569336e-07,True
-Dice,Gaussian,GC+brush,121.0,0.10562613606452942,False
-Dice,Gaussian,mSAM+pts-bilateral-filter-single,74.0,0.0046126991510391235,True
-Dice,CannyFill,GC+brush,2.0,4.470348358154297e-08,True
-Dice,CannyFill,mSAM+pts-bilateral-filter-single,44.0,0.00020888447761535645,True
-Dice,GC+brush,mSAM+pts-bilateral-filter-single,68.0,0.002707734704017639,True
+Dice,CannyFill,Gaussian,4.0,1.043081283569336e-07,True
+Dice,CannyFill,Otsu,135.0,0.2021402269601822,False
+Dice,CannyFill,mSAM+pts-no-filter,130.0,0.16235288977622986,False
+Dice,Gaussian,Otsu,0.0,1.4901161193847656e-08,True
+Dice,Gaussian,mSAM+pts-no-filter,20.0,5.5283308029174805e-06,True
+Dice,Otsu,mSAM+pts-no-filter,10.0,6.407499313354492e-07,True
