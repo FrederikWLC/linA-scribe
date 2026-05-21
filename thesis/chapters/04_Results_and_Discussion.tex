@@ -1,11 +1,11 @@
 %!TEX root = ../Thesis.tex
 \chapter{Results and Discussion}
 \section{Non-interactive segmentation performance}
-
+\label{rq1results}
 After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
 
 Meanwhile, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
-With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\mSAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
+With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\SAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
 
 The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{mSAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
 \subsection{SAM ablation}
@@ -20,6 +20,16 @@ This was also the one used for the main evaluation.
 \label{fig:dice_sam_ablation}
 \end{figure}
 
+\subsection{Few-shot SAM}
+The few-shot adaptation of training free SAM (\acs{FATESAM}) did not perform better than the default \acs{SAM} implementation, which is not surprising given the small size and poor quality of the dataset, and poor alignment of support images with ground truth.
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/evaluation_sam/plots/Dice_score_comparison.png}
+    \caption{\acs{Dice} score comparison of variants of \acs{FATESAM} with the best performing \acs{SAM} implementation. }
+    \label{fig:sam_fewshot_comparison}
+\end{figure}
+
+\clearpage
 \subsection{Model comparison}
 
 \begin{figure}
@@ -33,8 +43,8 @@ Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pa
 
 \acs{CannyFill} also oversegments, due to its large kernel window size for morphological closing, which was necessary to fill in the gaps between edges, but gives a blocky look, and merges all nearby edges together.
 
-The unprompted \acs{mSAM} segments only background noise here, producing nothing of value.
-But the prompted \acs{mSAM+pts} does produce a somewhat coherent mask, capturing almost every sign with less oversegmented areas than both \acs{Otsu} and \acs{CannyFill}.
+The unprompted \acs{SAM} segments only background noise here, producing nothing of value.
+But the prompted \acs{SAM+pts} does produce a somewhat coherent mask, capturing almost every sign with less oversegmented areas than both \acs{Otsu} and \acs{CannyFill}.
 Still, it oversegments many signs (especially those with background-space supposed to be inside of them), fades out signs where they are supposed to continue (due to loss of attention, as segmenting many separated signs at once is not what its attention weights have been trained for), and is not able to capture the outline of the tablet.
 But the signs that it does capture well, are captured with a good level of spatial coherence.
 And there is way less noise between them compared to the masks of the baselines, which is arguably a positive sign for the potential of \acs{SAM} to perform well on this task once properly fine-tuned prompts, or points are placed through human supervision.
@@ -74,8 +84,8 @@ And there is way less noise between them compared to the masks of the baselines,
 \vspace{0.5em}
 \begin{subfigure}{0.3\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-mSAM+pts-no-filter.jpg}}
-    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\examplemSAMptsScore}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-SAM+pts-no-filter.jpg}}
+    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\exampleSAMptsScore}}
 \end{subfigure}
 
 \caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
@@ -86,30 +96,30 @@ And there is way less noise between them compared to the masks of the baselines,
 \clearpage
 
 \subsection{Statistical significance}
-As it was clear from the results, \acs{mSAM+pts} did not perform better than the best performing classical baseline.
-To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{Gaussian} and \acs{mSAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
+As it was clear from the results, \acs{SAM+pts} did not perform better than the best performing classical baseline.
+To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{Gaussian} and \acs{SAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
 What follows is the documentation of that normality test, the paired t-test, and the results of both.
 
 \subsubsection{Normality of residuals}
 \label{subsubsec:normality_residuals}
-As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{Gaussian} and \acs{mSAM+pts} appeared to be approximately normally distributed.
-Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianmSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
+As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{Gaussian} and \acs{SAM+pts} appeared to be approximately normally distributed.
+Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
 Thus, the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_Gaussian_vs_mSAM+pts-no-filter.png}
-    \caption{QQplot of the residuals of the paired t-test comparing \acs{Gaussian} and \acs{mSAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
-    Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianmSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
+    \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_Gaussian_vs_SAM+pts-no-filter.png}
+    \caption{QQplot of the residuals of the paired t-test comparing \acs{Gaussian} and \acs{SAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
+    Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.}
     \label{fig:qqplot}
 \end{figure}
 
 \subsubsection{Paired t-test}
-The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{mSAM+pts}.
-The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{mSAM+pts}.
+The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{SAM+pts}.
+The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{SAM+pts}.
 
-Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{\tteststatGaussianmSAM}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianmSAM}$.
-Thus, as $\pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianmSAM} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{mSAM+pts} in terms of \acs{Dice} score.
-Hence, it can be said that \acs{mSAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets, even when automatically prompted.
+Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{\tteststatGaussianSAM}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianSAM}$.
+Thus, as $\pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianSAM} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{SAM+pts} in terms of \acs{Dice} score.
+Hence, it can be said that \acs{SAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets, even when automatically prompted.
 
 \subsection{Fairness of the experiment}
 
@@ -128,7 +138,45 @@ Lastly, \acs{SAM} was restricted by the automatic nature of this experiment, as 
 Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison to the classical baselines.
 The results therefore suggest a need for human intervention for the optimal placement of prompts to provide the best conditions for \acs{SAM}, as it otherwise underperforms.
 
-\section{Interactive segmentation performance}
+\section{Tool-side segmentation performance}
 ...The results therefore suggest a need for a generalized and computationally efficient SAM implementation to be tuned to the greater domain of inscriptions, as the default model is not sufficient enough to prove its potential capabilities there.
 For this potential tuning to be possible, there is a need of a sufficiently sized one-class-labeled dataset of general inscription segmentations.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/dice_by_tool_time.png}
+    \caption{Yeah.}
+    \label{fig:dice_by_tool_time}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_count.png}
+    \caption{Yeah.}
+    \label{fig:interaction_count}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_avg.png}
+    \caption{Yeah.}
+    \label{fig:interaction_avg}
+\end{figure}
+
 \section{Workflow impact}
+
+Case study of 3 documents.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/workflow_time.png}
+    \caption{This is how to do it}
+    \label{fig:workflow_time}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/model_execution_time.png}
+    \caption{This is how to do it}
+    \label{fig:model_exec_time}
+\end{figure}

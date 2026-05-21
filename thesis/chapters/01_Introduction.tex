@@ -19,18 +19,18 @@ However, the last addition to SigLA was in 2021, and the project has so far mana
 \subsection{A problem of manual digitization}
 
 The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita.
-For each document, she manually created her own annotated drawings based on the originals from \acs{Cefael}.
+For each document, she manually created her own annotated drawings based on the originals stored by \acs{Cefael}.
 From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be imported to SigLA.\footcite{SalgarellaCastellanSigLA2020}
 According to her (personal communication), this has been a highly time-consuming undertaking. 
 And the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not contain the entire available corpus.
 
 The aim of this project was therefore to investigate whether parts of this process can be automated.
-More specifically, whether some kind of semi-automatic segmentation tool can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA's database.
+More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA's database.
 
 \subsection{A problem of small data}
 The small size of the Linear A corpus and the irregularities in quality of its documents is a huge problem for the application of deep learning approaches, which typically require large amounts of data to perform well.
 Consequently, this project instead sought to make use of generalized \acf{ML} and \acf{CV}.
-In particular Meta's state-of-the-art interactive segmentation model, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset - \acf{SA-1B}, of over 1 billion masks.
+In particular Meta's \acf{SOTA} interactive segmentation model, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset - \acf{SA-1B}, of over 1 billion masks.
 \acs{SAM}'s generalization and interactivity (taking user-placed prompts that guide the segmentation) potentially allows for semi-automatic annotation of Linear A inscriptions without the need for large amounts of training data, which was unfortunately not available in this context.
 It was therefore of particular interest to map the capabilities and limitations of \acs{SAM} within this domain.
 
@@ -48,35 +48,38 @@ Ever since its release in 2023, \acs{SAM} has been extensively evaluated across 
 Papers have evaluated its performance within niche domains, such as medical images \parencite{MedSAM}, camouflaged objects \parencite{CamSAM}, transparent objects \parencite{TransparentSAM}, hierarchical texts \parencite{HiSAM}, and even oracle bone inscriptions \parencite{OBIFloSAM}. 
 Most of these papers found that \acs{SAM} still tends to struggle with such domains, despite its impressive zero-shot\footnote{The term \textit{zeroshot} refers to model performance on hitherto unseen data.} generalization.
 Meanwhile, some of them also found that this performance can be significantly improved through architectural extensions and domain-specific fine-tuning, which unfortunately requires deep learning and a lot of data.
-However, fortunately, it has equally been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
+However, equally, it has been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
+And within the domain of 3D medical images, a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{sam2} has been recently demonstrated to surpass supervised methods like U-Net, and even the best fined-tuned versions of \acs{SAM} \parencite{fatesam}.
+Thus, it seemed reasonable to test out the limits of \acs{SAM}'s generalization and interactivity within the domain of Linear A document images, to investigate whether it could be used to accelerate the annotation workflow of Ester Salgarella.
 
 \section{Problem statement}
-As previously stated, the aim of this project is to investigate whether parts of the process of creating annotated drawings for SigLA can be automated.
-More specifically, whether some kind of semi-automatic segmentation tool using interactive and generalized \acs{CV} - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA’s database.
+As previously stated, the aim of this project was to investigate whether parts of the process of creating annotated drawings like the ones in SigLA can be automated.
+More specifically, whether some kind of semi-automatic segmentation tool using interactive and generalized \acs{CV} - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with a database like SigLA.
 But what would be the relative segmentation quality of such a tool? How automatic would it be exactly? And by how much could it improve the efficiency of the workflow?
-To concretize the research, the problem statement was therefore decomposed into three \acfp{RQ} - each accompanied by their respective operationalization (see the following subsection for details).
+To concretize the research, the problem statement was decomposed into three \acfp{RQ} - each accompanied by their respective operationalization (see the following subsection for details).
 
 \subsection{Research questions}
+\label{research_questions}
 \begin{enumerate}
-\item \textbf{\acs{RQ}1 (Segmentation performance)}: 
+\item \textbf{\acs{RQ}1 (Segmentation quality)}: 
 \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?}
 
-\textbf{Operationalization}: \acs{SAM}-based masks will be compared to classical image-processing baselines using overlap metrics (e.g. \acs{IoU}/\acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files for a minimum of 25 documents.
-\item \textbf{\acs{RQ}2 (Degree of automation)}: 
+\textbf{Operationalization}: \acs{SAM}-based masks were compared to classical image-processing baselines using overlap metrics (i.e. \acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files using a self-made dataset of 60 documents.
+\item \textbf{\acs{RQ}2 (Interaction efficiency)}: 
 \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}
 
-\textbf{Operationalization}: The number of user interactions (e.g. clicks) required to achieve a certain level of segmentation quality (e.g. \acs{IoU}/\acs{Dice}) will be measured against ground truth (SigLA's Krita files) for a minimum of 25 documents.
+\textbf{Operationalization}: Two self-developed segmentation tools - one SAM-based, one classical - were evaluated in a case study of 3 documents. The number of Ester Salgarella's tool-side user interactions (i.e. prompts placed for SAM, and parameter adjustments for the classical method) was compared against segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files).
 \item \textbf{\acs{RQ}3 (Workflow efficiency)}: 
 \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}
 
-\textbf{Operationalization}: The time it takes Ester Salgarella to annotate manually compared to being assisted by the proposed segmentation tool will be measured for a minimum of 5 documents.
+\textbf{Operationalization}: The time it took Ester Salgarella to annotate manually compared to being assisted by two self-developed segmentation tools - one based on SAM, and the other based on a classical baseline - was measured in a case study of 3 documents.
 \end{enumerate}
 
 \section{Impact -- innovation and application}
 
-The work of this thesis presents itself as a first proof-of-concept (and a mapping of the difficulties involved) in using \acs{SAM} and modern \acs{CV} to accelerate the expansion of the SigLA database.
-Its main contribution is a prototype of a semi-automatic annotation tool, along with an evaluation framework that can be used to assess the performance of itself and any potential future versions.
-A future version of this tool could potentially also be applied to Linear B, as it is the whole field of Aegean studies that seems to suffer from severe under-digitization of the primary evidence (which is a huge problem for the scientific investigations of scholars).
+The work of this thesis presents itself as a first proof-of-concept (and a mapping of the difficulties involved) in using \acs{SAM} and modern \acs{CV} to accelerate the annotation of Linear A documents.
+Its main contribution is a prototype of a semi-automatic annotation tool that extracts engravings from raw tablet images, along with an evaluation framework that can be used to assess the performance of that tool and any potential future derivatives.
+Such a tool could potentially also be applied to Linear B, as it is the whole field of Aegean studies that seems to suffer from severe under-digitization of the primary evidence (which is a huge problem for the scientific investigations of scholars).
 Hopefully, the work will inspire further research and development within the field of digital epigraphy.
 Particularly in the application of generalized and interactive \acs{CV} approaches such as \acs{SAM} on Linear A, and perhaps even in the broader context of use on small corpus ancient writing systems, where the lack of big data is ill fit for approaches using deep learning.
 

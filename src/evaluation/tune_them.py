@@ -20,7 +20,6 @@ def get_models_to_be_tuned():
         build_otsu(),
     ] + build_all_tunable_modal_sam_variants() + build_all_tunable_modal_fatesam2d_variants()
 
-# NOTE: WRITE IT BACK BEFORE COMMIT!
 
 def evaluation_trial(trial, model, images, ground_truths):
     # set hyperparameters according to trial's suggestions
@@ -31,14 +30,15 @@ def evaluation_trial(trial, model, images, ground_truths):
 
 def perform_tuning(n_trials=100):
     models = get_models_to_be_tuned()
-    X,Y,_ = get_val_data() # get validation data for tuning
+    # The tuning was done without binarizing the images ideally, so binarized=False to be consistent with the tuning results.
+    X,Y,_ = get_val_data(binarized=False) # get validation data for tuning
     output_dir = Path("data/results/tuning")
     output_dir.mkdir(parents=True, exist_ok=True)
     for model in models:
         model_output_dir = output_dir / model.name
         model_output_dir.mkdir(parents=True, exist_ok=True)
         print(f"\nTuning {model.name}...")
-        # Hyperparameter optimization with Optuna using random search (seeded for reproducibility)
+        # Hyperparameter optimization with Optuna using TPE (seeded for reproducibility)
         study = optuna.create_study(direction="maximize", sampler=TPESampler(seed=42)) # 42 the meaning of life, why not?
         study.optimize(lambda trial: evaluation_trial(trial, model, X, Y), n_trials=n_trials)
         

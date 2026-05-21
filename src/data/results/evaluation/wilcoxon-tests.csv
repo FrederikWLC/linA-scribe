@@ -1,7 +1,7 @@
 metric,model1,model2,statistic,p_value,significant
-Dice,CannyFill,Gaussian,4.0,1.043081283569336e-07,True
-Dice,CannyFill,Otsu,135.0,0.2021402269601822,False
-Dice,CannyFill,mSAM+pts-no-filter,130.0,0.16235288977622986,False
+Dice,CannyFill,Gaussian,6.0,2.086162567138672e-07,True
+Dice,CannyFill,Otsu,134.0,0.19368016719818115,False
+Dice,CannyFill,SAM+pts-no-filter,67.0,0.002468690276145935,True
 Dice,Gaussian,Otsu,0.0,1.4901161193847656e-08,True
-Dice,Gaussian,mSAM+pts-no-filter,20.0,5.5283308029174805e-06,True
-Dice,Otsu,mSAM+pts-no-filter,10.0,6.407499313354492e-07,True
+Dice,Gaussian,SAM+pts-no-filter,61.0,0.0013849586248397827,True
+Dice,Otsu,SAM+pts-no-filter,83.0,0.009608790278434753,True

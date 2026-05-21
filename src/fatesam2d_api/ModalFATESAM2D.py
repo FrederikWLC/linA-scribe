@@ -54,7 +54,9 @@ image = (
     )
     .add_local_dir(local_path=str(config.FATESAM_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "fatesam2d_api"))
     .add_local_dir(local_path=str(config.SCRIBE_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "scribe"))
-    .add_local_dir(local_path=str(config.GT_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/ground_truth/registered"))
+    .add_local_dir(local_path=str(config.GT_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/ground_truth/registered2"))
+    .add_local_dir(local_path=str(config.GT0_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/ground_truth/registered0"))
+    .add_local_dir(local_path=str(config.GT2_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/ground_truth/registered2"))
     .add_local_dir(local_path=str(config.RAW_LOCAL_ROOT), remote_path=str(REMOTE_ROOT / "data/raw"))
 )
 

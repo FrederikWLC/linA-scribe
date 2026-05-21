@@ -31,25 +31,25 @@
 \pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableGaussian
 \edef\hyperparamNTrialsGaussian{\pgfplotsretval}
 
-\pgfplotstableread[col sep=comma]{../src/data/results/tuning/mSAM+pts-no-filter/best.csv}\hyperparamtablemSAMpts
-\pgfplotstablegetelem{0}{Dice}\of\hyperparamtablemSAMpts
-\edef\hyperparamDicemSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtablemSAMpts
-\edef\hyperparamDBilateralmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtablemSAMpts
-\edef\hyperparamSigmamSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{C}\of\hyperparamtablemSAMpts
-\edef\hyperparamCmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtablemSAMpts
-\edef\hyperparamDmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{n_fgd_points}\of\hyperparamtablemSAMpts
-\edef\hyperparamNfgdmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{n_bgd_points}\of\hyperparamtablemSAMpts
-\edef\hyperparamNbgdmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{d_gap_erosion}\of\hyperparamtablemSAMpts
-\edef\hyperparamDGapErosionmSAMpts{\pgfplotsretval}
-\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtablemSAMpts
-\edef\hyperparamNTrialsmSAMpts{\pgfplotsretval}
+\pgfplotstableread[col sep=comma]{../src/data/results/tuning/SAM+pts-no-filter/best.csv}\hyperparamtableSAMpts
+\pgfplotstablegetelem{0}{Dice}\of\hyperparamtableSAMpts
+\edef\hyperparamDiceSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_bilateral}\of\hyperparamtableSAMpts
+\edef\hyperparamDBilateralSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{sigma_bilateral}\of\hyperparamtableSAMpts
+\edef\hyperparamSigmaSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{C}\of\hyperparamtableSAMpts
+\edef\hyperparamCSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gaussian}\of\hyperparamtableSAMpts
+\edef\hyperparamDSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_fgd_points}\of\hyperparamtableSAMpts
+\edef\hyperparamNfgdSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_bgd_points}\of\hyperparamtableSAMpts
+\edef\hyperparamNbgdSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{d_gap_erosion}\of\hyperparamtableSAMpts
+\edef\hyperparamDGapErosionSAMpts{\pgfplotsretval}
+\pgfplotstablegetelem{0}{n_trials}\of\hyperparamtableSAMpts
+\edef\hyperparamNTrialsSAMpts{\pgfplotsretval}
 
 % Evaluation Results
 \pgfplotstableread[col sep=comma]{../src/data/results/evaluation/raw-pivot-Dice.csv}\rawpivot
@@ -99,17 +99,17 @@
 \pgfplotstablegetelem{0}{Dice_n}\of\resumetable
 \edef\numberofimages{\pgfplotsretval}
 
-% Shapiro-Wilk test for normality of residuals of paired t-test between Gaussian and mSAM+pts
+% Shapiro-Wilk test for normality of residuals of paired t-test between Gaussian and SAM+pts
 \pgfplotstablegetelem{4}{p_value}\of\shapirotable
-\edef\ShapiroPValueResidualGaussianmSAM{\pgfplotsretval}
+\edef\ShapiroPValueResidualGaussianSAM{\pgfplotsretval}
 
-% Paired t-test between Gaussian and mSAM+pts
+% Paired t-test between Gaussian and SAM+pts
 \pgfplotstablegetelem{4}{p_value}\of\ttable
-\edef\ttestpvalueGaussianmSAM{\pgfplotsretval}
+\edef\ttestpvalueGaussianSAM{\pgfplotsretval}
 \pgfplotstablegetelem{4}{statistic}\of\ttable
-\edef\tteststatGaussianmSAM{\pgfplotsretval}
+\edef\tteststatGaussianSAM{\pgfplotsretval}
 
-% Dice score means for Gaussian and, mSAM, and mSAM+pts, and mean residual
+% Dice score means for Gaussian and, SAM, and SAM+pts, and mean residual
 \pgfplotstablegetelem{0}{Dice_mean}\of\resumetable
 \edef\CannyFillmean{\pgfplotsretval}
 \pgfplotstablegetelem{1}{Dice_mean}\of\resumetable
@@ -117,8 +117,8 @@
 \pgfplotstablegetelem{2}{Dice_mean}\of\resumetable
 \edef\Otsumean{\pgfplotsretval}
 \pgfplotstablegetelem{4}{Dice_mean}\of\resumetable
-\edef\mSAMptsmean{\pgfplotsretval}
-\pgfmathsetmacro{\deltameanGaussianmSAM}{\Gaussianmean - \mSAMptsmean}
+\edef\SAMptsmean{\pgfplotsretval}
+\pgfmathsetmacro{\deltameanGaussianSAM}{\Gaussianmean - \SAMptsmean}
 
 % Dice score of the selected example tablet for visual comparison.
 \pgfplotstablegetelem{\exampleTabletRow}{CannyFill}\of\rawpivot
@@ -127,5 +127,5 @@
 \edef\exampleOtsuScore{\pgfplotsretval}
 \pgfplotstablegetelem{\exampleTabletRow}{Gaussian}\of\rawpivot
 \edef\exampleGaussianScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{mSAM+pts-no-filter}\of\rawpivot
-\edef\examplemSAMptsScore{\pgfplotsretval}
+\pgfplotstablegetelem{\exampleTabletRow}{SAM+pts-no-filter}\of\rawpivot
+\edef\exampleSAMptsScore{\pgfplotsretval}

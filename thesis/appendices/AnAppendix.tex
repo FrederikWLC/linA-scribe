@@ -37,18 +37,18 @@ $d_{gaussian}$ & \hyperparamDGaussian \\
 
 \begin{table}[ht]
 \centering
-\caption{Best \acs{TPE} hyperparameter optimization results for \acs{mSAM+pts} after $\hyperparamNTrialsmSAMpts$ trials.}
+\caption{Best \acs{TPE} hyperparameter optimization results for \acs{SAM+pts} after $\hyperparamNTrialsSAMpts$ trials.}
 \begin{tabular}{cc}
 \toprule
 Hyperparameter & Obtained value \\
 \midrule
-$d_{bilateral}$ & \hyperparamDBilateralmSAMpts \\
-$\sigma$ & \hyperparamSigmamSAMpts \\
-$C$ & \hyperparamCmSAMpts \\
-$d_{gaussian}$ & \hyperparamDmSAMpts \\
-$n_{fgd\_pts}$ & \hyperparamNfgdmSAMpts \\
-$n_{bgd\_pts}$ & \hyperparamNbgdmSAMpts \\
-$d_{gap\_erosion}$ & \hyperparamDGapErosionmSAMpts \\
+$d_{bilateral}$ & \hyperparamDBilateralSAMpts \\
+$\sigma$ & \hyperparamSigmaSAMpts \\
+$C$ & \hyperparamCSAMpts \\
+$d_{gaussian}$ & \hyperparamDSAMpts \\
+$n_{fgd\_pts}$ & \hyperparamNfgdSAMpts \\
+$n_{bgd\_pts}$ & \hyperparamNbgdSAMpts \\
+$d_{gap\_erosion}$ & \hyperparamDGapErosionSAMpts \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -62,7 +62,7 @@ $d_{gap\_erosion}$ & \hyperparamDGapErosionmSAMpts \\
     columns/CannyFill/.style={column name=CannyFill},
     columns/Gaussian/.style={column name=Gaussian},
     columns/Otsu/.style={column name=Otsu},
-    columns/mSAM+pts/.style={column name=mSAM+pts},
+    columns/SAM+pts/.style={column name=SAM+pts},
 }
 
 
@@ -250,29 +250,3 @@ Label column represents the name of the document segmented, while all other colu
     every last row/.style={after row=\bottomrule}
 ]{\resumetable}
 \end{table}
-
-\section{Tool development and user study}
-\subsection{Requirement analysis and first usability test}
-The 5th of May a requirement analysis and first usability test of a MVP was performed with Ester through a video call.
-That MVP was composed of two tools: a classical method (Gaussian), and an interactive SAM version (MobileSAM).
-
-After trying out the tools, she gave the impression that she could probably use the outputs as draft drawings to be completed with a pen, which might save her some time.
-
-For the classical baseline, the grainy resolution (due to the input image quality) bothered her a bit.
-The output mask was also noisy at times. And not all lines were always picked up.
-
-For the SAM version, she pointed out that it did not pick up the noisy tablet damage as much as the classical method did.
-But she was worried that the interaction with SAM would take longer than simply doing strokes manually.
-The box-prompt workflow was not completely successful during the test. Due to bugs, boxes mostly did not work. and when they did, the segmented forms were not useful.
-
-\subsection{Second (small) usability test}
-
-The 8th of May another usability test was performed on an updated MVP with Ester through a video call. Now, the box prompts worked, and the MobileSAM was replaced with SAM2.1. The segmentation quality per box-prompted sign was noticeably better than previously.
-Together with Lukas Esterle, the conclusions were to make a slider for the classical model to decrease and increase granularity.
-Maybe SAM use original image, preselect the boxes! - was discarded as it was not needed.
-
-\subsection{Third usability and final acceptance test}
-
-The 12th of May, a third usability test was conducted in person at AIAS in Århus, including the first part of the usability experiment.
-As all 45 images could not be drawn all at once, the .ora exports from the tool were saved, and finished at a later time in batches by Ester on her own, for each of them recording the time it took to do so.
-Due to the huge amount of time it took to process the images with the tool (especially with the SAM version), the experiment was stopped after just 3 images.

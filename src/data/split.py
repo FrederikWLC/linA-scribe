@@ -5,10 +5,10 @@ import cv2
 DIFFICULTIES = ("easy", "medium", "hard")
 DATA_ROOT = Path("data")
 get_raw_root = lambda data_root: data_root / "raw"
-get_ground_truth_root = lambda data_root: data_root / "ground_truth" / "registered"
+get_ground_truth_root = lambda data_root: data_root / "ground_truth" / "registered0"
+get_binarized_ground_truth_root = lambda data_root: data_root / "ground_truth" / "registered2"
 
-
-def get_difficulty_paths(difficulty: str, data_root: Path | str = DATA_ROOT) -> list[Path]:
+def get_difficulty_paths(difficulty: str, data_root: Path | str = DATA_ROOT, ) -> list[Path]:
 	data_root = Path(data_root)
 	return sorted((get_raw_root(data_root) / difficulty).glob("*.jpg"))
 
@@ -17,11 +17,13 @@ def iter_difficulty_image_paths(data_root: Path | str = DATA_ROOT):
 	for difficulty in DIFFICULTIES:
 		yield difficulty, get_difficulty_paths(difficulty, data_root=data_root)
 
-def load_paths(image_paths: list[Path], data_root: Path | str = DATA_ROOT):
+def load_paths(image_paths: list[Path], data_root: Path | str = DATA_ROOT, binarized=False):
 	data_root = Path(data_root)
 	images = [cv2.imread(path.as_posix(), cv2.IMREAD_GRAYSCALE) for path in image_paths]
+	ground_truth_root = get_binarized_ground_truth_root(data_root) if binarized else get_ground_truth_root(data_root)
 	ground_truths = [
-		cv2.imread((get_ground_truth_root(data_root) / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
+		cv2.imread((ground_truth_root / path.stem).with_suffix(".png").as_posix(), cv2.IMREAD_GRAYSCALE)
+		if binarized else cv2.imread((ground_truth_root / path.name).as_posix(), cv2.IMREAD_GRAYSCALE)
 		for path in image_paths
 	]
 	labels = [path.stem for path in image_paths]
@@ -86,32 +88,32 @@ def get_support_val_test_paths(seed: int = 42, data_root: Path | str = DATA_ROOT
 
 	return support_paths, val_paths, test_paths
 
-def get_support_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+def get_support_data(seed: int = 42, data_root: Path | str = DATA_ROOT, binarized=False):
 	data_root = Path(data_root)
 	support_paths, _, _ = get_support_val_test_paths(seed=seed, data_root=data_root)
-	images, ground_truths, labels = load_paths(support_paths, data_root=data_root)
+	images, ground_truths, labels = load_paths(support_paths, data_root=data_root, binarized=binarized)
 	return images, ground_truths, labels
 
-def get_val_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+def get_val_data(seed: int = 42, data_root: Path | str = DATA_ROOT, binarized=False):
 	data_root = Path(data_root)
 	_, val_paths, _ = get_support_val_test_paths(seed=seed, data_root=data_root)
-	images, ground_truths, labels = load_paths(val_paths, data_root=data_root)
+	images, ground_truths, labels = load_paths(val_paths, data_root=data_root, binarized=binarized)
 	return images, ground_truths, labels
 
-def get_test_data(seed: int = 42, data_root: Path | str = DATA_ROOT):
+def get_test_data(seed: int = 42, data_root: Path | str = DATA_ROOT, binarized=False):
 	data_root = Path(data_root)
 	_, _, test_paths = get_support_val_test_paths(seed=seed, data_root=data_root)
-	images, ground_truths, labels = load_paths(test_paths, data_root=data_root)
+	images, ground_truths, labels = load_paths(test_paths, data_root=data_root, binarized=binarized)
 	return images, ground_truths, labels
 
-def get_test_data_by_difficulty(seed: int = 42, data_root: Path | str = DATA_ROOT):
+def get_test_data_by_difficulty(seed: int = 42, data_root: Path | str = DATA_ROOT, binarized=False):
 	data_root = Path(data_root)
 	_, _, test_paths = get_support_val_test_paths(seed=seed, data_root=data_root)
 	evaluation_data = {difficulty: {"images": [], "ground_truths": [], "labels": [], "paths": []} for difficulty in DIFFICULTIES}
 
 	for difficulty in DIFFICULTIES:
 		difficulty_paths = [path for path in test_paths if path.parent.name == difficulty]
-		images, ground_truths, labels = load_paths(difficulty_paths, data_root=data_root)
+		images, ground_truths, labels = load_paths(difficulty_paths, data_root=data_root, binarized=binarized)
 		evaluation_data[difficulty] = {
 			"images": images,
 			"ground_truths": ground_truths,

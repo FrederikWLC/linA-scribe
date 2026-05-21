@@ -1,13 +1,22 @@
 %!TEX root = ../Thesis.tex
 \chapter{Methodology}
-\section{Common methodology}
+This chapter describes in detail the operationalization of answering the question of whether a \acs{SAM}-based segmentation tool can accelerate the annotation workflow of Linear A documents (see \cref{research_questions} for an overview of the individual \acsp{RQ}).
+Overall, this operationalization was achieved through a comprehensive evaluation of segmentation quality (see \cref{Segmentation quality}), and a case study involving Dr. Ester Salgarella measuring the interaction efficiency (see \cref{Interaction efficiency}) and workflow efficiency (see \cref{Workflow efficiency}) of a self-developed \acs{SAM}-based segmentation tool.
+In that way, these three abstract virtues were decomposed into independent measurable metrics, making it possible to concretely answer the research questions, and where the potential benefits and drawbacks of \acs{SAM} lie.
 \subsection{Development environment and tools}
 
+All software written for this thesis was made publicly available on GitHub \parencite{source_code}.
 Python 3.13 was used for all code development.
 The choice of this programming language was made due to its big community and library support for nearly everything; be it plotting (Matplotlib), statistics (SciPy), matrix math (NumPy), image processing (OpenCV), or GUI development (PyQt), etc.
 Python's package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
-For the \acs{ML} model implementation library needed (\acl{mSAM}), Python was also the language of choice, and thus it was the most convenient for development.
+For the \acs{ML} model implementation libraries needed, Python was also the language, and thus it was the most convenient for development.
 The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
+
+\section{Non-interactive segmentation ability} \label{Segmentation quality}
+To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
+All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
+
+The following subsections therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
 
 \subsection{Common theory}
 
@@ -31,12 +40,6 @@ $$ B(x,y) = \begin{cases}
 \footcite[p.~159]{DigitalImageProcessing}
 $$ (w \star I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~157]{DigitalImageProcessing}
-
-\section{Non-interactive segmentation ability} \label{Segmentation quality}
-To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of a computationally efficient implementation of \acs{SAM} (\acl{mSAM}) was evaluated against a set of baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
-All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
-
-The following subsections therefore document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
 
 \subsection{Baseline model configuration}
 The baseline models against which the best \acs{SAM} implementation was evaluated (from simplest to most advanced) were:
@@ -146,16 +149,12 @@ This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} f
 
 \subsection{State-of-the-art}
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
-For the sake of computational efficiency, a mobile implementation of \acs{SAM} - ~\acf{mSAM} \parencite[see][]{mobile_sam_v2} was used instead of the original.
-It is a lightweight version, which was designed to run more efficiently on mobile devices with a similar segmentation capability.
-More specifically, it is trained on a smaller sample of the same dataset of natural images as the original \acs{SAM}; \acs{SA-1B}, and thus has roughly the same segmentation capabilities, although with a slightly lower performance.
+Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its different use cases require different trade-offs in terms of accuracy, speed, and domain adaptation, there are many different variants of \acs{SAM}.
 
-As gray-scale images of clay tablets with Linear A inscriptions were not part of that dataset, \acs{mSAM} had to be adapted to the specific characteristics of the domain.
-But as it could not be further tuned by training on the domain dataset (due to its small size), the only way to do so, was through the use of prompts.
-Specifically, automatic prompts, to make the non-interactive comparison to the baselines fair.
+For the sake of fairness, it seemed only reasonable to test out a range of them, including of course the original, the computationally efficient Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}, and the latest \acs{SAM}2 \parencite[see][]{sam2}.
+Few-shot implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation, because of their potential to accommodate to niche domains with the help of support images.
 
-The main pipeline of \acs{mSAM} thus ended up consisting of segmentation of the raw image by \acl{mSAM} into a binary mask, preceded by automatic prompt generation.
-What follows is therefore a brief description of the model architecture, and the automatic prompt generation method used to adapt it to the domain.
+The following subsections describe the architecture of these chosen variants, and how they were implemented for the evaluation.
 
 \subsubsection{SAM architecture}
 \begin{figure}
@@ -165,8 +164,8 @@ What follows is therefore a brief description of the model architecture, and the
 \label{fig:SAM_architecture}
 \end{figure}
 
-For both \acs{SAM} and \acl{mSAM}, the model architecture consists of an image encoder, and a prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
-The image encoder used is a \acf{ViT}\footnote{The reason that \acl{mSAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
+For the original \acs{SAM} and \acl{mSAM}, the model architecture consists of an image encoder, and a prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
+The image encoder used is a \acf{ViT}\footnote{The reason that \acl{mSAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} (with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
 But instead of convolutional layers, a \acs{ViT} makes use of a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
 As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP}.
 These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weights the patches according to their relevance to eachother.\footcite[see][for the math behind \textit{attention}]{vaswani2023attentionneed}
@@ -189,20 +188,52 @@ one that generates their final segmentation masks by a dot product with the outp
 and another one that outputs a predicted IoU score for each mask.
 For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
 
-\begin{figure}[htbp]
+\begin{figure}
 \centering
     \includegraphics[width=\linewidth]{images/SAM-mask-decoder.jpg}
-\caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}. }
+\caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}.}
 \label{fig:SAM_mask_decoder}
 \end{figure}
 
 \subsubsection{SAM2}
 
+With the release of \acs{SAM}2 \parencite{sam2}, the architecture of the image encoder was changed to Hiera \parencite{hiera} - a hierarchical vision transformer that unlike a regular \acs{ViT}, to improve efficiency, makes no use of convolutional layers.
+MAE. It outperforms \acs{SOTA} for both videos and images.
+
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=\linewidth]{images/SAM2-architecture.jpg}
+\caption{Architecture of \acs{SAM}2, from \textcite{sam2}. }
+\label{fig:SAM2_architecture}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=\linewidth]{images/SAM2-mask-decoder.jpg}
+\caption{Architecture of \acs{SAM}2's mask decoder, from \textcite{sam2}. }
+\label{fig:SAM2_mask_decoder}
+\end{figure}
+
+
 \subsubsection{FATESAM}
+Within the domain of 3D medical images, a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{sam2} has been recently demonstrated to surpass supervised methods like U-Net, and even the best fined-tuned versions of \acs{SAM} \parencite{fatesam}.
+
+
+\begin{figure}[htbp]
+\centering
+    \includegraphics[width=\linewidth]{images/FATESAM-architecture.jpg}
+\caption{Architecture of \acs{FATESAM}, from \textcite{fatesam}. }
+\label{fig:FATESAM_architecture}
+\end{figure}
 
 \subsubsection{GFSAM}
 
 \subsubsection{Automatic prompting}
+As gray-scale images of clay tablets with Linear A inscriptions were not part of that dataset, \acs{mSAM} had to be adapted to the specific characteristics of the domain.
+But as it could not be further tuned by training on the domain dataset (due to its small size), the only way to do so, was through the use of prompts.
+Specifically, automatic prompts, to make the non-interactive comparison to the baselines fair.
+
+The main pipeline of \acs{mSAM} thus ended up consisting of segmentation of the raw image by \acl{mSAM} into a binary mask, preceded by automatic prompt generation.
+What follows is therefore a brief description of the model architecture, and the automatic prompt generation method used to adapt it to the domain.
 Even though the \acl{mSAM} implementation already makes use of an automatic box prompt, it does so from a \acf{YOLO}\footcite{YOLO} model trained on a subset of the same dataset as \acs{SAM}, \acs{SA-1B}.\footcite{mobile_sam_v2}
 Those box prompts are generalized for and work best on natural images.
 Thus, \acs{mSAM}  needed to be adapted through the use of other automatic prompts. 
@@ -210,13 +241,13 @@ But as it was particularly difficult to automatically create high quality box pr
 To perform a single ablation check of these automatic point prompts, two versions of MobileSAMv2 were then made for comparison: 
 \begin{itemize}
     \item \textbf{\acs{mSAM}}: \acl{mSAM} (with the original automatic box prompts from the \acs{YOLO}v8 model),
-    \item and \textbf{\acs{mSAM+pts}}: \acl{mSAM+pts} labeled as either foreground or background.
+    \item and \textbf{\acs{SAM+pts}}: \acl{SAM+pts} labeled as either foreground or background.
 \end{itemize}
 
-\noindent The automatic point prompts for \acs{mSAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from a thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-This was done by randomly sampling a number of foreground and background pixels from the mask as prompts for \acs{mSAM+pts}.
+\noindent The automatic point prompts for \acs{SAM+pts} (see \cref{fig:autoseed_mSAM} for a visual example) were derived from a thresholded mask of the Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+This was done by randomly sampling a number of foreground and background pixels from the mask as prompts for \acs{SAM+pts}.
 Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
-This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{mSAM+pts}.
+This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{SAM+pts}.
 \begin{figure}
 \centering
 \figcross
@@ -229,15 +260,15 @@ This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \
     \item $n_{bgd\_points}$: the number of background point prompts to be sampled from the sure background region,
     \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
 \end{enumerate}
-\caption{Hyperparameters for \acf{mSAM+pts}}
+\caption{Hyperparameters for \acf{SAM+pts}}
 \label{fig:hyperparameters_mSAM}
 \end{figure}
 
 
 \begin{figure}
 \centering
-    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-mSAM+pts-no-filter.jpg}}
-\caption{A visual example of prompt distribution for \acf{mSAM+pts}, overlayed on \displayexampleTabletName.
+    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-SAM+pts-no-filter.jpg}}
+\caption{A visual example of prompt distribution for \acf{SAM+pts}, overlayed on \displayexampleTabletName.
 Green points represent foreground point prompts, while red points represent background point prompts.}
 \label{fig:autoseed_mSAM}
 \end{figure}
@@ -281,17 +312,77 @@ Thus, the residuals of the paired differences in \acs{Dice} scores between the t
 And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
 
 
-\section{Interactive segmentation ability}
-Here, the interactivity and quality of human-guided SAM were evaluated.
+\section{Interaction efficiency} \label{Interaction efficiency}
+To answer the question of RQ2: \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method based on \acs{SAM}2, and another based on the best classical method from the non-interactive evaluation in the previous section (see \cref{Segmentation quality}), to allow for a direct comparison in terms of tool efficiency.
 
-\subsection{Interactive tool architecture}
+The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
+\subsection{Tool architecture}
+The tool was developed as a web-application using Svelte as the frontend framework, and FastAPI as the backend framework.
+Due to it being a web application, it could be run remotely on any device with a web browser, without the need for installation, making it more easily accessible for online user testing with Ester Salgarella.
+And to make the development environment be consistent with production, the application was containerized using Docker, which also made it easier to deploy and run on any machine without worrying about dependencies and environment setup.
+
+Svelte was chosen for the frontend mostly due to its reactive state management, .
+FASTAPI was chosen as the backend, as it is asynchronous, and a Python model-serving
+
+\subsubsection{Requirement analysis and first usability test}
+The 5th of May a requirement analysis and first usability test of a MVP was performed with Ester through a video call.
+That MVP was composed of two tools: a classical method (Gaussian), and an interactive SAM version (MobileSAM).
+After trying out the tools, she gave the impression that she could probably use the outputs as draft drawings to be completed with a pen, which might save her some time.
+
+For the classical baseline, the grainy resolution (due to the input image quality) bothered her a bit.
+The output mask was also noisy at times. And not all lines were always picked up.
+
+For the SAM version, she pointed out that it did not pick up the noisy tablet damage as much as the classical method did.
+But she was worried that the interaction with SAM would take longer than simply doing strokes manually.
+The box-prompt workflow was not completely successful during the test.
+Due to bugs, boxes mostly did not work. and when they did, the segmented forms were not useful.
+
+\subsubsection{Second (small) usability test}
+
+The 8th of May another usability test was performed on an updated MVP with Ester through a video call.
+Now, the box prompts worked, and the MobileSAM was replaced with SAM2.1.
+The segmentation quality per box-prompted sign was noticeably better than previously.
+Together with Lukas Esterle, the conclusions were to make a slider for the classical model to decrease and increase granularity.
+It was also suggested that box prompts for SAM could be computationally preselected based on the mask from the classical model, but this was discarded as it was not deemed needed.
+
+\subsubsection{Third usability and final acceptance test}
+
+The 12th of May, a third usability test was conducted in person at AIAS in Århus, including the first part of the usability experiment.
+As all 45 images could not be drawn all at once, the .ora exports from the tool were saved, and finished at a later time in batches by Ester on her own, for each of them recording the time it took to do so.
+Due to the huge amount of time it took to process the images with the tool (especially with the SAM version), the experiment was stopped after just 3 images.
+
+
+
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/Classic-tool.jpg}}
+    \caption{Yeah.}
+    \label{fig:classic_tool}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/SAM-tool.jpg}}
+    \caption{Yeah.}
+    \label{fig:sam_tool}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{images/SAM-tool-export.jpg}}
+    \caption{Yeah.}
+    \label{fig:sam_tool_export}
+\end{figure}
+
 \subsection{Experimental design for automation evaluation}
-\subsection{Definition of automation metrics}
+\subsection{Definition of interaction metrics}
 
-\section{Workflow efficiency}
+\section{Workflow efficiency} \label{Workflow efficiency}
+To answer the question of RQ3: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, a case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish the segmentation outputs exported from the tool was measured, and compared to the time taken to do the same drawings fully manually.
 
+The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of workflow efficiency metrics.
 
-\noindent\note{Add some context of RQ3 here, and how the question will be operationalized in bigger picture (though more detail than in introduction).}
 \subsection{Export to Krita}
 When the segmentation is complete, the tool allows for export to JPEG, PNG, or OpenRaster (.ora) format.
 The latter is an open file format that like Krita (.kra) files consists of a ZIP file with an XML document describing the layer structure, and a PNG or SVG image for each raster or vector layer, respectively.
@@ -300,7 +391,9 @@ It is supported by a few image editing programs, including Krita, which makes it
 
 \subsection{Definition of workflow efficiency metrics}
 Time.
-\subsection{Experimental design of the user study}
+\subsection{Experimental design}
+The drawings were made in Krita using a displayless pressure-sensitive Wacom drawing pad with a pen input.
+
 
 \subsection{Analysis of results}
 

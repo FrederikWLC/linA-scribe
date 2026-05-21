@@ -27,7 +27,9 @@ class FATESAM2DConfiguration(TunableConfiguration):
         )
 
     def get_support_data(self):
-        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root)
+        # we do binarize the images ideally for the few-shot inference and evaluation
+        # (unlike tuning, as it cannot be redone since ideal binarization was first implemented after the interactive experiment with Ester)
+        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root, binarized=True)
         if self.is_blank:
             rng = np.random.default_rng(42)
             support_labels = [

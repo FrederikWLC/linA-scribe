@@ -11,10 +11,12 @@ class BinaryMask(np.ndarray):
 
     @staticmethod
     def from_bool(bool_array: np.ndarray) -> "BinaryMask":
-        return BinaryMask(bool_array.astype(np.uint8))
+        return BinaryMask(np.asarray(bool_array).astype(np.uint8))
 
     @staticmethod
     def from_image(image: np.ndarray) -> "BinaryMask":
+        if image is None:
+            raise ValueError("Cannot create BinaryMask from a missing image.")
         # convert from uint8 image where 0 (black ink) is foreground and 255 (white empty area) is background
         # to binary mask where 1 is foreground and 0 is background
         return BinaryMask((image == 0).astype(np.uint8))

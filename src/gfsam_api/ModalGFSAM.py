@@ -29,7 +29,8 @@ LOCAL_GF_SAM_API_ROOT = LOCAL_SRC_ROOT / "gfsam_api"
 LOCAL_SCRIBE_ROOT = LOCAL_SRC_ROOT / "scribe"
 LOCAL_DATA_SPLIT_PATH = LOCAL_SRC_ROOT / "data" / "split.py"
 LOCAL_RAW_ROOT = LOCAL_SRC_ROOT / "data" / "raw"
-LOCAL_GT_ROOT = LOCAL_SRC_ROOT / "data" / "ground_truth" / "registered"
+LOCAL_GT0_ROOT = LOCAL_SRC_ROOT / "data" / "ground_truth" / "registered0"
+LOCAL_GT2_ROOT = LOCAL_SRC_ROOT / "data" / "ground_truth" / "registered2"
 
 _modal_app_started = False
 _modal_app_thread: threading.Thread | None = None
@@ -66,7 +67,8 @@ image = (
     .add_local_dir(local_path=str(LOCAL_GF_SAM_API_ROOT), remote_path=GFSAM_REMOTE_ROOT)
     .add_local_dir(local_path=str(LOCAL_SCRIBE_ROOT), remote_path="/root/scribe")
     .add_local_file(local_path=str(LOCAL_DATA_SPLIT_PATH), remote_path="/root/data/split.py")
-    .add_local_dir(local_path=str(LOCAL_GT_ROOT), remote_path="/root/data/ground_truth/registered")
+    .add_local_dir(local_path=str(LOCAL_GT0_ROOT), remote_path="/root/data/ground_truth/registered0")
+    .add_local_dir(local_path=str(LOCAL_GT2_ROOT), remote_path="/root/data/ground_truth/registered2")
     .add_local_dir(local_path=str(LOCAL_RAW_ROOT), remote_path="/root/data/raw")
 )
 

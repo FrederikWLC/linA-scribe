@@ -14,7 +14,9 @@ from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
 
 # Get test data, from data split module
-evaluation_data = get_test_data_by_difficulty()
+# we do binarize the images ideally for the evaluation
+# (unlike tuning, as it cannot be redone since ideal binarization was first implemented after the interactive experiment with Ester)
+evaluation_data = get_test_data_by_difficulty(binarized=True)
 
 METRICS = {"Dice": BinaryDiceScore}
 

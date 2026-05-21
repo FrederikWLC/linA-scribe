@@ -221,4 +221,4 @@ def get_all_tunable_sam_configurations():
 # ======================================================================
 
 def get_best_sam_configuration():
-    return SAMConfiguration("MobileSAM", use_bilateral_filter=False, use_autopoints=True)
+    return SAMConfiguration("SAM", use_bilateral_filter=False, use_autopoints=True)

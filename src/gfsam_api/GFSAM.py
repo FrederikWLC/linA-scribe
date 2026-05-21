@@ -46,7 +46,7 @@ class GFSAMConfiguration(ModelConfiguration):
         )
 
     def get_support_data(self):
-        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root)
+        support_images, support_labels, _ = get_support_data(data_root=self.support_data_root, binarized=True)
         return support_images, support_labels
 
 def build_from_gfsam_configuration(configuration: GFSAMConfiguration) -> GFSAM:

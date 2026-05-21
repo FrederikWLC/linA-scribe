@@ -28,6 +28,8 @@ class Config:
     CONFIG_LOCAL_PATH = ROOT_DIR / "config.py"
     RAW_LOCAL_ROOT = DATA_DIR / "raw"
     GT_LOCAL_ROOT = DATA_DIR / "ground_truth" / "registered"
+    GT0_LOCAL_ROOT = DATA_DIR / "ground_truth" / "registered0"
+    GT2_LOCAL_ROOT = DATA_DIR / "ground_truth" / "registered2"
     DATA_SPLIT_LOCAL_PATH = DATA_DIR / "split.py"
 
     FATESAM_CHECKPOINT = os.getenv("FATESAM_CHECKPOINT", "sam2_hiera_large.pt")
