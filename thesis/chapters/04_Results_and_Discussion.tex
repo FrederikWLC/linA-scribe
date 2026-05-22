@@ -4,10 +4,10 @@
 \label{rq1results}
 After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
 
-Meanwhile, \acs{mSAM+pts} with the engineered point prompt clouds performed considerably better.
+Meanwhile, \acs{SAM+pts} with the engineered point prompt clouds performed considerably better.
 With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\SAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
 
-The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{mSAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
+The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{SAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
 \subsection{SAM ablation}
 
 The results of the ablation study of different SAM variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was the one with automatic point prompts and bilateral filter, making use of the single output token per image instead of best of three.
@@ -85,7 +85,7 @@ And there is way less noise between them compared to the masks of the baselines,
 \begin{subfigure}{0.3\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-SAM+pts-no-filter.jpg}}
-    \caption{mSAMpts \pgfmathprintnumber[fixed,precision=3]{\exampleSAMptsScore}}
+    \caption{SAMpts \pgfmathprintnumber[fixed,precision=3]{\exampleSAMptsScore}}
 \end{subfigure}
 
 \caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
@@ -133,44 +133,43 @@ However, for comparison between models, the relative differences in \acs{Dice} s
 \subsubsection{Model implementation}
 In the case of the fairness of the \acs{SAM} implementation chosen, the experiment obviously only evaluates the performance of an untuned version.
 This implementation had most certainly never seen Linear A tablet images during training, as it was pretrained by default on the large and diverse dataset of natural images \acs{SA-1B}.
-Furthermore, the model implementation used makes use of \acl{mSAM} with its small \acs{ViT} image encoder TinyVit \parencite{TinyViT}, which can compromise on segmentation quality.
+Furthermore, the model implementation used makes use of Mobile\acs{SAM} with its small \acs{ViT} image encoder TinyVit \parencite{TinyViT}, which can compromise on segmentation quality.
 Lastly, \acs{SAM} was restricted by the automatic nature of this experiment, as its intended use is interactive segmentation.
 Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison to the classical baselines.
 The results therefore suggest a need for human intervention for the optimal placement of prompts to provide the best conditions for \acs{SAM}, as it otherwise underperforms.
 
 \section{Tool-side segmentation performance}
-...The results therefore suggest a need for a generalized and computationally efficient SAM implementation to be tuned to the greater domain of inscriptions, as the default model is not sufficient enough to prove its potential capabilities there.
-For this potential tuning to be possible, there is a need of a sufficiently sized one-class-labeled dataset of general inscription segmentations.
+The case study of 3 documents showed that the interactive version of \acs{SAM}2 with box prompts and point prompts not only took more time to use than the classical baselinedue to its the burden of interaction, but also did not perform better in terms of segmentation quality, even with the help of human input (see \cref{fig:dice_by_tool_time}).
 
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/dice_by_tool_time.png}
-    \caption{Yeah.}
+    \caption{\acs{Dice} score performance of the interactive version of \acs{SAM}2, compared to the classical baselines, plotted against the time taken to use each tool.}
     \label{fig:dice_by_tool_time}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_count.png}
-    \caption{Yeah.}
+    \caption{Amount of prompts placed per image for the interactive version of \acs{SAM}2.}
     \label{fig:interaction_count}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_avg.png}
-    \caption{Yeah.}
+    \caption{Average number of point prompts placed per box prompt per image for the interactive version of \acs{SAM}2.}
     \label{fig:interaction_avg}
 \end{figure}
 
 \section{Workflow impact}
 
-Case study of 3 documents.
+The case study of 3 documents 
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/workflow_time.png}
-    \caption{This is how to do it}
+    \caption{Workflow time spent per method, split into tool use }
     \label{fig:workflow_time}
 \end{figure}
 
