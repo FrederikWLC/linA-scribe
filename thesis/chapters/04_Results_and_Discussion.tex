@@ -139,43 +139,54 @@ Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison
 The results therefore suggest a need for human intervention for the optimal placement of prompts to provide the best conditions for \acs{SAM}, as it otherwise underperforms.
 
 \section{Tool-side segmentation performance}
-The case study of 3 documents showed that the interactive version of \acs{SAM}2 with box prompts and point prompts not only took more time to use than the classical baselinedue to its the burden of interaction, but also did not perform better in terms of segmentation quality, even with the help of human input (see \cref{fig:dice_by_tool_time}).
+The case study of 3 documents showed that the interactive version of \acs{SAM}2 with box prompts and point prompts not only took more time to use than the classical baseline, due to the burden of interaction, but also did not perform better in terms of segmentation quality, even with the help of human input (see \cref{fig:dice_by_tool_time}).
 
-\begin{figure}
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/dice_by_tool_time.png}
-    \caption{\acs{Dice} score performance of the interactive version of \acs{SAM}2, compared to the classical baselines, plotted against the time taken to use each tool.}
+    \caption{\acs{Dice} scores of the exported masks as a function of tool time, comparing the \acs{SAM}-based tool to the tool based on the classical baseline.}
     \label{fig:dice_by_tool_time}
 \end{figure}
 
-\begin{figure}
+ A significant portion of the time spent using the interactive version of \acs{SAM}2 was on waiting for the model to execute through Modal (see \cref{fig:model_exec_time}).
+ But clearly this was not the bottleneck, as the time spent on interaction was much higher, taking up more than 80\% of tool time.
+ The time spent waiting on \acs{SAM} execution was also below 5 seconds more than 50\% of executions.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\linewidth]{../src/data/results/workflow/model_execution_time.png}
+    \caption{Tool time spent on model execution per method (left), and distribution of \acs{SAM} Modal interaction time (right).}
+    \label{fig:model_exec_time}
+\end{figure}
+
+Looking at the interaction patterns of the \acs{SAM}-based tool, it is clear that the amount of prompts placed per image was quite high, with all instances above 60 prompts per image (see \cref{fig:interaction_count}).
+Only background point prompts were placed, suggesting that the user was compensating only for over-segmentation.
+
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_count.png}
-    \caption{Amount of prompts placed per image for the interactive version of \acs{SAM}2.}
+    \caption{The amount of prompts placed per image using the interactive \acs{SAM}-based tool.}
     \label{fig:interaction_count}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_avg.png}
-    \caption{Average number of point prompts placed per box prompt per image for the interactive version of \acs{SAM}2.}
+    \caption{Average number of point prompts placed per box prompt for the interactive version of \acs{SAM}2.}
     \label{fig:interaction_avg}
 \end{figure}
 
 \section{Workflow impact}
 
-The case study of 3 documents 
+The case study of 3 documents showed that none of the two tools were able to save time in the workflow, as the total workflow time spent was higher than the time spent on manual annotation in Krita (see \cref{fig:workflow_time}).
+Even just based on the time spent on post-editing alone, the tools did not save time compared to just drawing manually from scratch.
+In fact, the total time spent doing the classical workflow was more than twice the time spent doing the manual one, while the time spent doing the \acs{SAM}-based workflow was more than thrice (and almost four times) the time spent on the manual one.
 
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/workflow_time.png}
-    \caption{Workflow time spent per method, split into tool use }
+    \caption{Workflow time spent per method, split into phases of tool use (opaque colors) and post-editing in Krita (semi-transparent colors).}
     \label{fig:workflow_time}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\linewidth]{../src/data/results/workflow/model_execution_time.png}
-    \caption{This is how to do it}
-    \label{fig:model_exec_time}
-\end{figure}
+

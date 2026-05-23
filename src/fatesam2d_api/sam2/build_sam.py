@@ -193,7 +193,7 @@ def build_sam2_video_predictor_fate(
         "++model.use_obj_ptrs_in_encoder=false",
         "++model.pred_obj_scores=false",
         "++model.pred_obj_scores_mlp=false",
-        "++model.fixed_no_obj_ptr=false",
+        "++model.fixed_no_obj_ptr=false", # disables the 
     ]
     hydra_overrides.extend(hydra_overrides_extra)
 

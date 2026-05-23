@@ -97,7 +97,7 @@ $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) 
 
 This gave in total 4 hyperparameters for this baseline (see \cref{fig:hyperparameters_gaussian} for a list of these):
 
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
 \figcross
 \begin{enumerate}
@@ -133,7 +133,7 @@ turning $\sigma$ into a hyperparameter that together with the grayscale median o
 
 In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
 This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} for a list of these).
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
 \figcross
 \begin{enumerate}
@@ -150,24 +150,31 @@ Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its 
 
 For the sake of fairness, it seemed only reasonable to test out a range of them, including of course the original, the computationally efficient Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}, and the newer \acs{SAM}2 \parencite[see][]{sam2}.
 As the checkpoints (weight files) needed to run the newly released \acs{SAM}3 \parencite{sam3} were still access-restricted at the time of development, it was not included in the evaluation.
-However, few-shot implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation, because of their potential to better accommodate to niche domains.
-To be able to run these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} - a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
+However, \acf{ICL} implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation, due to their potential of being better at accommodating to niche domains.
 
-The following subsections describe the architecture of the chosen variants, and how they were implemented for the evaluation.
+To be able to run all these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} - a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
+
+The following subsections describe the architecture of the chosen variants, and how they were implemented in the evaluation.
 
 \subsubsection{SAM architecture}
-\begin{figure}
+For the original \acs{SAM} and Mobile\acs{SAM}, the model architecture consists of an image encoder, and a prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
+The image encoder used is a \acf{ViT} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
+But instead of convolutional layers, a \acs{ViT} is a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
+As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP} (see \cref{fig:ViT_architecture}).
+These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weights the patches according to their relevance to eachother.\footcite[see][for the math behind \textit{attention}]{vaswani2023attentionneed}
+\begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
 \caption{Architecture of \acs{SAM}, from \textcite{mobile_sam}. }
 \label{fig:SAM_architecture}
 \end{figure}
 
-For the original \acs{SAM} and Mobile\acs{SAM}, the model architecture consists of an image encoder, and a prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
-The image encoder used is a \acf{ViT}\footnote{The reason that Mobile\acs{SAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} (with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
-But instead of convolutional layers, a \acs{ViT} makes use of a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
-As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP}.
-These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weights the patches according to their relevance to eachother.\footcite[see][for the math behind \textit{attention}]{vaswani2023attentionneed}
+\begin{figure}[htp]
+\centering
+    \includegraphics[width=\linewidth]{images/ViT-architecture.jpg}
+\caption{Architecture of the \acs{ViT}, from \textcite{imageworth16x16words}. }
+\label{fig:ViT_architecture}
+\end{figure}
 
 More specifically, given the input embedding $X$, self-attention computes the projections; quieries: $Q$, keys: $K$, and values: $V$, as products of $X$ with respective learned matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
 $$ Attention(Q,K,V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
@@ -181,94 +188,114 @@ These are then fed to the lightweight mask decoder (which is also transformer-ba
 Self-attention is applied to the prompt and output tokens, and two-way cross-attention (same as self-attention but with one embedding as queries, and the other as keys and values, and vice-versa) is applied between the tokens and image embedding for them to influence and attend one another.
 To keep track of spatial coordinates and prompts, positional encodings and the original prompt embeddings are added as input at every attention layer.
 
-At the end of this process, the image embedding is upsampled by convolution to the original image resolution.
-The three output tokens are then processed in parallel by two separate \acsp{MLP}:
-one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
-and another one that outputs a predicted IoU score for each mask.
-For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
-
-\begin{figure}
+\begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM-mask-decoder.jpg}
 \caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}.}
 \label{fig:SAM_mask_decoder}
 \end{figure}
 
+At the end of this process, the image embedding is upsampled by convolution to the original image resolution.
+The three output tokens are then processed in parallel by two separate \acsp{MLP}:
+one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
+and another one that outputs a predicted IoU score for each mask.
+For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
+
+As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, as it is the biggest and best performing one.
+The reason that Mobile\acs{SAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} (with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).
+
 \subsubsection{SAM2}
 
 With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} - a hierarchical \acs{ViT}, which is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process, lowering attention complexity (see \cref{fig:Hiera_architecture}). 
-Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames, making it easier to segment videos.
+Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames, making masks between frames consistent enough to segment videos.
+It does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image encoded embeddings before being passed to the mask decoder (see \cref{fig:SAM2_architecture}).
 
- \begin{figure}[htbp]
+The mask decoder did not change much from the original, except for the passing of early visual features (stride 4 and stride 8) from the Hiera image encoder to the convolutional upsampling process of the mask decoder, improving the integrity of the output with the injection of high quality spatial context (see \cref{fig:SAM2_mask_decoder}).
+However, also added were output markers for video tracking.
+More specifically, occlusion scores were implemented to determine whether an object of interest is out of frame or not.
+And object pointers were added as lightweight vectors each keeping track of the semantic information of each object of interest.
+And these object pointers are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
+
+As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
+\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
+
+ \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/Hiera-architecture.jpg}
 \caption{Architecture of Hiera, adapted from \textcite{hiera}.}
 \label{fig:Hiera_architecture}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM2-architecture.jpg}
 \caption{Architecture of \acs{SAM}2, from \textcite{sam2}. }
 \label{fig:SAM2_architecture}
 \end{figure}
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM2-mask-decoder.jpg}
 \caption{Architecture of \acs{SAM}2's mask decoder, from \textcite{sam2}. }
 \label{fig:SAM2_mask_decoder}
 \end{figure}
 
-
 \subsubsection{FATESAM}
 Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
-It works in principle by making use of \acs{SAM}2's memory attention, by passing the few-shot support images to its memory encoder (see \cref{fig:FATESAM_architecture}), giving the mask decoder context to generate similar segmentation masks for the input query image.
-The support images are chosen by a feature similarity ranking to the input to make sure they are as representative as possible.
+It works in principle by making use of \acs{SAM}2's memory attention mechanism, by passing the few-shot support images to its memory encoder (see \cref{fig:FATESAM_architecture}), such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
 
-To adapt \acs{FATESAM} to single frame images, the object pointers were turned off through Hydra/YAML overrides to avoid shape mismatches.
-\begin{figure}
+These support images are chosen by a ranking of feature similarity to the input to make sure they are as representative as possible.
+This ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images, extracted from the Hiera image encoder of \acs{SAM}2.
+
+\begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/FATESAM-architecture.jpg}
 \caption{Architecture of \acs{FATESAM}, from \textcite{fatesam}. }
 \label{fig:FATESAM_architecture}
 \end{figure}
 
+The implementation of \acs{FATESAM} in the evaluation was based on the official repository \parencite{fatesam_repo}, and the checkpoint used was \texttt{sam2\_hiera\_large}, as it was the best performing one comptatible with the repository.
+Three support images were injected per query image, as this was the number of support images that was the number found to be most optimal in the paper \parencite{fatesam}.
+To adapt \acs{FATESAM} to single frame images, the object pointer functionality was turned off through Hydra/YAML overrides, which was necessary to avoid shape mismatches.
+In particular, the object-pointer encoder and object-score prediction heads were disabled by setting
+\texttt{use\_obj\_ptrs\_in\_encoder},
+\texttt{pred\_obj\_scores},
+\texttt{pred\_obj\_scores\_mlp}, and 
+\texttt{fixed\_no\_obj\_ptr} all to false.
+In an ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
+It was therefore deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
+
 \subsubsection{GFSAM}
-
-\subsubsection{Threshold-inferred automatic point prompts}
-Another way to adapt \acs{SAM} to the specific characteristics of the domain is through the use of automatic prompts.
-But as it is particularly difficult to automatically create meaningful box prompts without a trained object detection model, only point prompts were used for this adaptation.
-
-\noindent Inspired by point of interest placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} (see \cref{fig:autoprompt_SAM} for a visual example) were derived from the output mask of the classical Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-This was done by randomly sampling a number of foreground and background pixels from the mask as prompts for \acs{SAM+pts}.
-Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
-This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_mSAM}) for \acs{SAM+pts}.
-\begin{figure}
+The other kind of training-free \acs{ICL} adaptation of \acs{SAM} tested was the one-shot \acs{GFSAM} \parencite[see][]{gfsam}.
+It works by first extracting the features of the given support image with DINOv2 \parencite{dinov2}, (see \cref{fig:GFSAM_architecture}).
+With its Positive-Negative Alignment module, it then computes two similarity maps between query and support features, one for positive/object similarity, and one for negative/background similarity.
+These maps are then used to generate foreground point prompts for \acs{SAM}, which are then fed to the mask decoder that generates one mask per point prompt.
+A graph is then constructed of the coverage of the points laying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
+The purpose of those gating processes is to filter out false-positive masks, where the former process makes sure a given point is actually foreground according to the similarity maps, and the latter ensures that the point is not a boundary-near outlier.
+At the very last, the masks associated with the remaining points are merged together to generate the final segmentation mask.
+\begin{figure}[htp]
 \centering
-\figcross
-\begin{enumerate}
-    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $n_{fgd\_points}$: the number of foreground point prompts to be sampled from the foreground of the first Gaussian thresholded mask,
-    \item $n_{bgd\_points}$: the number of background point prompts to be sampled from the sure background region,
-    \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
-\end{enumerate}
-\caption{Hyperparameters for \acf{SAM+pts}}
-\label{fig:hyperparameters_SAM}
+    \includegraphics[width=\linewidth]{images/GFSAM-architecture.jpg}
+\caption{Architecture of \acs{GFSAM}, from \textcite{gfsam}. }
+\label{fig:GFSAM_architecture}
 \end{figure}
 
+\subsubsection{Threshold-inferred automatic point prompts}
+Another way to adapt \acs{SAM} to the specific characteristics of the domain was through the use of automatic prompts.
+As it is particularly difficult to automatically create meaningful box prompts without a trained object detection model, only point prompts were used for this adaptation.
 
-\begin{figure}
+\noindent Inspired by \acf{POI} placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} (see \cref{fig:autoprompt_SAM} for a visual example) were derived from the output mask of the classical Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
+This was done by randomly sampling a number of foreground and background pixels from the classical output mask as prompts for \acs{SAM+pts}.
+Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
+This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_SAM}) for \acs{SAM+pts}.
+
+\begin{figure}[htp]
 \centering
-    \fbox{\includegraphics[width=0.47\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-SAM+pts-no-filter.jpg}}
+    \fbox{\includegraphics[width=0.4\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-SAM+pts-no-filter.jpg}}
 \caption{A visual example of prompt distribution for \acf{SAM+pts}, overlayed on \displayexampleTabletName.
 Green points represent foreground point prompts, while red points represent background point prompts.}
 \label{fig:autoprompt_SAM}
 \end{figure}
 
-\clearpage
 
 \subsection{Evaluation protocol and performance metrics}
 For an evaluation of initial segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
@@ -353,21 +380,21 @@ Due to the huge amount of time it took to process the images with the tool (espe
 \begin{figure}
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/Classic-tool.jpg}}
-    \caption{Yeah.}
+    \caption{In-tool view of the classical Gaussian adaptive thresholding tool.}
     \label{fig:classic_tool}
 \end{figure}
 
 \begin{figure}
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/SAM-tool.jpg}}
-    \caption{Yeah.}
+    \caption{In-tool view in the SAM-based tool, with box prompts (in blue) placed around some signs of interest, with correcting background point prompts (in red) placed within the oversegmented regions.}
     \label{fig:sam_tool}
 \end{figure}
 
 \begin{figure}
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/SAM-tool-export.jpg}}
-    \caption{Yeah.}
+    \caption{In-tool view before export of the mask generated from the prompts placed as seen in \cref{fig:sam_tool}.}
     \label{fig:sam_tool_export}
 \end{figure}
 

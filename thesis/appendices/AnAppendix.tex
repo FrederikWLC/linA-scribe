@@ -2,8 +2,28 @@
 \chapter{An Appendix}
 
 \section{Non-interactive segmentation results}
-\subsection{Hyperparameter optimization}
-\label{appendix:hyperparam_optimization}
+\subsection{Hyperparameters}
+\label{appendix:hyperparam}
+
+\subsubsection{General hyperparameters}
+
+\begin{figure}
+\centering
+\figcross
+\begin{enumerate}
+    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $n_{fgd\_points}$: the number of foreground point prompts to be sampled from the foreground of the first Gaussian thresholded mask,
+    \item $n_{bgd\_points}$: the number of background point prompts to be sampled from the sure background region,
+    \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
+\end{enumerate}
+\caption{Hyperparameters for \acf{SAM+pts}}
+\label{fig:hyperparameters_SAM}
+\end{figure}
+
+\subsubsection{Optimization results}
 
 \begin{table}[ht]
 \centering
