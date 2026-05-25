@@ -8,29 +8,66 @@ Meanwhile, \acs{SAM+pts} with the engineered point prompt clouds performed consi
 With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\SAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
 
 The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{SAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
-\subsection{SAM ablation}
+\subsection{Ablation of zero-shot \acs{SAM}}
 
-The results of the ablation study of different SAM variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was the one with automatic point prompts and bilateral filter, making use of the single output token per image instead of best of three.
-This was also the one used for the main evaluation.
+The results of the ablation study of different \acs{SAM} variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was original \acs{SAM} with automatic point prompts and no filter.
 
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{../src/data/results/ablation_sam/plots/Dice_score_comparison}
-\caption{Dice Score performance per SAM variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
+\caption{Dice Score performance per \acs{SAM} variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
+The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 (S2), with (+p) or without automatic point prompts, and with (b) or without (n) a bilateral pre-filter.}
 \label{fig:dice_sam_ablation}
 \end{figure}
 
-\subsection{Few-shot SAM}
-The few-shot adaptation of training free SAM (\acs{FATESAM}) did not perform better than the default \acs{SAM} implementation, which is not surprising given the small size and poor quality of the dataset, and poor alignment of support images with ground truth.
+\subsection{Comparison of \acs{ICL} \acs{SAM}}
+Neither \acs{GFSAM} nor \acs{FATESAM} performed better than the best zero-shot \acs{SAM} implementation (see \cref{fig:dice_icl_comparison}).
+This is not too surprising given the small size and poor quality of the dataset, and poor alignment of support images with ground truth.
 \begin{figure}
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation_sam/plots/Dice_score_comparison.png}
-    \caption{\acs{Dice} score comparison of variants of \acs{FATESAM} with the best performing \acs{SAM} implementation. }
-    \label{fig:sam_fewshot_comparison}
+    \caption{\acs{Dice} score comparison of the \acs{ICL} models against the best performing zero-shot \acs{SAM} implementation.
+    Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
+    Compared were \acs{GFSAM}, the 2D-adapted \acs{FATESAM}2D, its automatic point prompted version \acs{FATESAM}2D+pts, and \acs{FATESAM}2DBlank, which was given blank support images.}
+    \label{fig:dice_icl_comparison}
 \end{figure}
 
-\clearpage
-\subsection{Model comparison}
+\begin{figure}
+\centering
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT7a.jpg}}
+    \caption{Raw Image}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/HT7a.png}}
+    \caption{Ground Truth}
+\end{subfigure}
+\break
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-FATESAM2D.jpg}}
+    \caption{FATESAM2D \pgfmathprintnumber[fixed,precision=3]{0.000}}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-GFSAM.jpg}}
+    \caption{GFSAM \pgfmathprintnumber[fixed,precision=3]{0.000}}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.29\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-SAM+pts-no-filter.jpg}}
+    \caption{S+p-n \pgfmathprintnumber[fixed,precision=3]{0.000}}
+\end{subfigure}
+\caption{Visual comparison of output masks per model from segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
+
+\end{figure}
+
+\subsection{Classical model comparison}
 
 \begin{figure}
 \centering
@@ -51,44 +88,44 @@ And there is way less noise between them compared to the masks of the baselines,
 
 \begin{figure}
 \centering
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.4\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/\exampleTabletName.jpg}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/PH2.jpg}}
     \caption{Raw Image}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.4\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/\exampleTabletName.jpg}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/PH2.png}}
     \caption{Ground Truth}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.4\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-Otsu.jpg}}
-    \caption{Otsu \pgfmathprintnumber[fixed,precision=3]{\exampleOtsuScore}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-Otsu.jpg}}
+    \caption{Otsu \pgfmathprintnumber[fixed,precision=3]{0}}
 \end{subfigure}
-\vspace{0.5em}
-\begin{subfigure}{0.29\textwidth}
+\vspace{1em}
+\begin{subfigure}{0.4\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-Gaussian.jpg}}
-    \caption{Gaussian \pgfmathprintnumber[fixed,precision=3]{\exampleGaussianScore}}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.29\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-CannyFill.jpg}}
-    \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{\exampleCannyFillScore}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-Gaussian.jpg}}
+    \caption{Gaussian \pgfmathprintnumber[fixed,precision=3]{0}}
 \end{subfigure}
 \hfill
-\vspace{0.5em}
-\begin{subfigure}{0.3\textwidth}
+\begin{subfigure}{0.4\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/\exampleTabletName-SAM+pts-no-filter.jpg}}
-    \caption{SAMpts \pgfmathprintnumber[fixed,precision=3]{\exampleSAMptsScore}}
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-CannyFill.jpg}}
+    \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{0}}
+\end{subfigure}
+\hfill
+\vspace{0.5em}
+\begin{subfigure}{0.4\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-SAM+pts-no-filter.jpg}}
+    \caption{S+p-n \pgfmathprintnumber[fixed,precision=3]{0}}
 \end{subfigure}
 
-\caption{Visual comparison of output masks per model from segmentation on \displayexampleTabletName{} (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
+\caption{Visual comparison of output masks per model from segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
 \label{fig:model_comparison}
 
 \end{figure}

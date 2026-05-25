@@ -6,6 +6,7 @@ from scribe.baselines.gaussian import build_gaussian
 from scribe.baselines.otsu import build_otsu    
 from gfsam_api.ModalGFSAM import build_modal_gfsam
 from fatesam2d_api.ModalFATESAM2D import build_default_modal_fatesam2d
+from gfsam_api.ModalGFSAM import build_modal_gfsam
 from scribe.base import predict
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 from sam_api.modal_sam import build_best_modal_sam_variant
@@ -14,11 +15,12 @@ output_folder = Path("data/results/scribed")
 
 def get_models_to_be_scribed():
     return [
-        build_cannyfill(),
-        build_gaussian(),
-        build_otsu(),
-        build_default_modal_fatesam2d(),
-        build_best_modal_sam_variant(),
+        #build_cannyfill(),
+        #build_gaussian(),
+        #build_otsu(),
+        #build_default_modal_fatesam2d(),
+        #build_best_modal_sam_variant(),
+        build_modal_gfsam()
     ] 
 
 def perform_comparison(models, raw_images, labels):

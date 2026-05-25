@@ -14,7 +14,7 @@ class GaussianConfiguration(TunableConfiguration):
     def __init__(self):
         super().__init__(
             name="Gaussian",
-            short_name="Gaus",
+            short_name="Gaussian",
             hyperparameter_specs=GAUSSIAN_SPECS
         )
 

@@ -7,6 +7,30 @@
 
 \subsubsection{General hyperparameters}
 
+\begin{figure}[htp]
+\centering
+\figcross
+\begin{enumerate}
+    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
+    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
+\end{enumerate}
+\caption{Hyperparameters for \acf{Gaussian}.}
+\label{fig:hyperparameters_gaussian}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\figcross
+\begin{enumerate}
+    \item $\sigma$: the constant used to determine the thresholds $T_l$ and $T_h$ for the hysteresis thresholding,
+    \item $d_{closing}$: the diameter of the kernel window for the morphological closing of the edges
+\end{enumerate}
+\caption{Hyperparameters for \acf{CannyFill}.}
+\label{fig:hyperparameters_CannyFill}
+\end{figure}
+
 \begin{figure}
 \centering
 \figcross
@@ -270,3 +294,35 @@ Label column represents the name of the document segmented, while all other colu
     every last row/.style={after row=\bottomrule}
 ]{\resumetable}
 \end{table}
+
+\section{Interactive tool development}
+
+\subsection{Usability tests}
+\label{appendix:usability-tests}
+
+\subsubsection{Requirement analysis and first usability test}
+The 5th of May, a requirement analysis and first usability test of a MVP was performed with Ester through a video call.
+That MVP was composed of two tools: a classical method (Gaussian), and an interactive SAM version (MobileSAM).
+After trying out the tools, she gave the impression that she could probably use the outputs as draft drawings to be completed with a pen, which might save her some time.
+
+For the classical baseline, the grainy resolution (due to the input image quality) bothered her a bit.
+The output mask was also noisy at times. And not all lines were always picked up.
+
+For the SAM version, she pointed out that it did not pick up the noisy tablet damage as much as the classical method did.
+But she was worried that the interaction with SAM would take longer than simply doing strokes manually.
+The box-prompt workflow was not completely successful during the test.
+Due to bugs, boxes mostly did not work. and when they did, the segmented forms were not useful.
+
+\subsubsection{Second (small) usability test}
+
+The 8th of May, another usability test was performed on an updated MVP with Ester through a video call.
+Now, the box prompts worked, and the MobileSAM was replaced with SAM2.1.
+The segmentation quality per box-prompted sign was noticeably better than previously.
+Together with Lukas Esterle, the conclusions were to make a slider for the classical model to decrease and increase granularity.
+It was also suggested that box prompts for SAM could be computationally preselected based on the mask from the classical model, but this was discarded as it was not deemed needed.
+
+\subsubsection{Third usability and final acceptance test}
+
+The 12th of May, a third usability test was conducted in person at AIAS in Århus, including the first part of the usability experiment.
+As all 45 images could not be drawn all at once, the .ora exports from the tool were saved, and finished at a later time in batches by Ester on her own, for each of them recording the time it took to do so.
+Due to the huge amount of time it took to process the images with the tool (especially with the SAM version), the experiment was stopped after just 3 images.

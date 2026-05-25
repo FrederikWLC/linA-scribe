@@ -13,7 +13,7 @@ class CannyConfiguration(TunableConfiguration):
     def __init__(self):
         super().__init__(
             name="CannyFill",
-            short_name="Canny",
+            short_name="CannyFill",
             hyperparameter_specs=CANNY_SPECS
         )
 
