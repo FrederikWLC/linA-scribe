@@ -340,6 +340,8 @@ Svelte was chosen for the frontend mostly due to its reactive state management, 
 FASTAPI was chosen as the backend, as it is Python based, and therefore able to serve the Python segmentation models implemented, which was essential for the tool's functionality.
 It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server.
 
+\input{charts/tool-architecture.tex}
+
 As previously mentioned, the tool was split into two segmentation methods: one method meant to represent \acs{SAM}, and another meant to represent the classical segmentation methods.
 Besides the general user interface, the following subsections go into more details on how these were implemented.
 
