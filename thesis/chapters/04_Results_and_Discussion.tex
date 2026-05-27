@@ -2,15 +2,15 @@
 \chapter{Results and Discussion}
 \section{Non-interactive segmentation performance}
 \label{rq1results}
-After running the non-interactive segmentation evaluation of the models on the dataset (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{mSAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
+After running the non-interactive segmentation evaluation of the models on the the test set (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{SAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
 
-Meanwhile, \acs{SAM+pts} with the engineered point prompt clouds performed considerably better.
-With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{\SAMptsmean}, it performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{\Otsumean} and \pgfmathprintnumber[fixed,precision=3]{\CannyFillmean}, respectively), and comparably to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{\Gaussianmean}.
 
-The following subsections go into a bit more detail on the explanation of these results, the statistical significance of the differences in performance between \acs{SAM} and the best classical baseline (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table), and a discussion of the fairness of this experiment.
+The following subsections go into the small ablation study of the basic \acs{SAM} variants, the performance of the \acs{ICL} variants, the comparison to classical baselines, and the statistical significance of the differences in performance between the best of these and \acs{SAM} (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table).
+
 \subsection{Ablation of zero-shot \acs{SAM}}
+\label{subsec:ablation_sam}
 
-The results of the ablation study of different \acs{SAM} variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was original \acs{SAM} with automatic point prompts and no filter.
+The results of the ablation study of different \acs{SAM} variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was the original \acs{SAM} with image encoder Vit-H and automatic point prompts, without any filter.
 
 \begin{figure}
 \centering
@@ -21,6 +21,7 @@ The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 
 \end{figure}
 
 \subsection{Comparison of \acs{ICL} \acs{SAM}}
+\label{subsec:comparison_icl_sam}
 Neither \acs{GFSAM} nor \acs{FATESAM} performed better than the best zero-shot \acs{SAM} implementation (see \cref{fig:dice_icl_comparison}).
 This is not too surprising given the small size and poor quality of the dataset, and poor alignment of support images with ground truth.
 \begin{figure}
@@ -34,57 +35,53 @@ This is not too surprising given the small size and poor quality of the dataset,
 
 \begin{figure}
 \centering
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.32\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT7a.jpg}}
     \caption{Raw Image}
 \end{subfigure}
-\hfill
-\begin{subfigure}{0.29\textwidth}
+\hspace{0.5em}
+\begin{subfigure}{0.32\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/HT7a.png}}
     \caption{Ground Truth}
 \end{subfigure}
 \break
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.32\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-FATESAM2D.jpg}}
-    \caption{FATESAM2D \pgfmathprintnumber[fixed,precision=3]{0.000}}
+    \caption{FATESAM2D \pgfmathprintnumber[fixed,precision=2]{0.372}}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.32\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-GFSAM.jpg}}
-    \caption{GFSAM \pgfmathprintnumber[fixed,precision=3]{0.000}}
+    \caption{GFSAM \pgfmathprintnumber[fixed,precision=2]{0.129}}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.29\textwidth}
+\begin{subfigure}{0.32\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-SAM+pts-no-filter.jpg}}
-    \caption{S+p-n \pgfmathprintnumber[fixed,precision=3]{0.000}}
+    \caption{S+p-n \pgfmathprintnumber[fixed,precision=2]{0.258}}
 \end{subfigure}
-\caption{Visual comparison of output masks per model from segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
+\caption{Visual comparison of output masks per \acs{ICL} model and best \acs{SAM} variant from \cref{subsec:ablation_sam} of the segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.
+This is one of the instances where \acs{FATESAM}2D performed better than the best zero-shot \acs{SAM} implementation, but due to general undersegmentation, this was generally not the case.}
 
 \end{figure}
 
 \subsection{Classical model comparison}
 
+With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{0.2626}, the best performing \acs{SAM} variant performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{0.2240188867488452} and \pgfmathprintnumber[fixed,precision=3]{0.1832489064945111}, respectively), but clearly underperformed compared to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{0.3272506453060173} (see \cref{dice_comparison} for details).
+See \cref{fig:model_comparison} for a visual comparison of the output masks of the best \acs{SAM} variant and the classical baselines on one of the easy images, and \cref{appendix:non-interactive-evaluation-data} for the full results table.
+
 \begin{figure}
 \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation/plots/Dice_score_comparison.png}
-    \caption{Dice score comparison of all models on the evaluation dataset.}
+    \caption{Dice score comparison of all models on the evaluation dataset.
+    Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
 \label{fig:dice_comparison}
 \end{figure}
 
-Knowing the overall quantitative results (see \cref{fig:dice_comparison}), it pays to look at a visual example to see what is going on behind the scenes.
-
-\acs{CannyFill} also oversegments, due to its large kernel window size for morphological closing, which was necessary to fill in the gaps between edges, but gives a blocky look, and merges all nearby edges together.
-
-The unprompted \acs{SAM} segments only background noise here, producing nothing of value.
-But the prompted \acs{SAM+pts} does produce a somewhat coherent mask, capturing almost every sign with less oversegmented areas than both \acs{Otsu} and \acs{CannyFill}.
-Still, it oversegments many signs (especially those with background-space supposed to be inside of them), fades out signs where they are supposed to continue (due to loss of attention, as segmenting many separated signs at once is not what its attention weights have been trained for), and is not able to capture the outline of the tablet.
-But the signs that it does capture well, are captured with a good level of spatial coherence.
-And there is way less noise between them compared to the masks of the baselines, which is arguably a positive sign for the potential of \acs{SAM} to perform well on this task once properly fine-tuned prompts, or points are placed through human supervision.
 
 \begin{figure}
 \centering
@@ -93,7 +90,7 @@ And there is way less noise between them compared to the masks of the baselines,
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/PH2.jpg}}
     \caption{Raw Image}
 \end{subfigure}
-\hfill
+\hspace{0.5em}
 \begin{subfigure}{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/PH2.png}}
@@ -103,29 +100,28 @@ And there is way less noise between them compared to the masks of the baselines,
 \begin{subfigure}{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-Otsu.jpg}}
-    \caption{Otsu \pgfmathprintnumber[fixed,precision=3]{0}}
+    \caption{Otsu \pgfmathprintnumber[fixed,precision=2]{0.245}}
 \end{subfigure}
-\vspace{1em}
+\hspace{0.5em}
 \begin{subfigure}{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-Gaussian.jpg}}
-    \caption{Gaussian \pgfmathprintnumber[fixed,precision=3]{0}}
+    \caption{Gaussian \pgfmathprintnumber[fixed,precision=2]{0.423}}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-CannyFill.jpg}}
-    \caption{CannyFill \pgfmathprintnumber[fixed,precision=3]{0}}
+    \caption{CannyFill \pgfmathprintnumber[fixed,precision=2]{0.324}}
 \end{subfigure}
-\hfill
-\vspace{0.5em}
+\hspace{0.5em}
 \begin{subfigure}{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/PH2-SAM+pts-no-filter.jpg}}
-    \caption{S+p-n \pgfmathprintnumber[fixed,precision=3]{0}}
+    \caption{S+p-n \pgfmathprintnumber[fixed,precision=2]{0.383}}
 \end{subfigure}
 
-\caption{Visual comparison of output masks per model from segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
+\caption{Visual comparison of output masks per classical model and best \acs{SAM} variant of segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.}
 \label{fig:model_comparison}
 
 \end{figure}
@@ -154,25 +150,17 @@ Thus, the normality assumption for the paired t-test was satisfied, and its resu
 The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{SAM+pts}.
 The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{SAM+pts}.
 
-Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{\tteststatGaussianSAM}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianSAM}$.
-Thus, as $\pgfmathprintnumber[fixed,precision=3]{\ttestpvalueGaussianSAM} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{SAM+pts} in terms of \acs{Dice} score.
+Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{3.73744358804111}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{0.0009236665541473004}$.
+Thus, as $\pgfmathprintnumber[fixed,precision=3]{0.0009236665541473004} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{SAM+pts} in terms of \acs{Dice} score.
 Hence, it can be said that \acs{SAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets, even when automatically prompted.
 
 \subsection{Fairness of the experiment}
 
-\subsubsection{Data}
-The dataset used for evaluation was the same as the one used for hyperparameter optimization of models, which could be seen as a potential source of bias.
-Additionally, the dataset of 60 images is quite small, which makes it more susceptible to noise and outliers, although sufficiently sized to support the statistical analysis.
-Moreover, the ground truth annotations of the dataset were heavily biased, even as they were manually created and registered to the raw images.
-Therefore, \acs{Dice} scores obtained from the evaluation were unreasonably low, and the performance of the models is not properly reflected by these scores.
-However, for comparison between models, the relative differences in \acs{Dice} scores were still meaningful, as all models were evaluated on the same imperfectly aligned dataset.
-
 \subsubsection{Model implementation}
 In the case of the fairness of the \acs{SAM} implementation chosen, the experiment obviously only evaluates the performance of an untuned version.
 This implementation had most certainly never seen Linear A tablet images during training, as it was pretrained by default on the large and diverse dataset of natural images \acs{SA-1B}.
-Furthermore, the model implementation used makes use of Mobile\acs{SAM} with its small \acs{ViT} image encoder TinyVit \parencite{TinyViT}, which can compromise on segmentation quality.
-Lastly, \acs{SAM} was restricted by the automatic nature of this experiment, as its intended use is interactive segmentation.
-Thus, it does not come as a surprise that \acs{mSAM} underperforms in comparison to the classical baselines.
+Furthermore, \acs{SAM} was restricted by the automatic nature of this experiment, as its intended use is interactive segmentation.
+Thus, it does not come as a surprise that \acs{SAM} underperforms in comparison to the classical baselines.
 The results therefore suggest a need for human intervention for the optimal placement of prompts to provide the best conditions for \acs{SAM}, as it otherwise underperforms.
 
 \section{Tool-side segmentation performance}

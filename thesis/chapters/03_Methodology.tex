@@ -7,9 +7,8 @@ In that way, these three abstract virtues were decomposed into independent measu
 
 All software written for this thesis was made publicly available on GitHub \parencite{source_code}.
 Python 3.13 was used for all code development except frontend.
-The choice of this programming language was made due to its big community and library support for nearly everything; be it plotting (Matplotlib), matrix math (NumPy), image processing (OpenCV), etc.
-Python's package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
-For the \acs{ML} and \acs{SAM} implementation libraries needed, Python has also been the language of choice, and thus it was the obvious choice for development.
+The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} and \acs{SAM} implementation libraries needed.
+Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
 The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
 
 \section{Non-interactive segmentation ability} \label{Segmentation quality}
@@ -29,15 +28,15 @@ $$ B(x,y) = \begin{cases}
     0 & \text{otherwise} \end{cases} $$ 
 
 \noindent In a threshold-based approach for example, the predicate function can be expressed as $f(I,x,y) = I(x,y) > T$, where $T$ is the threshold value that determines the cutoff between foreground and background pixels.\footcite[p.~743]{DigitalImageProcessing}
-But this classification can of course also be determined with other methods that take into account more context than mere individual pixel values.
-With the help of convolutional kernels for example, the predicate function can be defined as a function of the local neighborhood of a pixel, as in the case of local adaptive thresholding:
-
+The predicate function does not, however, have to depend only on the individual pixel value being classified.
+It can for example also be defined based on an attribute computed from the global image context (see global thresholding with Otsu in \cref{subsubsec:otsu_baseline}).
+Or it can be determined from the local context of the pixel neighborhood (see local adaptive thresholding in \cref{subsubsec:gaussian_baseline}), which can be expressed by kernel convolution working on neighborhood intensities of a window $w \in \mathbb{R}^{m \times n}$ around each pixel (here $a=(m-1)/2$ and $b=(n-1)/2$ are the vertical and horizontal half-widths of $w$, respectively, assuming odd dimensions):\footcite[p.~159]{DigitalImageProcessing}\footcite[p.~157]{DigitalImageProcessing}
 
 $$ (w * I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
-where $w$ is the convolution kernel (window) of size $m \times n$, and $a=(m-1)/2$ and $b=(n-1)/2$ are the half-width and half-height (assuming odd dimensions), respectively.\footcite[p.~159]{DigitalImageProcessing}
-\footcite[p.~157]{DigitalImageProcessing}
 
-Even the entire image with external pointers can be given as context, as in the case of \acs{SAM}, where the predicate function is a black-box non-linear function learned by the model during training that takes prompts to produce a segmentation mask.
+\noindent Even the entire image can be given as context with external pointers, as in the case of \acs{SAM}, where the predicate function can be understood as a learned, non-linear black-box function that takes both image and prompts to produce the binary output mask.
+Thus, the segmentation problem could evidently be approached by many different methods, each with their own contextual arguments and inner workings $f$.
+And of those evaluated, it was just a matter of choosing the best one (for the evaluation details used to do that, see \cref{subsec:evaluation}).
 
 \subsection{Baseline model configuration}
 The classical baseline models against which \acs{SAM} was evaluated (from simplest to most advanced) were:
@@ -51,20 +50,21 @@ Besides a description of the pre-filtering method used for all of them, what fol
 
 \subsubsection{Bilateral pre-filtering}
 As a pre-filtering step for all the classical models, a bilateral filter \parencite[see][]{TomasiManduchi1998} was applied to the input image before feeding it to the classical methods.
-In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at reducing noise while preserving edges.
-Discretely \parencite[see][]{Pan2025InnovativeBilateral}, its output intensity $I_{\mathrm{bf}}(p)$ at a given two-dimensional pixel position $p$ (where $q$ is the two-dimensional position of one of its neighbors within the kernel window) can be defined as follows:
+In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at blurring out noise while preserving edges thanks to its combined distance and intensity-dependent weighting.
+Discretely \parencite[see][]{Pan2025InnovativeBilateral}, its output value $I_{\mathrm{bf}}(p)$ at a given two-dimensional pixel position $p$ (where $q$ is the two-dimensional position of one of its neighbors within the kernel window with size $d$) can be defined as follows:
 $$I_{\mathrm{bf}}(p)=
 \frac{\sum_q I(q)\,W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}
 {\sum_q W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}$$
 
-Here, the spatial weight based on the distance between pixels $p$ and $q$, and the color range weight based on the intensity difference between $p$ and $q$ are respectively given by:
+\noindent Here, the spatial weight based on the distance between pixels $p$ and $q$, and the color range weight based on the intensity difference between $p$ and $q$ are respectively given by:
 $$W_{\mathrm{space}}(p,q)=\exp(-\frac{\|p-q\|^2}{2\sigma_{\mathrm{space}}^2})$$
 $$W_{\mathrm{color}}(p,q)=\exp(-\frac{\|I(p)-I(q)\|^2}{2\sigma_{\mathrm{color}}^2})$$
 
-It thus takes three hyperparameters: the kernel window diameter $d$, the spatial standard deviation $\sigma_{\mathrm{space}}$, and the intensity standard deviation $\sigma_{\mathrm{color}}$.
-It was however decided to use the same $\sigma$ value for both spatial and color weights, as this simplified the hyperparameter tuning (see \cref{subsubsec:hyperparameter_optimization}) without significantly compromising the filter's performance.
+\noindent It thus takes three hyperparameters: the kernel window diameter $d$, the spatial standard deviation $\sigma_{\mathrm{space}}$, and the intensity standard deviation $\sigma_{\mathrm{color}}$.
+However, inspired by \parencite{OpenCVBilateralFilter}, it was decided to use the same $\sigma$ value for both spatial and color weights for the implementation, as this simplified the hyperparameter tuning (see \cref{subsubsec:hyperparameter_optimization}) without significantly compromising the filter's performance.
 
 \subsubsection{Global thresholding (Otsu's method)}
+\label{subsubsec:otsu_baseline}
 Otsu's method is a global thresholding method that works on gray-level histograms, which was originally proposed by \textcite{Otsu1979}.
 As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global gray level distribution into account, with no assumptions about any spatial relationships between pixels.
 It is therefore expected to perform poorly on images with erosion, uneven lighting, and differences in surface texture\footcite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the images to be segmented.
@@ -93,8 +93,8 @@ $$ B(x,y) = \begin{cases}
 
 To compute $T(x,y)$, there are a few weighting functions to choose from.
 For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels by assigning weights based on distance from the kernel center.
-With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using convolution ($\star$), this can be expressed as:\footcite{opencv_adaptive_threshold}
-$$ T(x,y) = (G_{\sigma} \star I)(x,y) - C $$
+With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as:\footcite{opencv_adaptive_threshold}
+$$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
 
 In general, the weight at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel):\footcite[p.~167]{DigitalImageProcessing}
 $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
@@ -125,8 +125,9 @@ To be compared against the classical baselines was the generalized deep learning
 Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its different use cases require different trade-offs in terms of accuracy, speed, and domain adaptation, there are many different variants of \acs{SAM}.
 
 For the sake of fairness, it seemed only reasonable to test out a range of them, including of course the original, the computationally efficient Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}, and the newer \acs{SAM}2 \parencite[see][]{sam2}.
-As the checkpoints (weight files) needed to run the newly released \acs{SAM}3 \parencite{sam3} were still access-restricted at the time of development, it was not included in the evaluation.
-However, \acf{ICL} implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation, due to their potential of being better at accommodating to niche domains.
+\footnote{Due to access restrictions, the checkpoints (weight files) necessary for running the newly released \acs{SAM}3 \parencite{sam3}, it was not included in the evaluation.}
+Additionally, a small ablation study was conducted on these base models to investigate whether these benefitted from the use of bilateral pre-filtering (see \cref{fig:bilateral_filtering}) of the input image, and or automatic threshold-derived point prompts (see \cref{subsubsec:automatic_prompts}).
+Furthermore, due to their potential of being better at accommodating to niche domains, \acf{ICL} implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation.
 
 To be able to run all these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} - a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
 
@@ -178,8 +179,8 @@ one that generates their final segmentation masks by a dot product with the outp
 and another one that outputs a predicted IoU score for each mask.
 For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
 
-As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, as it is the biggest and best performing one.
-The reason that Mobile\acs{SAM} is computationally faster than the original is its lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} (with only 5M parameters) compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively).
+As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, since it is the biggest and best performing one.
+And as per definition, the Mobile\acs{SAM} implementation used the lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively) - which is why it is computationally faster than the original.  
 
 \subsubsection{SAM2}
 
@@ -259,6 +260,7 @@ At the very last, the masks associated with the remaining points are merged toge
 As an adaptation to the data, the selection of support images for \acs{GFSAM} was done in the same way as for \acs{FATESAM}, by ranking the feature similarity of the support images to the input image via Manhattan distance on the extracted features from DINOv2, and selecting the most similar one as one-shot support.
 
 \subsubsection{Threshold-inferred automatic point prompts}
+\label{subsubsec:automatic_prompts}
 Another way to adapt \acs{SAM} to the specific characteristics of the domain was through the use of automatic prompts.
 As it is particularly difficult to automatically create meaningful box prompts without a trained object detection model, only point prompts were used for this adaptation.
 
@@ -277,13 +279,15 @@ Green points represent foreground point prompts, while red points represent back
 
 
 \subsection{Evaluation protocol and performance metrics}
+\label{subsec:evaluation}
 For an evaluation of initial segmentation quality, relevant metrics and statistical tests needed to be defined to determine whether one model performed significantly better than another.
 Furthermore, all models with hyperparameters needed to be optimized to their best performance on the dataset, to ensure a fair comparison.
-Naturally, due to the nature of \acs{RQ}1, it was of particular interest to compare the best performing baseline model against the best performing version of \acl{SAM}.
+Naturally, as a last check of \acs{SAM}'s efficiency, it was of particular interest to compare its best performing version against the best performing classical baseline.
 
-What follows is therefore a description of the choice of metrics, the optimization of model hyperparameters, and the statistical tests for the evaluation, used to answer RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}.
+What follows is a description of the choice of metrics, the optimization of model hyperparameters, and the statistical tests used in the evaluation.
 
 \subsubsection{Choice of metrics}
+\label{subsubsec:metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are the \acf{Dice} and the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
 It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements are critical for results.
 Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
@@ -374,9 +378,11 @@ This choice was made due to its theoretical \acs{SOTA} superiority, as it was de
 It was decided to make full use of the interactive capabilities, including both box prompts, and foreground and background point prompts, as this seemed to be the best way to represent its potential.
 But there was one problem.
 The mask decoder for \acs{SAM} (and \acs{SAM}2 for that matter) only takes one box prompt at a time, which is not ideal when wanting to segment multiple signs of interest within the same tablet.
-To circumvent this, the prompts given to it when boxes were present were processed in the mask decoder so that a separate mask was generated once for each $n$ box prompts placed, also passing the point prompts within it.
+To circumvent this, the prompts given to it when boxes were present were processed in the mask decoder so that a separate mask was generated once for each $n$ box prompts placed, also passing the point prompts within it (see \cref{fig:sam_tool} for the associated user interface).
 These $n$ masks were then at last merged together by a pixel-wise logical OR operation to generate the final segmentation mask.
-This was still sensible computationally, as the image encoder was only executed once per image, while the mask decoder (as described in \cref{subsubsec:SAM_architecture}) is lightweight enough to be executed multiple times without a significant increase in latency.
+This was still sensible computationally, as predictions were split up such that the image encoder was only executed once on image import, while the mask decoder (as described in \cref{subsubsec:SAM_architecture}) is lightweight enough that it could be executed multiple times without a significant increase in latency.
+
+
 
 Included in this prompt placement interface of the tool was a toolbar consisting of the following tool buttons (see \cref{fig:sam_tool} and \cref{fig:sam_tool_export} for in-tool views of the SAM-based tool, with the toolbar on the left):
 \begin{itemize}
@@ -388,42 +394,68 @@ Included in this prompt placement interface of the tool was a toolbar consisting
     \item \texttt{Reset}: When clicked, cleared all prompts from the canvas, allowing the user to start over.
 \end{itemize}
 
-
-\begin{figure}
+\begin{figure}[htp]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/SAM-tool.jpg}}
     \caption{In-tool view of the \acs{SAM}-based tool in the raw view, with box prompts (in blue) placed around some signs of interest, with correcting background point prompts (in red) placed within the oversegmented regions.}
     \label{fig:sam_tool}
 \end{figure}
 
-\begin{figure}
+
+\begin{figure}[htp]
     \centering
     \fbox{\includegraphics[width=\linewidth]{images/SAM-tool-export.jpg}}
     \caption{In-tool view of the \acs{SAM}-based tool in the mask view, before export of the mask generated from the prompts placed as seen in \cref{fig:sam_tool}.}
     \label{fig:sam_tool_export}
 \end{figure}
 
-\subsection{Experimental design for evaluation of interaction efficiency}
+\clearpage
 
-To evaluate the interaction efficiency of the \acs{SAM}-based tool, a case study was conducted with Ester Salgarella, where she was asked to perform the segmentation of 3 documents with each method of the tool.
+\subsection{Experimental design for evaluation of interaction efficiency}
+\label{subsec:experimental_design_interaction_efficiency}
+To evaluate the interaction efficiency of the \acs{SAM}-based tool, a case study was conducted with Ester Salgarella, where she was asked to perform the segmentation of 3 documents from the test set (one from each difficulty category) with each method of the tool.
 In a wish to obtain statistical power, an inclusion of all 27 test images was initially preferred, but due to time constraints, only 3 documents made it to the evaluation.
-The experiment itself was conducted in-person at \acf{AIAS} on the 12th of June on the same day as the last usability and acceptance test.
-Tool interaction was recorded by the help of screen recordings via Microsoft Teams, wherefrom the actions performed, the prompts placed, and the time taken from image import to mask export was measured.
+That reduced sample size made the evaluation exploratory and case-study-based rather than statistically powered.
+However, it still allowed for a direct comparison of the interaction efficiency of the two tools, using quantitative indicators of both time expenditure (minutes), and the quality of the outputs they generated (\acs{Dice}).
+The interaction burden could then further be exploratorily decomposed into the time taken for the models to execute, and for \acs{SAM}-based tool, the amount and types of prompts placed.
+
+The experiment itself was conducted in-person with Ester Salgarella as the participant at \acf{AIAS} on the 12th of June on the same day as the last usability and acceptance test.
+Specifically, she was instructed to make use of the tool method evaluated on the document given until she deemed that she could not further improve the segmentation output, whereafter she should export the final mask as it was.
+Tool interaction was recorded by the help of live screen recordings via Microsoft Teams, wherefrom the model execution time, the prompts placed, and the time taken from image import to mask export were all measured.
+The exports of each tool were also saved on disk, so that \acs{Dice} scores could later be computed therefrom.
 
 \section{Workflow efficiency} \label{Workflow efficiency}
 To answer the question of RQ3: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the tools described in the previous section (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
-This case study was built upon the data obtained from the previous one on the same documents, and can therefore merely be seen as an extension of that one.
-The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of workflow efficiency metrics.
 
+The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of the workflow efficiency metric.
+
+\subsection{Definition of the workflow}
+\label{subsection:definition_of_workflow}
+The tool was designed to fit into Ester's existing workflow as much as possible, to make it more likely that she would be able to use it with minimal friction, and to make the evaluation of its efficiency more ecologically valid.
+To do that, however, it was necessary to first understand her workflow in detail.
+
+When Ester does the annotation of a document from the \acs{GORILA} corpus, she first imports a screenshot of the \acs{GORILA} corpus drawing into Krita, creating a new layer on top of it to do the segmentation drawing.
+She draws this drawing with a digital pen on a displayless pressure-sensitive Wacom drawing pad.
+And while doing that, she looks for any possible mistakes in the signs, with the original image, and her mental map of the sign types as guidance, correcting them by erasing and redrawing.
+At last, when she is satisfied with the drawing, she splits each sign into a separate layer, adds metadata, and exports to JSON format.
+Due to scope limitations, it was only the process before that splitting into layers and adding of metadata that this project aimed to improve.
 \subsection{Export to Krita}
 \label{subsection:export_to_krita}
-When the segmentation of a document within the tool was complete, it was made to allow for export to JPEG, PNG, or OpenRaster (\texttt{.ora}) format.
+When the segmentation of a document within the tool was complete, it was designed to allow for export to JPEG, PNG, or OpenRaster (\texttt{.ora}) format.
 The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively.
 This is simpler in structure and easier to read and write for external programs than the \texttt{.kra} file format, since it was specificially designed as an open exchange format between graphics editors.
-It is additionally supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly opened in Krita for further manual editing and annotation.
+Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only.
 
-\subsection{Experimental design}
-The drawings were made in Krita using a displayless pressure-sensitive Wacom drawing pad with a pen input.
-The process leading to tool export, we recorded there in person, while Ester finished the polishing in Krita by her own the days afterward, recording the time taken and saving the final drawings
+Additionally, OpenRaster (\texttt{.ora}) format is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly opened there for further manual editing and annotation.
+And as Krita was already part of Ester's workflow, it was only natural to make the exported starting point suggestions from the tools directly compatible with it, to make the transition from tool to manual post-editing as seamless as possible.
+This file format also made it possible for the tool export to include the original image as a layer, and the generated mask as another, so that the former could be used as a guiding reference for post-editing of the latter.
 
+\subsection{Experimental design for evaluation of workflow efficiency}
+The workflow efficiency case study was built upon the data obtained from the in-tool case study described in the previous section (see \cref{subsection:definition_of_workflow}).
+These two case studies can therefore be seen as a single one, as one was merely an extension of the other.
+Thus, both of them suffered from the same time-constraint-caused limitations in terms of sample size and statistical power, making them exploratory and case-study-based rather than statistically powered.
 
+The drawings were made in Krita using the displayless pressure-sensitive Wacom drawing pad with a pen input used in her original workflow (see).
+The case study involved Ester Salgarella post-editing the tool exports from the interaction efficiency study in Krita, recording the time taken, to compare it to the time taken to do the same drawings fully manually.
+Since Ester expressed a lack of guiding reference to know when the drawing was complete - even with the originally imported raw tablet images included as layers - the corresponding \acs{GORILA} corpus drawing for each document was also included as a layer in the exported \texttt{.ora} file by manually importing it and aligning it with the other two layers before letting Ester start the post-editing.
+And as a proof of completion, Ester was asked to send the finished \texttt{.ora} files back again.

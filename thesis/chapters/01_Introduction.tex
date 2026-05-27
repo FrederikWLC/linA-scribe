@@ -12,19 +12,20 @@ A key obstacle to its decipherment has been the small size of its corpus, lately
 But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents.\footcite{RILA-S1}\footcite{CNRLinearACorpus2025}
 
 Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
-While photographs with accompanying drawings of nearly the entire corpus are available online through \acf{Cefael} (see \textcite{EtudesCretoises21}), these are only available in print form.
+While photographs with accompanied by expert drawings of nearly the entire corpus - \acf{GORILA} - are available online through \acf{Cefael} (see \textcite{EtudesCretoises21}), these are only available in print form.
 This motivated the development of the palæographical\footnote{The term "palæographical" refers to the study of ancient writing systems.} database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions [...] in order to carry out statistical and palæographic analyses within the epigraphic corpus" \parencite{SalgarellaCastellanSigLA2020}.
 However, the last addition to SigLA was in 2021, and the project has so far managed to document just 772 of all currently known inscriptions.\footcite{SigLAAboutPage}\footcite{SigLASearchDocuments}
 
 \subsection{A problem of manual digitization}
 
 The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita.
-For each document, she manually created her own annotated drawings based on the originals stored by \acs{Cefael}.
-From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be imported to SigLA.\footcite{SalgarellaCastellanSigLA2020}
+For each document, she manually created her own annotated drawings based on the \acs{GORILA} originals stored by \acs{Cefael} as raw tablet images accompanied by expert drawings.
+From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be exported as JSON files to SigLA.\footcite{SalgarellaCastellanSigLA2020}
 According to her (personal communication), this has been a highly time-consuming undertaking. 
 And the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not contain the entire available corpus.
 
-The aim of this project was therefore to investigate whether parts of this process can be automated.
+Due to the potential violation of \acf{IPR}, it is also of particular interest, whether this process can begin from the digital source images themselves, before relying on already completed but undigitized expert drawings as input.
+The aim of this project was therefore to investigate whether parts of the process can be automated by working on the raw tablet images from \acs{GORILA}.
 More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA's database.
 
 \subsection{A problem of small data}
@@ -53,9 +54,9 @@ And within the domain of 3D medical images, a training-free few-shot adaptation 
 Thus, it seemed reasonable to test out the limits of \acs{SAM}'s generalization and interactivity within the domain of Linear A document images, to investigate whether it could be used to accelerate the annotation workflow of Ester Salgarella.
 
 \section{Problem statement}
-As previously stated, the aim of this project was to investigate whether parts of the process of creating annotated drawings like the ones in SigLA can be automated.
-More specifically, whether some kind of semi-automatic segmentation tool using interactive and generalized \acs{CV} - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with a database like SigLA.
-But what would be the relative segmentation quality of such a tool? How automatic would it be exactly? And by how much could it improve the efficiency of the workflow?
+As previously stated, the aim of this project was to investigate whether parts of the process of creating annotated drawings like the ones in SigLA can be automated by working on the raw tablet images from \acs{GORILA}.
+More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) using interactive and generalized \acs{CV} - specifically the \acf{SAM} - can accelerate the workflow, while maintaining high-quality outputs that are still compatible with a database like SigLA.
+But what would be the relative segmentation quality of such a tool? How interaction efficient would it be exactly? And by how much could it improve the efficiency of the workflow?
 To concretize the research, the problem statement was decomposed into three \acfp{RQ} - each accompanied by their respective operationalization (see the following subsection for details).
 
 \subsection{Research questions}
@@ -68,7 +69,7 @@ To concretize the research, the problem statement was decomposed into three \acf
 \item \textbf{\acs{RQ}2 (Interaction efficiency)}: 
 \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}
 
-\textbf{Operationalization}: Two self-developed segmentation tools - one SAM-based, one classical - were evaluated in a case study of 3 documents. The number of Ester Salgarella's tool-side user interactions (i.e. prompts placed for SAM, and parameter adjustments for the classical method) was compared against segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files).
+\textbf{Operationalization}: Two self-developed segmentation tools - one SAM-based, one classical - were evaluated in a case study of 3 documents. The time spent in each tool by Ester Salgarella from image import to mask export was compared against the segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files).
 \item \textbf{\acs{RQ}3 (Workflow efficiency)}: 
 \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}
 

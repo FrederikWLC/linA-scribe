@@ -1,0 +1,48 @@
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.0cm and 1.4cm,
+    process/.style={
+        rectangle,
+        rounded corners,
+        draw,
+        align=center,
+        minimum width=3.2cm,
+        minimum height=0.9cm
+    },
+    decision/.style={
+        diamond,
+        draw,
+        align=center,
+        aspect=2,
+        inner sep=1pt
+    },
+    arrow/.style={-{Latex}, thick}
+]
+
+\node[process] (import) {Image import};
+\node[process, below=of import] (preprocess) {Pre-processing};
+\node[decision, below=of preprocess] (mode) {Segmentation\\mode};
+
+\node[process, below left=1.0cm and 1.3cm of mode] (classical) {Classical\\segmentation};
+\node[process, below right=1.0cm and 1.3cm of mode] (sam) {SAM-based\\segmentation};
+
+\node[process, below=2.3cm of mode] (preview) {Mask preview\\and adjustment};
+\node[process, below=of preview] (export) {Export to\\OpenRaster (.ora)};
+\node[process, below=of export] (krita) {Krita refinement\\by expert};
+\node[process, below=of krita] (sigla) {Potential\\SigLA workflow};
+
+\draw[arrow] (import) -- (preprocess);
+\draw[arrow] (preprocess) -- (mode);
+\draw[arrow] (mode) -- (classical);
+\draw[arrow] (mode) -- (sam);
+\draw[arrow] (classical) |- (preview);
+\draw[arrow] (sam) |- (preview);
+\draw[arrow] (preview) -- (export);
+\draw[arrow] (export) -- (krita);
+\draw[arrow] (krita) -- (sigla);
+
+\end{tikzpicture}
+\caption{Overview of the developed segmentation tool workflow.}
+\label{fig:tool-workflow}
+\end{figure}
