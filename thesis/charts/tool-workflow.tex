@@ -1,0 +1,156 @@
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.4cm,
+    tool/.style={
+        rectangle,
+        rounded corners,
+        draw=orange!60!black,
+        fill=orange!15,
+        align=center,
+        minimum width=4.2cm,
+        minimum height=0.9cm,
+        inner sep=5pt
+    },
+    interactive/.style={
+        rectangle,
+        rounded corners,
+        draw=blue!60!black,
+        fill=blue!15,
+        align=center,
+        minimum width=4.2cm,
+        minimum height=0.9cm,
+        inner sep=5pt
+    },
+    existing/.style={
+        rectangle,
+        rounded corners,
+        draw=green!60!black,
+        fill=green!15,
+        align=center,
+        minimum width=4.2cm,
+        minimum height=0.9cm,
+        inner sep=5pt
+    },
+    outside/.style={
+        rectangle,
+        rounded corners,
+        draw=black!55,
+        dashed,
+        fill=white,
+        align=center,
+        minimum width=4.2cm,
+        minimum height=0.9cm,
+        inner sep=5pt
+    },
+    arrow/.style={-{Latex}, thick},
+    looparrow/.style={-{Latex}, thick, dashed},
+    optional/.style={-{Latex}, thick, dashed, draw=black!60}
+]
+
+
+
+\node[tool] (import) {
+    Import image\\
+    \footnotesize Ctrl+V / file drop / choose file
+};
+
+\node[interactive, below= 1.5cm of import] (run) {
+    "Run" segmentation
+};
+
+\node[interactive, below=of run] (preview) {
+    "Mask" preview
+};
+
+\node[interactive, right=of run] (adjust) {
+    Optional adjustment\\
+    \footnotesize prompts / granularity
+};
+
+\node[tool, below=of preview] (export) {
+    Export\\
+    \footnotesize .ora / .png / .jpeg
+};
+
+% Existing workflow continues
+\node[existing, right=of export] (krita) {
+    Open in Krita
+};
+
+\node[existing, below=of krita] (finish) {
+    Finish drawing
+};
+
+\node[outside, below=1.8cm of finish] (layers) {
+    Split into layers\\
+    \footnotesize add metadata
+};
+
+\node[outside, below=of layers] (export-final) {
+    Export to JSON\\
+};
+
+% Groups
+
+
+\begin{scope}[on background layer]
+\node[
+    draw=blue!60!black,
+    fill=blue!3,
+    rounded corners,
+    dashed,
+    inner sep=0.35cm,
+    fit= (run) (adjust) (preview),
+    label={[blue!60!black]above:Iterative interaction}
+] (interactivegroup) {};
+\end{scope}
+
+\begin{scope}[on background layer]
+\node[
+    draw=green!60!black,
+    fill=green!3,
+    rounded corners,
+    dashed,
+    inner sep=0.35cm,
+    fit= (krita) (finish) (layers) (export-final),
+] (kritagroup) {};
+\end{scope}
+
+\node[
+    green!60!black,
+    left=0.3cm of kritagroup,
+    align=center
+] {
+    Krita post-editing
+};
+
+
+% Main snake arrows
+\draw[optional] (import) -| (adjust);
+\draw[arrow] (import) -- (run);
+\draw[optional] (adjust) -- (run);
+\draw[arrow] (run) -- (preview);
+\draw[optional] (preview) -| (adjust);
+
+\draw[arrow] (preview) -- (export);
+\draw[arrow] (export) -- (krita);
+\draw[arrow] (krita) -- (finish);
+\draw[arrow] (finish) -- (layers);
+\draw[arrow] (layers) -- (export-final);
+
+\draw[
+    dashed,
+    thick,
+    draw=black!55
+]
+    ($(finish.south west)+(-0.4,-0.85)$) --
+    node[midway, fill=green!3, inner sep=3pt, ] {scope cutoff}
+    ($(finish.south east)+(0.4,-0.85)$);
+
+
+
+\end{tikzpicture}
+\caption{User-facing workflow of the developed segmentation tool and its relation to the existing Krita-based annotation workflow.}
+\label{fig:tool-workflow}
+\end{figure}

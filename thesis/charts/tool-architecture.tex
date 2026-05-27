@@ -2,10 +2,33 @@
 \centering
 \begin{tikzpicture}[
     node distance=1.8cm,
-    component/.style={
+    svelte/.style={
         rectangle,
         rounded corners,
-        draw,
+        draw=red!60!black,
+        fill=red!3,
+        align=center,
+        minimum width=6.4cm,
+        minimum height=1.15cm,
+        inner xsep=4pt,
+        inner ysep=3pt
+    },
+    fastapi/.style={
+        rectangle,
+        rounded corners,
+        draw=blue!60!black,
+        fill=blue!3,
+        align=center,
+        minimum width=6.4cm,
+        minimum height=1.15cm,
+        inner xsep=4pt,
+        inner ysep=3pt
+    },
+    modal/.style={
+        rectangle,
+        rounded corners,
+        draw=green!60!black,
+        fill=green!3,
         align=center,
         minimum width=6.4cm,
         minimum height=1.15cm,
@@ -19,17 +42,17 @@
 ]
 
 % Main modules
-\node[component] (svelte) {
+\node[svelte] (svelte) {
     Svelte frontend\\
     \footnotesize browser interface, preview, export
 };
 
-\node[component, below=of svelte] (fastapi) {
+\node[fastapi, below=of svelte] (fastapi) {
     FastAPI backend\\
     \footnotesize segmentation API, OpenCV methods
 };
 
-\node[component, below=of fastapi] (modal) {
+\node[modal, below=of fastapi] (modal) {
     Modal cloud service\\
     \footnotesize GPU-based SAM inference
 };
@@ -50,19 +73,19 @@
 % Svelte => FastAPI
 \draw[arrow]
     ([xshift=-0.30cm]svelte.south) --
-    node[left, align=center] {\footnotesize image, method,\\[-1mm]\footnotesize parameters and prompts}
+    node[left, align=center] {\footnotesize image, method,\\[-1mm]\footnotesize granularity or prompts}
     ([xshift=-0.30cm]fastapi.north);
 
 % FastAPI => Svelte
 \draw[arrow]
     ([xshift=0.30cm]fastapi.north) --
-    node[right, align=center] {\footnotesize segmentation mask}
+    node[right, align=center] {\footnotesize output mask}
     ([xshift=0.30cm]svelte.south);
 
 % FastAPI => Modal
 \draw[arrow]
     ([xshift=-0.30cm]fastapi.south) --
-    node[left, align=center] {\footnotesize SAM request:\\[-1mm]\footnotesize image + prompts}
+    node[left, align=center] {\footnotesize SAM request:\\[-1mm]\footnotesize \texttt{set\_image} or \texttt{decode\_mask}}
     ([xshift=-0.30cm]modal.north);
 
 % Modal => FastAPI
