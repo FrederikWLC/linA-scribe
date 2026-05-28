@@ -2,17 +2,18 @@
 \chapter{Results and Discussion}
 \section{Non-interactive segmentation performance}
 \label{rq1results}
-After running the non-interactive segmentation evaluation of the models on the the test set (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{SAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results).
+After running the non-interactive evaluation of the models' segmentation quality on the test set of 27 raw tablet images (hyperparameter optimization results can be found in \cref{appendix:hyperparam_optimization}), it was clear that \acs{SAM} did not perform better than the classical baselines (see \cref{subsec:classical_comparison}).
+It was also found that the tested \acs{ICL} variants of \acs{SAM} were beaten (see \cref{subsec:comparison_icl_sam}) by the best zero-shot \acs{SAM} implementation, which through ablation was determined to be the original \acs{SAM} with classical threshold-derived point prompts, without any filter (see \cref{subsec:ablation_sam}).
 
-
-The following subsections go into the small ablation study of the basic \acs{SAM} variants, the performance of the \acs{ICL} variants, the comparison to classical baselines, and the statistical significance of the differences in performance between the best of these and \acs{SAM} (see \cref{appendix:non-interactive-evaluation-data} in the appendix for the full results table).
+The following subsections go in-depth with each of these three subresults, and what they mean for the research question at hand:
 
 \subsection{Ablation of zero-shot \acs{SAM}}
 \label{subsec:ablation_sam}
 
-The results of the ablation study of different \acs{SAM} variants (see \cref{fig:dice_sam_ablation}) showed that the best performing variant was the original \acs{SAM} with image encoder Vit-H and automatic point prompts, without any filter.
+The results of the ablation study of the in-total 12 different permutations of \acs{SAM} (see \cref{fig:dice_sam_ablation}, and \cref{tab:sam-variants-summary}) showed that the best performing variant was the original \acs{SAM} with image encoder Vit-H, without any filter, guided by classical threshold-derived automatic point prompts.
+This was closely followed by its bilateral pre-filtered variant, and its Mobile\acs{SAM} variant (which performed worse due to its smaller image encoder Tiny\acs{ViT}).
 
-\begin{figure}
+\begin{figure}[htp]
 \centering
 \includegraphics[width=\linewidth]{../src/data/results/ablation_sam/plots/Dice_score_comparison}
 \caption{Dice Score performance per \acs{SAM} variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
@@ -20,11 +21,28 @@ The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 
 \label{fig:dice_sam_ablation}
 \end{figure}
 
+\begin{table}[htp]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\caption{Average \acs{Dice} scores of the in total 12 tested permutations of Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 (S2), with and without automatic classical threshold-derived point prompts, and with and without bilateral filter.}
+\vspace{0.5em}
+\input{tables/ablation.tex}
+\label{tab:sam-variants-summary}
+\end{table}
+
+Surprisingly so, the \acs{SAM}2 variants performed worse than the original \acs{SAM}, both when and when not prompted.
+The \acs{POI}-based prompting strategy demonstratively did not work on \acs{SAM}2, as shown by the \acs{SAM}2 variants with this strategy performing worse than when unprompted.
+However, for the other vanilla (non-Hiera) \acs{ViT}-based \acs{SAM} variants, the \acs{POI}-based prompting strategy did work, and was even necessary to obtain any meaningful performance whatsoever.
+This is not surprising, as zero-shot \acs{SAM} has never seen this type of images before, since it was exclusively trained on natural images.
+Thus, it can be stated that when it comes to images of inscribed tablets of Linear A, the model does not know what to segment, without any external guidance.
+
 \subsection{Comparison of \acs{ICL} \acs{SAM}}
 \label{subsec:comparison_icl_sam}
-Neither \acs{GFSAM} nor \acs{FATESAM} performed better than the best zero-shot \acs{SAM} implementation (see \cref{fig:dice_icl_comparison}).
-This is not too surprising given the small size and poor quality of the dataset, and poor alignment of support images with ground truth.
-\begin{figure}
+Neither the one-shot \acs{GFSAM} nor the few-shot \acs{FATESAM} performed better (see \cref{fig:dice_icl_comparison}) than the best zero-shot \acs{SAM} implementation (found in the previous \cref{subsec:ablation_sam}). 
+\acs{GFSAM} performed particularly poorly with a mean \acs{Dice} score of approximately \pgfmathprintnumber[fixed,precision=3]{0.14735636150568918}, obtaining roughly the same poor scores on hard images (\pgfmathprintnumber[fixed,precision=3]{0.14699629000917605}), as with both medium (\pgfmathprintnumber[fixed,precision=3]{0.14264739200706456}) and easy ones (\pgfmathprintnumber[fixed,precision=3]{0.15242540250082692}). 
+\acs{FATESAM}2D, however, performed relatively way better with a mean \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{0.25571675578635145}, which was comparable to the best zero-shot \acs{SAM} implementation (with \pgfmathprintnumber[fixed,precision=3]{0.26263640013862244}), although still worse.
+
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation_sam/plots/Dice_score_comparison.png}
     \caption{\acs{Dice} score comparison of the \acs{ICL} models against the best performing zero-shot \acs{SAM} implementation.
@@ -33,7 +51,7 @@ This is not too surprising given the small size and poor quality of the dataset,
     \label{fig:dice_icl_comparison}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[htp]
 \centering
 \begin{subfigure}{0.32\textwidth}
     \centering
@@ -66,13 +84,22 @@ This is not too surprising given the small size and poor quality of the dataset,
 \end{subfigure}
 \caption{Visual comparison of output masks per \acs{ICL} model and best \acs{SAM} variant from \cref{subsec:ablation_sam} of the segmentation on PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.
 This is one of the instances where \acs{FATESAM}2D performed better than the best zero-shot \acs{SAM} implementation, but due to general undersegmentation, this was generally not the case.}
-
 \end{figure}
 
-\subsection{Classical model comparison}
+The \acs{POI}-based prompting strategy also did not work on \acs{FATESAM}2D, as shown by the variant using this strategy performing worse than when unprompted.
+This fits with the observation from the previous \cref{subsec:ablation_sam} that this prompting strategy does not work on \acs{SAM}2, which is where \acs{FATESAM}2D  gets its architecture from.
 
-With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{0.2626}, the best performing \acs{SAM} variant performed better than \acs{Otsu} and \acs{CannyFill} (with mean \acs{Dice} scores of \pgfmathprintnumber[fixed,precision=3]{0.2240188867488452} and \pgfmathprintnumber[fixed,precision=3]{0.1832489064945111}, respectively), but clearly underperformed compared to the best performing classical baseline, \acs{Gaussian} that yielded a \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{0.3272506453060173} (see \cref{dice_comparison} for details).
-See \cref{fig:model_comparison} for a visual comparison of the output masks of the best \acs{SAM} variant and the classical baselines on one of the easy images, and \cref{appendix:non-interactive-evaluation-data} for the full results table.
+Furthermore, the \acs{FATESAM}2D variant with blank support images (\acs{FATESAM}2DBlank) performed worst of all.
+This supports the idea that the support images provided useful information to the main model, even though it was not able to effectively leverage this information to perform better than the best zero-shot \acs{SAM} implementation.
+Hence, it can be concluded that the \acs{ICL} strategy of \acs{GFSAM} is not effective within the domain in question, while the \acs{ICL} strategy of \acs{FATESAM}2D clearly works, but is still not enough to outperform zero-shot \acs{SAM} with the right automatic prompting strategy.
+
+
+\subsection{Classical model comparison}
+\label{subsec:classical_comparison}
+As mentioned already, \acs{SAM} did not perform better than the classical baselines (see \cref{fig:dice_comparison} for a plot of the results, and \cref{fig:model_comparison} for a visual comparison).
+With a mean \acs{Dice} score of around \pgfmathprintnumber[fixed,precision=3]{0.2626}, the best performing \acs{SAM} variant performed better than \acs{Otsu} (\pgfmathprintnumber[fixed,precision=3]{0.2240188867488452}) and \acs{CannyFill} (\pgfmathprintnumber[fixed,precision=3]{0.1832489064945111}), but clearly underperformed compared to the best performing classical baseline, \acs{Gaussian} (\pgfmathprintnumber[fixed,precision=3]{0.3272506453060173}).
+
+In fact, it \textit{significantly} underperformed compared to \acs{Gaussian}, as is shown statistically in the next \cref{subsec:statistical_significance}.
 
 \begin{figure}
 \centering
@@ -129,6 +156,7 @@ See \cref{fig:model_comparison} for a visual comparison of the output masks of t
 \clearpage
 
 \subsection{Statistical significance}
+\label{subsec:statistical_significance}
 As it was clear from the results, \acs{SAM+pts} did not perform better than the best performing classical baseline.
 To determine whether it performed significantly worse, a paired t-test was conducted, as residuals of the differences in \acs{Dice} scores between \acs{Gaussian} and \acs{SAM+pts} were approximately normally distributed (see next \cref{subsubsec:normality_residuals}).
 What follows is the documentation of that normality test, the paired t-test, and the results of both.
@@ -215,3 +243,10 @@ In fact, the total time spent doing the classical workflow was more than twice t
 \end{figure}
 
 
+\section{Consolidated discussion}
+The results suggest that \acs{SAM} in the forms tested is not suitable for segmentation of Linear A tablets.
+For each \acs{RQ}, \acs{SAM} failed compared to the baselines - even when guided by human interaction.
+Not only did it not live up to its supposedly \acs{SOTA} superiority in terms of mere segmentation quality.
+It also took more time to use, and did not save any time in the workflow whatsoever.
+
+When taking the domain and data quality into account, this is not too surprising.

@@ -1,0 +1,32 @@
+\newcommand{\threecellvalues}[6]{%
+\begin{tabular}{|c|c|c|}
+\hline
+#1 & #2 & #3 \\
+\hline
+\pgfmathprintnumber[fixed,precision=3]{#4} & \pgfmathprintnumber[fixed,precision=3]{#5} & \pgfmathprintnumber[fixed,precision=3]{#6} \\
+\hline
+\end{tabular}%
+}
+
+\begin{tabular}{c@{\hspace{0.25cm}}c@{\hspace{0.25cm}}c}
+
+&
+\textbf{No filter}
+&
+\textbf{Bilateral filter}
+\\[1em]
+
+\makebox[3.8cm][r]{\textbf{No point prompts}}
+&
+\threecellvalues{M}{S}{S2}{0.07129832140167863}{0.14698616177989765}{0.1418201129841118}
+&
+\threecellvalues{M}{S}{S2}{0.09053779625438585}{0.14598118942797275}{0.13951963184903898}
+\\[1.8em]
+
+\makebox[3.8cm][r]{\textbf{Point prompts}}
+&
+\threecellvalues{M}{S}{S2}{0.23084173807931677}{0.26263640013862244}{0.1336061392569504}
+&
+\threecellvalues{M}{S}{S2}{0.22930997272234735}{0.2565835892431091}{0.12640849817817906}
+
+\end{tabular}
