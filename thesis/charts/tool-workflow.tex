@@ -96,8 +96,9 @@
     \footnotesize add metadata
 };
 
-\node[outside, below=of layers] (export-final) {
-    Export to JSON\\
+\node[outside, below=of layers] (import-sigla) {
+    Import to SigLA\\
+    \footnotesize as JSON and image files
 };
 
 % Groups
@@ -120,7 +121,7 @@
     rounded corners,
     dashed,
     inner sep=0.35cm,
-    fit= (krita) (finish) (layers) (export-final),
+    fit= (krita) (finish) (layers),
 ] (kritagroup) {};
 \end{scope}
 
@@ -139,7 +140,7 @@
 % Main snake arrows
 \draw[optional] (import) -| (adjust);
 \draw[arrow] (import) -- (run);
-\draw[optional] (adjust) -- (run);
+\draw[arrow] (adjust) -- (run);
 \draw[arrow] (run) -- (preview);
 \draw[optional] (preview) -| (adjust);
 
@@ -147,7 +148,7 @@
 \draw[arrow] (export) -- (krita);
 \draw[arrow] (krita) -- (finish);
 \draw[arrow] (finish) -- (layers);
-\draw[arrow] (layers) -- (export-final);
+\draw[arrow] (layers) -- (import-sigla);
 
 \draw[
     dashed,

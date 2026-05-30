@@ -27,10 +27,10 @@ $$ B(x,y) = \begin{cases}
     1 & \text{if } f(I,x,y) \\
     0 & \text{otherwise} \end{cases} $$ 
 
-\noindent In a threshold-based approach for example, the predicate function can be expressed as $f(I,x,y) = I(x,y) > T$, where $T$ is the threshold value that determines the cutoff between foreground and background pixels.\footcite[p.~743]{DigitalImageProcessing}
+\noindent In a threshold-based approach for example, the predicate function can be expressed as $f(I,x,y) = I(x,y) > T$, where $T$ is the threshold value that determines the cutoff between foreground and background pixels \parencite[p.~743]{DigitalImageProcessing}.
 The predicate function does not, however, have to depend only on the individual pixel value being classified.
 It can for example also be defined based on an attribute computed from the global image context (see global thresholding with Otsu in \cref{subsubsec:otsu_baseline}).
-Or it can be determined from the local context of the pixel neighborhood (see local adaptive thresholding in \cref{subsubsec:gaussian_baseline}), which can be expressed by kernel convolution working on neighborhood intensities of a window $w \in \mathbb{R}^{m \times n}$ around each pixel (here $a=(m-1)/2$ and $b=(n-1)/2$ are the vertical and horizontal half-widths of $w$, respectively, assuming odd dimensions):\footcite[p.~159]{DigitalImageProcessing}\footcite[p.~157]{DigitalImageProcessing}
+Or it can be determined from the local context of the pixel neighborhood (see local adaptive thresholding in \cref{subsubsec:gaussian_baseline}), which can be expressed by kernel convolution working on neighborhood intensities of a window $w \in \mathbb{R}^{m \times n}$ around each pixel \parencite[p.~157,159]{DigitalImageProcessing} (here $a=(m-1)/2$ and $b=(n-1)/2$ are the vertical and horizontal half-widths of $w$, respectively, assuming odd dimensions):
 
 $$ (w * I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 
@@ -67,7 +67,7 @@ However, inspired by \parencite{OpenCVBilateralFilter}, it was decided to use th
 \label{subsubsec:otsu_baseline}
 Otsu's method is a global thresholding method that works on gray-level histograms, which was originally proposed by \textcite{Otsu1979}.
 As the simplest of the baselines, it represents the minimum acceptable segmentation quality, since it only takes the global gray level distribution into account, with no assumptions about any spatial relationships between pixels.
-It is therefore expected to perform poorly on images with erosion, uneven lighting, and differences in surface texture\footcite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the images to be segmented.
+It is therefore expected to perform poorly on images with erosion, uneven lighting, and differences in surface texture \parencite[p.~751]{DigitalImageProcessing}, which are the exact characteristics of the images to be segmented.
 \vspace{1em}
 
 Here is how it works:
@@ -86,28 +86,28 @@ Local adaptive thresholding works by computing a threshold for each pixel based 
 This is an advantage in cases where the image has varying light conditions (which is the case for the images to be segmented), as the threshold adapts to local lighting.
 
 Mathematically, the local threshold $T$ is a function of a given pixel position $(x,y)$ computed by a weighted sum of the neighborhood.
-The generated binary mask $B$ is then defined as:\footcite[p.~761]{DigitalImageProcessing}
+The generated binary mask $B$ is then defined as \parencite[p.~761]{DigitalImageProcessing}:
 $$ B(x,y) = \begin{cases}
     1 & \text{if} ~ I(x,y) > T(x,y) \\
     0 & \text{otherwise} \end{cases} $$
 
 To compute $T(x,y)$, there are a few weighting functions to choose from.
 For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels by assigning weights based on distance from the kernel center.
-With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as:\footcite{opencv_adaptive_threshold}
+With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as \parencite{opencv_adaptive_threshold}:
 $$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
 
-In general, the weight at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel):\footcite[p.~167]{DigitalImageProcessing}
+In general, the weight at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel) \parencite[p.~167]{DigitalImageProcessing}:
 $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
 
 This gave in total 4 hyperparameters for this baseline (see \cref{fig:hyperparameters_gaussian} for a list of these):
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
 Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
-First, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the orientation $\theta_s(x,y)$ are computed:\footcite[p.~730]{DigitalImageProcessing}
+First, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the orientation $\theta_s(x,y)$ are computed \parencite[p.~730]{DigitalImageProcessing}:
 $$M_s(x,y) = \|\ \nabla I_{s}(x,y) \|\ = \sqrt{\left(\frac{\partial I_{s}}{\partial x}\right)^2 + \left(\frac{\partial I_{s}}{\partial y}\right)^2}$$ 
 $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}/\partial x} \right)$$
-Next, \textit{non-maxima suppression}\footcite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
-This is then followed by \textit{hysteresis thresholding}\footcite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
+Next, \textit{non-maxima suppression} \parencite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
+This is then followed by \textit{hysteresis thresholding} \parencite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
 
 Inspired by \parencite{autocanny}, for the implementation, these thresholds were automatically determined by setting
 $$
@@ -121,7 +121,7 @@ This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} f
 
 
 \subsection{State-of-the-art}
-To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite[see][]{sam}.
+To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite{sam}.
 Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its different use cases require different trade-offs in terms of accuracy, speed, and domain adaptation, there are many different variants of \acs{SAM}.
 
 For the sake of fairness, it seemed only reasonable to test out a range of them, including of course the original, the computationally efficient Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}, and the newer \acs{SAM}2 \parencite[see][]{sam2}.
@@ -139,7 +139,7 @@ For the original \acs{SAM} and Mobile\acs{SAM}, the model architecture consists 
 The image encoder used is a \acf{ViT} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
 But instead of convolutional layers, a \acs{ViT} is a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
 As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP} (see \cref{fig:ViT_architecture}).
-These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weighs the patches according to their relevance to eachother.\footcite[see][for the math behind \textit{attention}]{vaswani2023attentionneed}
+These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weighs the patches according to their relevance to eachother.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
@@ -154,11 +154,11 @@ These embedded patches are then processed through a repeated series of normaliza
 \label{fig:ViT_architecture}
 \end{figure}
 
-More specifically, given the input embedding $X$, self-attention computes the projections; quieries: $Q$, keys: $K$, and values: $V$, as products of $X$ with respective learned matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
+More specifically \parencite[see][]{vaswani2023attentionneed}, given the input embedding $X$, self-attention computes the projections; quieries: $Q$, keys: $K$, and values: $V$, as products of $X$ with respective learned matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
 $$ Attention(Q,K,V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
 Here, the $\mathrm{softmax}$ function normalizes the output to a probability distribution (putting each element on the interval $]0, 1[$, with their sum being 1), which is then multiplied by $V$ (again turned into logits / non-normalized probabilities).
 
-Thanks to this attention mechanism, after a number of these series-layers, the \acs{ViT} finally outputs an image embedding containing the spatial context of the image.\footcite[see][for how \acsp{ViT} work in general]{imageworth16x16words}
+Thanks to this attention mechanism, after a number of these series-layers, the \acs{ViT} finally outputs an image embedding containing the spatial context of the image.\parencite[see][for how \acsp{ViT} work in general]{imageworth16x16words}
 It is this image embedding, combined with embedded prompts from the prompt encoder (referred to as prompt tokens) that are fed to the mask decoder to generate the final segmentation mask.
 However, before this happens, the prompt encoder takes any given sparse prompts (i.e. box or point prompts) as embeddings by summing their positional encodings with learned type-specifc embeddings (one foreground/background embedding per point prompt, and two opposite corner embeddings per box prompt).
 
@@ -177,7 +177,7 @@ At the end of this process, the image embedding is upsampled by convolution to t
 The three output tokens are then processed in parallel by two separate \acsp{MLP}:
 one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
 and another one that outputs a predicted IoU score for each mask.
-For single output masks, the mask is generated from a fourth output token.\footcite[p. 17]{sam}
+For single output masks, the mask is generated from a fourth output token \parencite[p. 17]{sam}.
 
 As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, since it is the biggest and best performing one.
 And as per definition, the Mobile\acs{SAM} implementation used the lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively) - which is why it is computationally faster than the original.  
@@ -290,7 +290,7 @@ What follows is a description of the choice of metrics, the optimization of mode
 \label{subsubsec:metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are the \acf{Dice} and the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
 It is naturally more foregiving than the related segmentation metric \acs{IoU}, which instead tends to be rather strict, and is specifically used to evaluate segmentation results where small displacements are critical for results.
-Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size: \footcite{Metrics2025}
+Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size \parencite{Metrics2025}:
 
 $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
 
@@ -299,7 +299,7 @@ $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|
 \subsubsection{Hyperparameter optimization}
 \label{subsubsec:hyperparameter_optimization}
 To ensure a fair comparison between the models, all models with hyperparameters were tuned to their best performance on the dataset using Optuna, a hyperparameter optimization framework.
-The optimization itself was performed using the \acf{TPE} algorithm \parencite[see][]{TPEHyperparameterOptimization2013}\footcite[also see][]{TPEHyperparameterOptimization2011},
+The optimization itself was performed using the \acf{TPE} algorithm \parencite{TPEHyperparameterOptimization2013,TPEHyperparameterOptimization2011},
 which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
 Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
 
@@ -314,7 +314,7 @@ The paired t-test has two main assumptions: 1. independence of observations, and
 The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on results.
 Thus, the residuals of the paired differences in \acs{Dice} scores between the two models in question needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
-And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead.\footcite{Rainio2024}
+And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
 
 
 \section{Interaction efficiency} \label{Interaction efficiency}

@@ -166,7 +166,7 @@ What follows is the documentation of that normality test, the paired t-test, and
 As the QQplot in \cref{fig:qqplot} shows, the residuals of the paired differences in \acs{Dice} scores between \acs{Gaussian} and \acs{SAM+pts} appeared to be approximately normally distributed.
 Furthermore, the Shapiro-Wilk test for normality of these residuals yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{\ShapiroPValueResidualGaussianSAM} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
 Thus, the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
-\begin{figure}[htbp]
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_Gaussian_vs_SAM+pts-no-filter.png}
     \caption{QQplot of the residuals of the paired t-test comparing \acs{Gaussian} and \acs{SAM+pts}. The residuals appear to be approximately normally distributed, which supports the validity of the paired t-test results. 
@@ -175,12 +175,17 @@ Thus, the normality assumption for the paired t-test was satisfied, and its resu
 \end{figure}
 
 \subsubsection{Paired t-test}
-The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{SAM+pts}.
-The null hypothesis ($H_0$) stated that there is no difference in mean \acs{Dice} scores between the two models, while the alternative hypothesis ($H_1$) stated that \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{SAM+pts}.
+The paired t-test was conducted on the \acs{Dice} scores obtained for each of the $\pgfmathprintnumber{\numberofimages}$ images across \acs{Gaussian} and \acs{SAM} under the following hypotheses:
+
+
+\begin{itemize}
+\item $H_0$: There is no difference in mean \acs{Dice} scores between the two models.$$\mu_{Gaussian} = \mu_{SAM}$$
+\item $H_1$: \acs{Gaussian} has a higher mean \acs{Dice} score than \acs{SAM}.$$\mu_{Gaussian} > \mu_{SAM}$$
+\end{itemize}
 
 Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprintnumber[fixed,precision=3]{3.73744358804111}$ and a p-value of $P(T > t) \approx \pgfmathprintnumber[fixed,precision=3]{0.0009236665541473004}$.
-Thus, as $\pgfmathprintnumber[fixed,precision=3]{0.0009236665541473004} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperforms \acs{SAM+pts} in terms of \acs{Dice} score.
-Hence, it can be said that \acs{SAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets, even when automatically prompted.
+Thus, as $\pgfmathprintnumber[fixed,precision=3]{0.0009236665541473004} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperformed \acs{SAM} in terms of \acs{Dice} score.
+Hence, it can be said that the best testedvariant of \acs{SAM} performed significantly worse in comparison to the best classical segmentation methods for non-interactive segmentation of Linear A tablets.
 
 \subsection{Fairness of the experiment}
 
@@ -205,7 +210,7 @@ The case study of 3 documents showed that the interactive version of \acs{SAM}2 
  But clearly this was not the bottleneck, as the time spent on interaction was much higher, taking up more than 80\% of tool time.
  The time spent waiting on \acs{SAM} execution was also below 5 seconds more than 50\% of executions.
 
-\begin{figure}[htb]
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/model_execution_time.png}
     \caption{Tool time spent on model execution per method (left), and distribution of \acs{SAM} Modal interaction time (right).}
@@ -235,7 +240,7 @@ The case study of 3 documents showed that none of the two tools were able to sav
 Even just based on the time spent on post-editing alone, the tools did not save time compared to just drawing manually from scratch.
 In fact, the total time spent doing the classical workflow was more than twice the time spent doing the manual one, while the time spent doing the \acs{SAM}-based workflow was more than thrice (and almost four times) the time spent on the manual one.
 
-\begin{figure}[htb]
+\begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/workflow_time.png}
     \caption{Workflow time spent per method, split into phases of tool use (opaque colors) and post-editing in Krita (semi-transparent colors).}

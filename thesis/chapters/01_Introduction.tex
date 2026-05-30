@@ -8,28 +8,29 @@ Some documents were clearly of a newer script, which he called \textit{Linear B}
 Some fifty years later, the British amateur archaeologist Michael Ventris finally succeeded in deciphering the newer script Linear B, which he proved to be representing Mycenaean Greek, the earliest attested form of Greek.
 But the same hypothesis did not hold for the older script Linear A, whose encoded language remained unknown, still yet to be deciphered.
 
-A key obstacle to its decipherment has been the small size of its corpus, lately consisting of only around 2,500 inscriptions (about 1,400 if only including those well-preserved enough to be readable) - significantly smaller than that of its younger counterpart that now spans more than 4,500 inscriptions (which are comparatively longer and better preserved).\footcite{Salgarella2020}\footcite[p.~13,46]{Salgarella2025} 
-But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents.\footcite{RILA-S1}\footcite{CNRLinearACorpus2025}
+A key obstacle to its decipherment has been the small size of its corpus, lately consisting of only around 2,500 inscriptions, and about 1,400 if only including those well-preserved enough to be readable \parencite[p.~13]{Salgarella2025}.
+This is significantly smaller than that of its younger counterpart, which now spans more than 4,500 inscriptions that are also comparatively longer and better preserved \parencite[p.~46]{Salgarella2025}.
+But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents \parencite{RILA-S1,CNRLinearACorpus2025}
 
 Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
-While photographs with accompanied by expert drawings of nearly the entire corpus - \acf{GORILA} - are available online through \acf{Cefael} (see \textcite{EtudesCretoises21}), these are only available in print form.
+While photographs accompanied by expert drawings of nearly the entire corpus - \acf{GORILA} - are available online through \acf{Cefael}, these are only available in print form \parencite{EtudesCretoises21}.
 This motivated the development of the palæographical\footnote{The term "palæographical" refers to the study of ancient writing systems.} database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions [...] in order to carry out statistical and palæographic analyses within the epigraphic corpus" \parencite{SalgarellaCastellanSigLA2020}.
-However, the last addition to SigLA was in 2021, and the project has so far managed to document just 772 of all currently known inscriptions.\footcite{SigLAAboutPage}\footcite{SigLASearchDocuments}
+However, until a most recent addition of four documents in May 2026, the latest expansion of SigLA had been in 2021. 
+And the project has so far managed to document just 776 of all currently known inscriptions \parencite{SigLAAboutPage,SigLASearchDocuments}.
 
 \subsection{A problem of manual digitization}
 
 The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita.
-For each document, she manually created her own annotated drawings based on the \acs{GORILA} originals stored by \acs{Cefael} as raw tablet images accompanied by expert drawings.
-From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be exported as JSON files to SigLA.\footcite{SalgarellaCastellanSigLA2020}
-According to her (personal communication), this has been a highly time-consuming undertaking. 
-And the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not contain the entire available corpus.
+For each document, she manually created her own annotated drawings based on the \acs{GORILA} originals, stored by \acs{Cefael} as raw tablet images accompanied by expert drawings.
+From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be exported as JSON files to SigLA \parencite{SalgarellaCastellanSigLA2020}.
+According to her (personal communication), this has been a highly time-consuming undertaking - and the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not contain the entire available corpus.
 
-Due to the potential violation of \acf{IPR}, it is also of particular interest, whether this process can begin from the digital source images themselves, before relying on already completed but undigitized expert drawings as input.
-The aim of this project was therefore to investigate whether parts of the process can be automated by working on the raw tablet images from \acs{GORILA}.
-More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) can accelerate the workflow, while maintaining high-quality outputs that are still compatible with SigLA's database.
+The aim of this project was therefore to investigate whether parts of this process can be automated through processing of the tablet images from \acs{GORILA}.
+Due to the potential violation of \acf{IPR}, it was furthermore of particular interest, whether the annotation process could begin from the raw source images themselves, without relying on the undigitized but already completed expert drawings.
+
 
 \subsection{A problem of small data}
-The small size of the Linear A corpus and the irregularities in quality of its documents is a huge problem for the application of deep learning approaches, which typically require large amounts of data to perform well.
+The small size of the Linear A corpus and the irregularities in quality of its documents is a huge problem for the application of deep learning, as models created therefrom typically require large amounts of good quality data to perform well.
 Consequently, this project instead sought to make use of generalized \acf{ML} and \acf{CV}.
 In particular Meta's \acf{SOTA} interactive segmentation model, the \acf{SAM} \parencite{sam}, which is pre-trained on a massive and diverse dataset - \acf{SA-1B}, of over 1 billion masks.
 \acs{SAM}'s generalization and interactivity (taking user-placed prompts that guide the segmentation) potentially allows for semi-automatic annotation of Linear A inscriptions without the need for large amounts of training data, which was unfortunately not available in this context.
