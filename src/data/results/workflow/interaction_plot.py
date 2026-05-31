@@ -58,28 +58,28 @@ for i, tablet in enumerate(tablet_order):
         f"{total}",
         ha="center",
         va="bottom",
-        fontsize=10,
+        fontsize=16,
     )
 
     if boxes > 0:
         ax.text(
             position,
-            boxes / 2 - 1,
+            boxes / 2 - 3,
             f"{boxes}",
             color="white",
             ha="center",
             va="bottom",
-            fontsize=10,
+            fontsize=16,
         )
     if bgd_points > 0:
         ax.text(
             position,
-            boxes + bgd_points / 2 - 1,
+            boxes + bgd_points / 2 - 3,
             f"{bgd_points}",
             color="white",
             ha="center",
             va="bottom",
-            fontsize=10,
+            fontsize=16,
         )
 
 legend_elements = [
@@ -87,14 +87,15 @@ legend_elements = [
     Patch(facecolor=palette["bgd_points"], label="Background points"),
     Patch(facecolor=palette["box"], label="Boxes"),
 ]
-legend = ax.legend(handles=legend_elements, loc="upper left")
+legend = ax.legend(handles=legend_elements, loc="upper left",fontsize=18)
 ax.add_artist(legend)
-plt.xticks(x, tablet_order)
-plt.xlabel("Tablet")
-plt.ylabel("Prompt count")
-plt.title("Ester's prompt count per tablet")
-plt.legend()
+plt.yticks(fontsize=12)
+plt.xticks(x, tablet_order, fontsize=16)
+plt.xlabel("Tablet",fontsize=18)
+plt.ylabel("Prompt count",fontsize=18)
+plt.title("Ester's prompt count per tablet",fontsize=18)
+plt.legend(fontsize=18)
 max_total = (df["boxes"] + df["bgd_points"] + df["fgd_points"]).max()
-ax.set_ylim(0, max_total * 1.3)
+ax.set_ylim(0, max_total * 1.5)
 plt.tight_layout()
 plt.show()

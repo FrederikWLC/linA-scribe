@@ -62,6 +62,8 @@ ax1.bar(
     alpha=0.25
 )
 
+ax1.set_ylim(0, compare_df["tool_minutes"].max() * 1.2)
+
 for xi, row in compare_df.iterrows():
     total_minutes = row["run_minutes"] + row["tool_rest_minutes"]
     ax1.text(
@@ -70,7 +72,7 @@ for xi, row in compare_df.iterrows():
         f"{row['tool_duration'].components.minutes}:{row['tool_duration'].components.seconds:02d}",
         ha="center",
         va="bottom",
-        fontsize=9,
+        fontsize=16,
     )
     if row["run_minutes"] >= 1:
         ax1.text(
@@ -79,16 +81,20 @@ for xi, row in compare_df.iterrows():
             f"{row['action_duration'].components.minutes}:{row['action_duration'].components.seconds:02d}",
             ha="center",
             va="bottom",
-            fontsize=9,
+            fontsize=16,
             color="black",
         )
 
 ax1.set_xticks(x)
-ax1.set_xticklabels(method_order)
-ax1.set_xlabel("Method")
-ax1.set_ylabel("Time [min]")
-ax1.set_title("Total time spent in tool, including model execution time (sum of all images)")
-ax1.legend()
+ax1.set_xticklabels(method_order, fontsize=18)
+ax1.set_xlabel("Method", fontsize=20)
+ax1.set_ylabel("Time [min]", fontsize=18)
+ax1.set_title(
+    "Tool time, including model execution",
+    fontsize=20,
+)
+ax1.tick_params(axis="both", which="major", labelsize=18)
+ax1.legend(fontsize=18, loc="upper left")
 
 sam_run_df = run_df[run_df["method"] == "SAM"]
 sam_run_seconds = sam_run_df["duration"].dt.total_seconds()
@@ -97,12 +103,12 @@ counts, bin_edges = np.histogram(sam_run_seconds, bins=bins, density=False)
 relative_counts = counts / counts.sum()
 bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
 
-ax2.set_xticks(range(0, 50, 5))
-ax2.bar(bin_centers, relative_counts, width=np.diff(bin_edges), alpha=0.5, color="darkred", edgecolor="black")
-ax2.set_xlabel("Time [s]")
-ax2.set_ylabel("Relative frequency [%]")
-ax2.set_title("Distribution of SAM Modal execution time")
-ax2.legend()
+ax2.barh(bin_centers, relative_counts, height=np.diff(bin_edges), alpha=0.5, color="darkred", edgecolor="black")
+ax2.set_ylabel("Time [s]", fontsize=18)
+ax2.set_xlabel("Relative frequency [%]", fontsize=20)
+ax2.set_title("Distribution of SAM Modal execution time", fontsize=20)
+ax2.set_yticks(np.arange(0, int(sam_run_seconds.max() * 1.05) + 1, 5))
+ax2.tick_params(axis="both", which="major", labelsize=16)
 
 plt.tight_layout()
 plt.show()

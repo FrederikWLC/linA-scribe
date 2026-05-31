@@ -43,12 +43,12 @@ for tablet in tablet_order:
             row["dice"] + 0.0075,
             f"{tablet} {method}",
             va="center",
-            fontsize=8,
+            fontsize=10,
         )
 
-ax.set_xlabel("Tool time [min]")
-ax.set_ylabel("Dice")
-ax.set_title("Tool-export Dice score by tool time")
+ax.set_xlabel("Tool time [min]",fontsize=12)
+ax.set_ylabel("Dice",fontsize=12)
+ax.set_title("Tool-export Dice score by tool time",fontsize=16)
 ax.set_ylim(plot_df["dice"].min() - 0.01, plot_df["dice"].max() + 0.02)
 ax.set_xlim(0, plot_df["tool_time_minutes"].max() + 1)
 ax.grid(alpha=0.3)

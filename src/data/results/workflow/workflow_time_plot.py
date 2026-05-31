@@ -62,11 +62,11 @@ for i, tablet in enumerate(tablet_order):
 
         ax.text(
             pos,
-            total_minutes + 0.25,
+            total_minutes + 0.2,
             f"{total.components.minutes}:{total.components.seconds:02d}",
             ha="center",
             va="bottom",
-            fontsize=8,
+            fontsize=11,
         )
 
         if tool_minutes > 0:
@@ -76,13 +76,14 @@ for i, tablet in enumerate(tablet_order):
                 f"{tool.components.minutes}:{tool.components.seconds:02d}",
                 ha="center",
                 va="bottom",
-                fontsize=7,
+                fontsize=11,
             )
 
-plt.xticks(x, method_order)
-plt.xlabel("Method")
-plt.ylabel("Time [min]")
-plt.title("Ester's workflow time spent per method, split into tool use and post-editing")
+plt.xticks(x, method_order, fontsize=14)
+plt.xlabel("Method",fontsize=14)
+plt.ylabel("Time [min]",fontsize=14)
+plt.title("Ester's workflow time per method, split into tool use and post-editing",fontsize=18)
+plt.ylim(0, df["time_minutes"].max() + 2)
 legend1 = [
     Patch(facecolor="black", alpha=0.3, label="Krita post-editing time"),
     Patch(facecolor="black", alpha=1, label="Tool use time"),
@@ -92,9 +93,9 @@ Patch(facecolor="green", alpha=1, label="HT7a (easy)"),
     Patch(facecolor="orange", alpha=1, label="HT4 (medium)"),
     Patch(facecolor="red", alpha=1, label="HT30 (hard)"),
 ]
-legend1_obj = ax.legend(handles=legend1, loc="lower left")
+legend1_obj = ax.legend(handles=legend1, loc="lower left",fontsize=12)
 ax.add_artist(legend1_obj)
-ax.legend(handles=legend2, loc="upper left")
+ax.legend(handles=legend2, loc="upper left",fontsize=12)
 
 plt.tight_layout()
 plt.show()
