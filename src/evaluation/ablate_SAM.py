@@ -8,4 +8,4 @@ def run_ablation():
     # we do binarize the images ideally for the evaluation
     # (unlike tuning, as it cannot be redone since ideal binarization was first implemented after the interactive experiment with Ester)
     evaluation_data = get_test_data_by_difficulty(binarized=True)
-    run_full_evaluation(evaluation_data=evaluation_data, models=SAM_MODELS, csv_path="data/results/ablation_sam")
+    run_full_evaluation(evaluation_data=evaluation_data, models=SAM_MODELS, csv_path="data/results/ablation_sam",short_names=True)

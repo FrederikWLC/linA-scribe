@@ -16,8 +16,8 @@ class FATESAM2DConfiguration(TunableConfiguration):
         self.checkpoint_path = config.FATESAM_CHECKPOINT_PATH
         self.config_file = config.FATESAM_CONFIG
 
-        name = "FATESAM2D+pts" if use_autopoints else "FATESAM2DBlank" if is_blank else "FATESAM2D"
-        short_name = "FATESAM2D+pts" if use_autopoints else "FATESAM2DBlank" if is_blank else "FATESAM2D"
+        name = "FATESAM2D+pts" if use_autopoints else "FATESAM2D-blank" if is_blank else "FATESAM2D"
+        short_name = "FATESAM2D+pts" if use_autopoints else "FATESAM2D-blank" if is_blank else "FATESAM2D"
         hyperparameter_specs = AUTOPOINT_SPECS if use_autopoints else []
 
         super().__init__(

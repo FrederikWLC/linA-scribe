@@ -272,9 +272,9 @@ def do_qqplot(residuals, metric, model1, model2, csv_path: str = "data/results/e
     artifact_tag = _artifact_tag(csv_path)
     plt.figure(figsize=(6, 6))
     probplot(residuals, dist="norm", plot=plt)
-    plt.title(f"QQ Plot of {metric} Residuals for {model1} vs {model2}")
-    plt.xlabel("Theoretical Quantiles")
-    plt.ylabel("Ordered Residuals")
+    plt.title(f"QQ Plot of the paired {metric} differences", fontsize=16)
+    plt.xlabel("Theoretical Quantiles", fontsize=16)
+    plt.ylabel("Ordered Differences", fontsize=16)
     plt.grid()
     plt.tight_layout()
     plt.savefig(qqplots_dir / f"{artifact_tag}{metric}_{model1}_vs_{model2}.png")
@@ -287,7 +287,7 @@ def _series_by_model(df_resume: pd.DataFrame, difficulty: str, metric_field: str
     return np.array([values_by_model.get(model, 0.0) for model in model_names])
 
 
-def do_barplots(models, csv_path: str = "data/results/evaluation"):
+def do_barplots(models, csv_path: str = "data/results/evaluation", short_names: bool = False):
     df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
     if df_resume.empty:
         return
@@ -296,7 +296,7 @@ def do_barplots(models, csv_path: str = "data/results/evaluation"):
     artifact_tag = _artifact_tag(csv_path)
 
     model_names = np.array([model.name for model in models])
-    model_display_names = np.array([model.short_name for model in models])
+    model_display_names = np.array([model.short_name if short_names else model.name for model in models])
 
     for metric in METRICS.keys():
 
@@ -331,7 +331,7 @@ def do_barplots(models, csv_path: str = "data/results/evaluation"):
 
         # Mean Metric (background bars)
         ax.bar(x_metric, metric_mean, width, yerr=metric_std_error, capsize=4, 
-            alpha=1, label='Mean ' + metric.capitalize() + ' (All Difficulties)', color='lightblue', edgecolor='none',
+            alpha=1, label='Mean ' + metric.capitalize(), color='lightblue', edgecolor='none',
             error_kw=dict(
                 ecolor='deepskyblue',
                 elinewidth=1.5,
@@ -362,80 +362,27 @@ def do_barplots(models, csv_path: str = "data/results/evaluation"):
             ))
 
         ax.set_xticks(x)
-        ax.set_xticklabels(model_display_names)
-        ax.set_ylabel(metric.capitalize())
-        ax.set_title(f"{metric.capitalize()} Score per Model with Difficulty Breakdown")
+        ax.set_xticklabels(model_display_names, fontsize=14)
+        ax.tick_params(axis="y", labelsize=14)
+        ax.set_ylabel(metric.capitalize(), fontsize=16)
+        ax.set_title(f"{metric.capitalize()} Score per Model with Difficulty Breakdown", fontsize=18)
         ax.set_ylim(0, 1)
-        ax.legend()
+        ax.legend(fontsize=12, loc="upper right")
         ax.yaxis.grid(True, linestyle='--', linewidth=0.6, alpha=0.5)
         ax.set_axisbelow(True)
 
+        plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
         plt.savefig(plots_dir / f"{artifact_tag}{metric}_score_comparison.png")
         plt.close()
 
-def do_boxplots(models, csv_path: str = "data/results/evaluation"):
-    df_resume = _safe_read_csv(_variant_path(csv_path, "resume"), RESUME_COLUMNS)
-    if df_resume.empty:
-        return
-
-    plots_dir = _artifact_dir(csv_path, "plots")
-    artifact_tag = _artifact_tag(csv_path)
-    
-    base_model_names = np.array([model.name for model in models])
-
-    for metric in METRICS.keys():
-
-        df_raw_pivot = _safe_read_csv(_variant_path(csv_path, f"raw-pivot-{metric}"), RAW_COLUMNS)
-        if df_raw_pivot.empty:
-            continue
-
-        metric_median = _series_by_model(df_resume, "all", f"{metric}_median", base_model_names)
-        order = np.argsort(-metric_median)
-
-        model_names = base_model_names[order]
-
-        data = [df_raw_pivot[m].values for m in model_names]
-
-        x = np.arange(len(model_names))
-
-        plt.figure(figsize=(10, 6))
-        ax = plt.gca()
-
-        ax.boxplot(
-            data,
-            positions=x,
-            widths=0.5,
-            showfliers=False,
-            patch_artist=True,
-            boxprops=dict(facecolor='lightblue', alpha=1),
-            medianprops=dict(color='black', linewidth=2),
-            whiskerprops=dict(color='black'),
-            capprops=dict(color='black')
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(model_names, rotation=45)
-        ax.set_title(f"{metric.capitalize()} Distribution per Model")
-        ax.set_xlabel("Model")
-        ax.set_ylabel(metric.capitalize())
-
-        ax.grid(axis="y", linestyle="--", alpha=0.7)
-        ax.set_axisbelow(True)
-
-        plt.tight_layout()
-        plt.savefig(plots_dir / f"{artifact_tag}{metric}_boxplot.png")
-        plt.close()
-
-def do_preview(models, csv_path: str = "data/results/evaluation"):
+def do_preview(models, csv_path: str = "data/results/evaluation", short_names: bool = False):
     do_resume(csv_path=csv_path, models=models)
-    do_boxplots(csv_path=csv_path, models=models) # ensure boxplots are up to date
-    do_barplots(csv_path=csv_path, models=models) # ensure barplots are up to date
-    do_statistical_tests( models=models,csv_path=csv_path) # ensure statistical tests are up to date
+    do_barplots(csv_path=csv_path, models=models, short_names=short_names) # ensure barplots are up to date
+    do_statistical_tests(models=models,csv_path=csv_path) # ensure statistical tests are up to date
 
-
-def run_full_evaluation(models, evaluation_data, csv_path: str = "data/results/evaluation"):
-    do_preview(csv_path=csv_path, models=models) # ensure preview is up to date before starting evaluation
+def run_full_evaluation(models, evaluation_data, csv_path: str = "data/results/evaluation", short_names: bool = False):
+    do_preview(csv_path=csv_path, models=models, short_names=short_names) # ensure preview is up to date before starting evaluation
     set_all_tuned_hyperparameters(models) # ensure all models have their tuned hyperparameters set before starting evaluation
     for difficulty in DIFFICULTIES:
         if difficulty not in evaluation_data:
@@ -454,11 +401,10 @@ def run_full_evaluation(models, evaluation_data, csv_path: str = "data/results/e
             labels=labels,
             csv_path=csv_path,
         )
-        #do_preview(csv_path=csv_path, models=models) # intermediate preview after each difficulty evaluation to monitor progress and catch any issues early
     do_preview(csv_path=csv_path, models=models) # final preview after all evaluations and statistical tests are done
 
 
 def run_default_evaluation():
     MODELS = get_models_to_be_evaluated()
     print("Starting full evaluation...")
-    run_full_evaluation(models=MODELS,evaluation_data=evaluation_data)
+    run_full_evaluation(models=MODELS,evaluation_data=evaluation_data,short_names=False)
