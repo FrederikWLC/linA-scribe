@@ -52,7 +52,6 @@
 \edef\hyperparamNTrialsSAMpts{\pgfplotsretval}
 
 % Evaluation Results
-\pgfplotstableread[col sep=comma]{../src/data/results/evaluation/raw-pivot-Dice.csv}\rawpivot
 \pgfplotstableread[col sep=comma]{../src/data/results/evaluation/resume.csv}\resumetable
 \pgfplotstableread[col sep=comma]{../src/data/results/evaluation/shapiro-tests.csv}\shapirotable
 \pgfplotstableread[col sep=comma]{../src/data/results/evaluation/paired-t-tests.csv}\ttable
@@ -119,13 +118,3 @@
 \pgfplotstablegetelem{4}{Dice_mean}\of\resumetable
 \edef\SAMptsmean{\pgfplotsretval}
 \pgfmathsetmacro{\deltameanGaussianSAM}{\Gaussianmean - \SAMptsmean}
-
-% Dice score of the selected example tablet for visual comparison.
-\pgfplotstablegetelem{\exampleTabletRow}{CannyFill}\of\rawpivot
-\edef\exampleCannyFillScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{Otsu}\of\rawpivot
-\edef\exampleOtsuScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{Gaussian}\of\rawpivot
-\edef\exampleGaussianScore{\pgfplotsretval}
-\pgfplotstablegetelem{\exampleTabletRow}{SAM+pts-no-filter}\of\rawpivot
-\edef\exampleSAMptsScore{\pgfplotsretval}

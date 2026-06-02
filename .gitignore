@@ -32,6 +32,10 @@ src/data/ground_truth/registered/*
 !src/data/results/**
 !src/data/split.py
 
+# Ignore all generated QQplots except the Gaussian vs SAM+pts-no-filter plot
+src/data/results/**/qqplots/*.png
+!src/data/results/evaluation/qqplots/Dice_Gaussian_vs_SAM+pts-no-filter.png
+
 # ignore GF SAM data
 src/gfsam_api/matcher/data/*
 src/gfsam_api/dinov2/data/*

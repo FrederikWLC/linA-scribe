@@ -250,6 +250,7 @@ These maps are then used to generate foreground point prompts for \acs{SAM}, whi
 A graph is then constructed of the coverage of the points laying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
 The purpose of those gating processes is to filter out false-positive masks, where the former process makes sure a given point is actually foreground according to the similarity maps, and the latter ensures that the point is not a boundary-near outlier.
 At the very last, the masks associated with the remaining points are merged together to generate the final segmentation mask.
+And if no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/GFSAM-architecture.jpg}

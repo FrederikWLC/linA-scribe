@@ -2,6 +2,12 @@ metric,model1,model2,statistic,p_value,significant
 Dice,CannyFill,Gaussian,6.0,2.086162567138672e-07,True
 Dice,CannyFill,Otsu,134.0,0.19368016719818115,False
 Dice,CannyFill,SAM+pts-no-filter,67.0,0.002468690276145935,True
+Dice,Gaussian,CannyFill,6.0,2.086162567138672e-07,True
 Dice,Gaussian,Otsu,0.0,1.4901161193847656e-08,True
 Dice,Gaussian,SAM+pts-no-filter,61.0,0.0013849586248397827,True
+Dice,Otsu,CannyFill,134.0,0.19368016719818115,False
+Dice,Otsu,Gaussian,0.0,1.4901161193847656e-08,True
 Dice,Otsu,SAM+pts-no-filter,83.0,0.009608790278434753,True
+Dice,SAM+pts-no-filter,CannyFill,67.0,0.002468690276145935,True
+Dice,SAM+pts-no-filter,Gaussian,61.0,0.0013849586248397827,True
+Dice,SAM+pts-no-filter,Otsu,83.0,0.009608790278434753,True

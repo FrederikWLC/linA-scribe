@@ -12,6 +12,11 @@ from sam_api.modal_sam import build_best_modal_sam_variant
 from evaluation.utils.metrics import BinaryDiceScore, evaluate_model, summarize_results
 from evaluation.utils.tuning import set_all_tuned_hyperparameters
 
+"""
+This module (although poorly refactored) is responsible for all evaluation-related logic
+It gathers the test data, gives summary statistics, statistic tests
+And produces "artifacts" like barplots and qqplots to visualize the results
+"""
 
 # Get test data, from data split module
 # we do binarize the images ideally for the evaluation
@@ -37,6 +42,8 @@ RAW_COLUMNS.insert(1, "label")
 RAW_COLUMNS.extend(METRICS.keys())
 
 
+
+# create path for .csv file variant (raw, resume, friedman-tests, wilcoxon-tests, paired-t-tests, shapiro-tests)
 def _variant_path(csv_path: str, suffix: str) -> Path:
     base_path = Path(csv_path)
     if base_path.suffix == ".csv":
@@ -46,45 +53,28 @@ def _variant_path(csv_path: str, suffix: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
-
-def _results_root(csv_path: str) -> Path:
+# get root path for results (without suffix) to store "artifacts" like qqplots and barplots
+def _path_root(csv_path: str) -> Path:
     base_path = Path(csv_path)
-    # Legacy file-style paths (e.g. data/results/evaluation.csv) map to data/results/evaluation/
     if base_path.suffix == ".csv":
         return base_path.with_suffix("")
     return base_path
 
 
+# ensures that dir exists for storing "artifacts" (qqplot, plot etc.) and returns full path
 def _artifact_dir(csv_path: str, kind: str) -> Path:
-    directory = _results_root(csv_path) / kind
+    directory = _path_root(csv_path) / kind
     directory.mkdir(parents=True, exist_ok=True)
     return directory
 
-
-def _artifact_tag(csv_path: str) -> str:
-    base_path = Path(csv_path)
-    if base_path.suffix == ".csv":
-        return f"{base_path.stem}-"
-    return ""
-
-
+# ensures .csv file exists to retrieve dataframe, otherwise returns empty df with columns 
 def _safe_read_csv(path: Path, columns: list[str]) -> pd.DataFrame:
     if path.exists():
         if path.stat().st_size > 0:
             return pd.read_csv(path)
     return pd.DataFrame(columns=columns)
 
-
-def _build_raw_pivots(df_raw: pd.DataFrame, csv_path: str) -> None:
-    if df_raw.empty:
-        return
-    for metric in METRICS.keys():
-        pivot_df = (
-            df_raw.pivot(index=["difficulty", "label"], columns="model", values=metric).reset_index()
-        )
-        pivot_df.to_csv(_variant_path(csv_path, f"raw-pivot-{metric}"), index=False)
-
-
+# performs whole evaluation given models, a difficulty, and the corresponding raw images, ground truths, and labels (tablet identifiers)  
 def perform_evaluation(
     raw_images,
     ground_truths,
@@ -110,9 +100,9 @@ def perform_evaluation(
         df_raw.sort_values(by=["difficulty", "label","model"], inplace=True)
 
     df_raw.to_csv(_variant_path(csv_path, "raw"), index=False)
-    _build_raw_pivots(df_raw, csv_path)
 
 
+# processes raw evaluation results to produce summary statistics (mean, median, std, std_error, n)
 def do_resume(models, csv_path: str = "data/results/evaluation"):
     df_raw = _safe_read_csv(_variant_path(csv_path, "raw"), RAW_COLUMNS)
     if df_raw.empty:
@@ -182,7 +172,9 @@ def do_statistical_tests(models, csv_path: str = "data/results/evaluation", alph
         df_friedman_tests.drop_duplicates(subset=["metric"], keep="last", inplace=True)
 
         for i in range(len(models)):
-            for j in range(i + 1, len(models)):
+            for j in range(len(models)):
+                if i == j:
+                    continue
                 model1, model2 = model_names[i], model_names[j]
                 data1 = df_raw[df_raw["model"] == model1][metric].dropna().to_numpy()
                 data2 = df_raw[df_raw["model"] == model2][metric].dropna().to_numpy()
@@ -196,7 +188,8 @@ def do_statistical_tests(models, csv_path: str = "data/results/evaluation", alph
                 shapiro_statistic, shapiro_p_value = shapiro(residuals)
                 shapiro_significant = bool(shapiro_p_value < alpha)
 
-                paired_t_statistic, paired_t_p_value = ttest_rel(data1, data2)
+                # one-tailed, every test is if the mean of data1 (model1) is significantly greater than that of data2 (model2)
+                paired_t_statistic, paired_t_p_value = ttest_rel(data1, data2, alternative="greater")
                 paired_t_significant = bool(paired_t_p_value < alpha)
 
                 pair_rows = {
@@ -266,10 +259,8 @@ def do_statistical_tests(models, csv_path: str = "data/results/evaluation", alph
     df_paired_t_tests.to_csv(_variant_path(csv_path, "paired-t-tests"), index=False)
     df_shapiro_tests.to_csv(_variant_path(csv_path, "shapiro-tests"), index=False)
 
-
 def do_qqplot(residuals, metric, model1, model2, csv_path: str = "data/results/evaluation"):
     qqplots_dir = _artifact_dir(csv_path, "qqplots")
-    artifact_tag = _artifact_tag(csv_path)
     plt.figure(figsize=(6, 6))
     probplot(residuals, dist="norm", plot=plt)
     plt.title(f"QQ Plot of the paired {metric} differences", fontsize=16)
@@ -277,7 +268,7 @@ def do_qqplot(residuals, metric, model1, model2, csv_path: str = "data/results/e
     plt.ylabel("Ordered Differences", fontsize=16)
     plt.grid()
     plt.tight_layout()
-    plt.savefig(qqplots_dir / f"{artifact_tag}{metric}_{model1}_vs_{model2}.png")
+    plt.savefig(qqplots_dir / f"{metric}_{model1}_vs_{model2}.png")
     plt.close()
 
 
@@ -293,7 +284,6 @@ def do_barplots(models, csv_path: str = "data/results/evaluation", short_names: 
         return
 
     plots_dir = _artifact_dir(csv_path, "plots")
-    artifact_tag = _artifact_tag(csv_path)
 
     model_names = np.array([model.name for model in models])
     model_display_names = np.array([model.short_name if short_names else model.name for model in models])
@@ -373,7 +363,7 @@ def do_barplots(models, csv_path: str = "data/results/evaluation", short_names: 
 
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
-        plt.savefig(plots_dir / f"{artifact_tag}{metric}_score_comparison.png")
+        plt.savefig(plots_dir / f"{metric}_score_comparison.png")
         plt.close()
 
 def do_preview(models, csv_path: str = "data/results/evaluation", short_names: bool = False):

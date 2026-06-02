@@ -86,14 +86,14 @@ for xi, row in compare_df.iterrows():
         )
 
 ax1.set_xticks(x)
-ax1.set_xticklabels(method_order, fontsize=18)
+ax1.set_xticklabels(method_order, fontsize=22)
 ax1.set_xlabel("Method", fontsize=20)
-ax1.set_ylabel("Time [min]", fontsize=18)
+ax1.set_ylabel("Time [min]", fontsize=20)
 ax1.set_title(
     "Tool time, including model execution",
-    fontsize=20,
+    fontsize=22,
 )
-ax1.tick_params(axis="both", which="major", labelsize=18)
+ax1.tick_params(axis="y", which="major", labelsize=18)
 ax1.legend(fontsize=18, loc="upper left")
 
 sam_run_df = run_df[run_df["method"] == "SAM"]
@@ -104,11 +104,11 @@ relative_counts = counts / counts.sum()
 bin_centers = 0.5 * (bin_edges[:-1] + bin_edges[1:])
 
 ax2.barh(bin_centers, relative_counts, height=np.diff(bin_edges), alpha=0.5, color="darkred", edgecolor="black")
-ax2.set_ylabel("Time [s]", fontsize=18)
-ax2.set_xlabel("Relative frequency [%]", fontsize=20)
-ax2.set_title("Distribution of SAM Modal execution time", fontsize=20)
+ax2.set_ylabel("Time [s]", fontsize=20)
+ax2.set_xlabel("Relative frequency [%]", fontsize=22)
+ax2.set_title("Distribution of SAM Modal exec. time", fontsize=22)
 ax2.set_yticks(np.arange(0, int(sam_run_seconds.max() * 1.05) + 1, 5))
-ax2.tick_params(axis="both", which="major", labelsize=16)
+ax2.tick_params(axis="both", which="major", labelsize=18)
 
 plt.tight_layout()
 plt.show()

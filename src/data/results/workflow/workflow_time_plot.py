@@ -79,10 +79,10 @@ for i, tablet in enumerate(tablet_order):
                 fontsize=11,
             )
 
-plt.xticks(x, method_order, fontsize=14)
+plt.xticks(x, method_order, fontsize=16)
 plt.xlabel("Method",fontsize=14)
 plt.ylabel("Time [min]",fontsize=14)
-plt.title("Ester's workflow time per method, split into tool use and post-editing",fontsize=18)
+plt.title("Workflow time per method, split into tool use and post-editing",fontsize=20)
 plt.ylim(0, df["time_minutes"].max() + 2)
 legend1 = [
     Patch(facecolor="black", alpha=0.3, label="Krita post-editing time"),

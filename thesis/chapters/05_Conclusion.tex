@@ -1,10 +1,34 @@
 %!TEX root = ../Thesis.tex
 \chapter{Conclusion}
 \section{Summary of findings per research question}
+
+
 \subsection{RQ1: Segmentation performance}
+First, to answer the question, \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?},
+a non-interactive segmentation experiment was performed to compare the performance of \acs{SAM} to classical image processing baselines in terms of segmentation quality.
+
+The tested \acs{SAM} variants on 27 raw tablet images did not outperform the best classical baseline, \acs{Gaussian} thresholding.
+On the contrary, they all performed \textit{significantly worse} - even with inclusion of \acs{ICL} implementations and \acs{POI} prompt placement strategy.
+
 \subsection{RQ2: Interaction efficiency}
+Secondly, to answer the question, \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?},
+two interactive segmentation tools - one based on \acs{SAM}2, one based on \acs{Gaussian} thresholding - were developed and evaluated on time spent in each tool by Ester Salgarella from image import to mask export and segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files), in a case study of 3 documents.
+The .
+
+The \acs{SAM}2-based interactive tool did not show any potential of outperforming the \acs{Gaussian}-based one, as it both produced masks of lower quality (i.e. of lower \acs{Dice} scores), and took more time to use.
+
 \subsection{RQ3: Workflow efficiency}
+Finally, to answer the question, \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?},
+the time spent by Ester Salgarella to annotate manually compared to being assisted by the two self-developed tools was measured in a case study of 3 documents.
+
+The \acs{SAM}2-based interactive tool did not show any potential of saving time in the workflow, both in total, and when only considering the post-editing phase.
+Compared to the classical baselineworkflow of \acs{Gaussian} thresholding, it took more than twice the time to use.
+And compared to the manual workflow, it took more than thrice the time to use.
 \section{Overall contribution}
+The results suggest that \acs{SAM} in the forms tested is not suitable for segmentation of Linear A tablets.
+For each \acs{RQ}, \acs{SAM} failed compared to the baselines - even when guided by human interaction.
+Not only did it not live up to its supposedly \acs{SOTA} superiority in terms of mere segmentation quality.
+It also took more time to use, and did not save any time in the workflow whatsoever.
 \section{Future Work}
 \subsection{Alternative data sources}
 Since the raw tablet based \acs{ML} system developed did not perform well enough to be deemed helpful for the workflow, another approach seems necessary in order to achieve a more automated workflow.
