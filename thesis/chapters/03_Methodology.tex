@@ -11,7 +11,7 @@ The choice of this programming language was made primarily due to it being the l
 Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
 The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
 
-\section{Non-interactive segmentation ability} \label{Segmentation quality}
+\section{Non-interactive segmentation} \label{Segmentation quality}
 To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
 All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
@@ -318,7 +318,7 @@ Thus, the residuals of the paired differences in \acs{Dice} scores between the t
 And in case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
 
 
-\section{Interaction efficiency} \label{Interaction efficiency}
+\section{Tool-side interaction} \label{Interaction efficiency}
 To answer the question of RQ2: \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
 The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
 \subsection{Tool development}
@@ -427,7 +427,7 @@ Specifically, she was instructed to make use of the tool method evaluated on the
 Tool interaction was recorded by the help of live screen recordings via Microsoft Teams, wherefrom the model execution time, the prompts placed, and the time taken from image import to mask export were all measured.
 The exports of each tool were also saved on disk, so that \acs{Dice} scores could later be computed therefrom.
 
-\section{Workflow efficiency} \label{Workflow efficiency}
+\section{Workflow integration} \label{Workflow efficiency}
 To answer the question of RQ3: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the tools described in the previous section (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
 
 The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of the workflow efficiency metric.

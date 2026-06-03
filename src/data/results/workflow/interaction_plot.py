@@ -6,10 +6,12 @@ from matplotlib.patches import Patch
 df = pd.read_csv("overall_interactivity.csv")
 tablet_order = ["HT7a", "HT4", "HT30"]
 
+l = 225
+d = 50
 palette = {
-    "box": "blue",
-    "bgd_points": "red",
-    "fgd_points": "green",
+    "box": (d/255, d/255, l/255),
+    "bgd_points": (l/255, d/255, d/255),
+    "fgd_points": (d/255, l/255, d/255)
 }
 
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -93,7 +95,7 @@ plt.yticks(fontsize=12)
 plt.xticks(x, tablet_order, fontsize=16)
 plt.xlabel("Tablet",fontsize=18)
 plt.ylabel("Prompt count",fontsize=18)
-plt.title("Ester's prompt count per tablet",fontsize=18)
+plt.title("Prompt count per tablet",fontsize=18)
 plt.legend(fontsize=18)
 max_total = (df["boxes"] + df["bgd_points"] + df["fgd_points"]).max()
 ax.set_ylim(0, max_total * 1.5)

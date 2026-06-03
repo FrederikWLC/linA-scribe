@@ -87,6 +87,7 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT3.jpg}}
     \caption{Hard HT3 (ground truth)}
+    \label{fig:difficulty_examples_ht3_gt}
 \end{subfigure}
 
 \caption{Examples of images with different levels of segmentation difficulty: easy, medium, and hard. For each case, the raw image (left) and the corresponding ground truth annotation (right) are shown.}
@@ -109,6 +110,8 @@ That lack of good quality data can unfortunately limits the output quality of se
 Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
 This misalignment was a source of noise in the evaluation.
 Ester's annotations were never constructed by overlaying them on the raw images, but rather by doing so on the accompanied corpus drawings, only using the raw images as reference.
+
+As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawings are also especially biased with a drawing style of dots and and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
 Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate that.
 This is seen by the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
