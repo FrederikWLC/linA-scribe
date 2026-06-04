@@ -53,13 +53,13 @@ It seems that the \acs{ICL} strategy of \acs{GFSAM} is not effective within the 
     \label{fig:dice_icl_comparison}
 \end{figure}
 
-\subsubsection{Why \acs{GFSAM} failed}
+\subsubsection{Why \acs{GFSAM} fails}
 \acs{GFSAM}'s particularly poor performance was clearly due to the fact that it - for almost all instances - segmented the whole tablet instead of the inscriptions within it (as shown in \cref{fig:comparison_icl_sam}).
 This indicates that the one-shot strategy of \acs{GFSAM} is generally not effective for this domain of non-natural images. 
 It is very likely that no point ever passed its gating processes, always returning the mask with the highest predicted \acs{IoU} score instead, which was the whole tablet, as it is always the most salient and clearly separated object in the image.
 Specifically, \acs{GFSAM}'s overshooting gating process seems to have been the culprit, as it is designed to filter out points that are near the boundary of a mask, which for a thin engraving is always the case.
 
-\subsubsection{Why \acs{FATESAM}2D (sort of) worked}
+\subsubsection{Why \acs{FATESAM}2D (sort of) works}
 \acs{FATESAM}2D's comparatively better performance can be attributed to the support images actually providing useful information to the model.
 The variant with blank support images (\acs{FATESAM}2D-blank) performing worst of all (see \cref{fig:dice_icl_comparison}), is a proof of this, as the inference hence does not work without any meaningful support images.
 The manipulation of \acs{SAM}2's memory encoder and memory attention mechanism thus worked reasonably well for few-shot inference given just the raw tablet images.
@@ -275,7 +275,7 @@ In fact, the total time spent doing the classical baseline workflow was more tha
 When looking at the post-editing times taken in Krita as a function of the tool-export \acs{Dice} scores, it seems that higher \acs{Dice} scores do imply time-saving in post-editing (see \cref{fig:post_edit_time_by_dice}).
 This is not surprising, as higher \acs{Dice} scores indicate closer resemblance to ground truth, which should require less time to refine in Krita.
 Thus, the reason that the tools did not save any time, was in all likelihood due to the low resemblance of the exports to ground truth, as indicated by their low \acs{Dice} scores.
-But apparently, post-editing time also depends on the size of the document.
+But apparently, post-editing time also seems to depend on the size of the document.
 For both tools, the medium-difficulty document \acs{HT}4 took about as much or less time to post-edit than the easy-difficulty document \acs{HT}7a.
 This can be explained by their size-difference, which also shows in \cref{fig:interaction_count}, as \acs{HT}7a had 20 box prompts placed (indicating 20 separate engravings), while \acs{HT}4 had only 10 placed (indicating a smaller tablet).
 
@@ -299,18 +299,31 @@ Still, none of the data obtained showed potential for time-saving.
 And none showed potential for \acs{SAM} outperforming the best classical baseline.
 
 When taking the domain and data quality into account, this underperformance is not too surprising.
+The raw document images used for inference are screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}. 
+They therefore provide only a limited two-dimensional representation, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
 During the second case study, Dr. Salgarella gave the impression that even she herself could not clearly distinguish tablet damage from inscriptions based on the raw images alone.
-If even an expert cannot do that, it is not surprising that a model that has not seen this type of images before cannot do it either.
+If even an expert cannot do that, it is not surprising that a segmentation model cannot do it either.
 
 But what these results suggest, is not only that the available data is poor.
-As \acs{SAM} performed worse than the best classical baseline on the same data, it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
-For \acs{SAM} to be useful, not only is there a need for a more suitable data source, there is seemingly also a need for a sufficiently sized dataset to be able to adapt it to the domain.
-To allow for a hypothetical dataset of such size, it has to also be composed of inscriptions other than Linear A - at least including the other closely related Aegean scripts like Linear B, but ideally also epigraphical inscriptions in general - forming a generalized inscription segmentation dataset, which could then lay the groundwork for the creation of an epigraphically tuned \acs{SAM}. 
+As \acs{SAM} performed worse than the strongest classical baseline on the same data, it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
+For \acs{SAM} to be useful, not only is there a need for a more suitable data source.
+To be able to adapt it to the domain at all, there is seemingly also a need for a sufficiently sized dataset.
+Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \cite{MayaSAM}).
+To be able to create a model that can be used in practice, a dataset of at least a few thousand annotated images would likely be necessary.
+Creating a hypothetical dataset of such size might require collecting inscriptions other than just Linear A - such as the other closely related Aegean scripts like Linear B, and maybe even epigraphical inscriptions in general - laying the groundwork for the creation of an epigraphically tuned \acs{SAM}. 
 
-Until such a model is developed, however, the results suggest that classical deterministic methods are better suited for the task.
-But most importantly, they suggest that manual annotation in Krita remains the best option for producing drawings of Linear A documents.
+Until such a model is developed, however, the results seem to suggest that classical deterministic methods are better suited for the task.
+But most importantly, they suggest that manual annotation in Krita so far remains the best option for producing digitized drawings of Linear A documents.
 Nevertheless, that is not to say that there is no potential for automation in the workflow.
 Rather, it means that the tested approaches are not sufficient enough to be helpful for it, and that alternative approaches should be explored in future work.
-For instance, if ignoring \acs{IPR} issues and taking the already made expert drawings from the \acs{GORILA} corpus as input instead of the raw document images, it is in theory entirely doable to cut drawing time through little else than binarization, rescaling and smoothing of those drawings, giving Ester the most qualified suggested starting point that there is.
-Doing so, however, was not within the scope of this thesis, as it was focused on the process of creating drawings from scratch.
-But in Ester's case specifically, it represents a promising workaround and pivot for future work, as it does not depend on transformers nor any segmentation models whatsoever.
+
+In particular, approaching the drawing step of Ester's annotation workflow as a segmentation task on raw document images does not seem to be very useful.
+And considering the quality of these images, it probably never will be - even when tuning on a big hypothetical dataset like the one mentioned.
+However, if the INSCRIBE \parencite{INSCRIBE3D} project were to resume and succeed in producing high-quality 3D scans for the entire corpus, a 3D segmentation approach might very well prove useful.
+The process of producing such a complete set of scans, however, would arguably require more work than Ester merely manually producing digital drawings for the entire corpus.
+
+Setting \acs{IPR} issues aside, the best information available is clearly the expert drawings from the \acs{GORILA} corpus.
+They exist for all published documents and are so close to the ground truth that they could arguably be seen as ground truth themselves.
+In theory, it is entirely doable to cut drawing time through little else than binarization, rescaling and smoothing of those drawings, giving Ester the most qualified starting points possible, which she can then adapt to her needs.
+Doing so, however, was not within the scope of this thesis, as it was focused on the general process of creating drawings from scratch through segmentation.
+But in Ester's case specifically, it represents a promising workaround and pivot for future work, as such an approach does not depend on any segmentation models nor any cumbersome data bottlenecks whatsoever.

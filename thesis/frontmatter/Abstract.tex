@@ -1,3 +1,11 @@
 %!TEX root = ../Thesis.tex
 \chapter{Abstract}
-This thesis is in the workings... \note{Write something when finished with all thesis chapters}
+
+To enable computational analysis of the still undeciphered Linear A script of Bronze Age Crete, epigraphers such as Dr. Ester Salgarella have been working to structurally digitize its corpus.
+Since this process is slow and laborious, involving manual drawing and labeling, this thesis investigated whether the drawing step can be partially automated by approaching the problem as a segmentation task on raw documents, using the \acf{SAM}.
+Due to the small corpus size and lack of labeled data, the study tested whether zero-shot and few-shot variants of \acs{SAM} can transfer to the epigraphic domain of Linear A without training or fine-tuning.
+Three aspects were evaluated: non-interactive segmentation quality, tool efficiency, and the total time saved in the full workflow.
+Across all tests, \acs{SAM} did not outperform the strongest classical baseline.
+In a real-world case study, the tool even seemed to increase total work time, as its output required too much correction.
+These results suggest a general need for a sufficiently sized registered dataset of epigraphic documents, as \acs{SAM} otherwise lacks the domain-specific knowledge to perform well on this task.
+For Ester's workflow specifically, they further suggest that the drawing step may need to be approached differently than as a task of segmentation on raw document images.

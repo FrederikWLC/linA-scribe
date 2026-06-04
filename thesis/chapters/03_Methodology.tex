@@ -12,7 +12,7 @@ Its big community, and library support, and package manager (pip) also made it e
 The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
 
 \section{Non-interactive segmentation} \label{Segmentation quality}
-To answer the question of RQ1: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
+To answer the question of \hyperref[rq1]{\acs{RQ}1}: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
 All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
 The following subsections therefore give an explanation of the segmentation problem itself and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
@@ -217,7 +217,7 @@ As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen
 \label{fig:SAM2_mask_decoder}
 \end{figure}
 
-\subsubsection{FATESAM}
+\subsubsection{FATESAM} \label{subsubsec:FATESAM}
 Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
 It works in principle by making use of \acs{SAM}2's memory attention mechanism, by passing the few-shot support images to its memory encoder (see \cref{fig:FATESAM_architecture}), such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
 
@@ -242,7 +242,7 @@ In particular, the object-pointer encoder and object-score prediction heads were
 In an ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
 It was therefore deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
 
-\subsubsection{GFSAM}
+\subsubsection{GFSAM} \label{subsubsec:GFSAM}
 The other kind of training-free \acs{ICL} adaptation of \acs{SAM} tested was the one-shot \acs{GFSAM} \parencite[see][]{gfsam}.
 It works by first extracting the features of the given support image with DINOv2 \parencite{dinov2}, (see \cref{fig:GFSAM_architecture}).
 With its Positive-Negative Alignment module, it then computes two similarity maps between query and support features, one for positive/object similarity, and one for negative/background similarity.
@@ -319,7 +319,7 @@ And in case the normality assumption was violated, the non-parametric domain-spe
 
 
 \section{Tool-side interaction} \label{Interaction efficiency}
-To answer the question of RQ2: \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
+To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
 The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
 \subsection{Tool development}
 The tool was developed in close collaboration with Ester Salgarella, in an attempt to make it fit her workflow and needs as much as possible.
@@ -428,7 +428,7 @@ Tool interaction was recorded by the help of live screen recordings via Microsof
 The exports of each tool were also saved on disk, so that \acs{Dice} scores could later be computed therefrom.
 
 \section{Workflow integration} \label{Workflow efficiency}
-To answer the question of RQ3: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the tools described in the previous section (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
+To answer the question of \hyperref[rq3]{\acs{RQ}3}: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the tools described in the previous section (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
 
 The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of the workflow efficiency metric.
 

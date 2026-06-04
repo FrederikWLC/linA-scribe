@@ -10,23 +10,24 @@ What follows in this chapter is a detailed description of this dataset, document
 \section{Characteristics and construction}
 The dataset was made to consists of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
 Each of these image pairs was categorized into one of three difficulty levels (easy, medium, hard) based on the visual quality of the inscriptions (see \cref{sec:difficulty_classification}).
-They were then split into a test set of 27 images, a validation set of 27 images, and a support set of 6 images, with each set containing an equal proportion of images from each of the three difficulty levels.
+They were then randomly split into three subsets: test (27 images), validation (27 images), and support (6 images), with each one having an equal proportion of images from each of the three difficulty levels.
+All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization, and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
 
-Only inscriptions with clay as writing support were included, as they are the most common and representative of the Linear A corpus, and were the only ones for which SigLA ground truth annotations were already available.
+Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
 The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only widely publicly available images of the Linear A inscriptions.
 For an example of a raw document image and its corresponding ground truth annotation, see Figure \ref{fig:ht7b_example}.
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
 \begin{subfigure}[t]{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/HT7b.jpg}}
-    \caption{Raw image (HT7b)}
+    \caption{Raw image (\acs{HT}7b)}
 \end{subfigure}
 \hspace{0.04\textwidth}
 \begin{subfigure}[t]{0.4\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT7b.jpg}}
-    \caption{Ground truth (HT7b)}
+    \caption{Ground truth (\acs{HT}7b)}
 \end{subfigure}
 
 \caption{Example of a raw inscription image and its corresponding ground truth annotation.}
@@ -46,19 +47,19 @@ The concrete criteria used to classify the difficulty sets were as follows:
 For visual examples of images within each of these difficulties, see \cref{fig:difficulty_examples}.
 
 
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
 
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/easy/KHWc2104.jpg}}
-    \caption{Easy KHWc2104 (raw)}
+    \caption{Easy \acs{KH}Wc2104 (raw)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/KHWc2104.jpg}}
-    \caption{Easy KHWc2104 (gt)}
+    \caption{Easy \acs{KH}Wc2104 (gt)}
 \end{subfigure}
 
 \vspace{0.6em}
@@ -66,13 +67,13 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/medium/MA1a.jpg}}
-    \caption{Medium MA1a (raw)}
+    \caption{Medium \acs{MA}1a (raw)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/MA1a.jpg}}
-    \caption{Medium MA1a (gt)}
+    \caption{Medium \acs{MA}1a (gt)}
 \end{subfigure}
 
 \vspace{0.6em}
@@ -80,13 +81,13 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/raw/hard/HT3.jpg}}
-    \caption{Hard HT3 (raw)}
+    \caption{Hard \acs{HT}3 (raw)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered/HT3.jpg}}
-    \caption{Hard HT3 (ground truth)}
+    \caption{Hard \acs{HT}3 (ground truth)}
     \label{fig:difficulty_examples_ht3_gt}
 \end{subfigure}
 
@@ -99,6 +100,7 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations had to be aligned and registered to each other.
 This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
 
+\clearpage
 
 \section{Limitations and biases}
 \subsection{Quality of the raw tablet images}
@@ -111,32 +113,31 @@ Even after image registration, ground truth images still did not perfectly align
 This misalignment was a source of noise in the evaluation.
 Ester's annotations were never constructed by overlaying them on the raw images, but rather by doing so on the accompanied corpus drawings, only using the raw images as reference.
 
-As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawings are also especially biased with a drawing style of dots and and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
+As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawing style of the drawings is also especially biased with dots and and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
 Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate that.
 This is seen by the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
 \subsection{Binarization of the drawings}
-Due to a missing threshold step of the registered JPEGs in the initial registration of the dataset, the ground truth annotations were to begin with binarized with a threshold of 0 instead of 128, meaning that only the pure black pixels of the drawings were considered as part of the ground truth foreground, while the lighter gray pixels were not accounted for.
-This led to lower \acs{Dice} scores in general, as the ground truth in practice was thinner and more sparse compared to the actual drawings.
+Due to a missing threshold step of the registered JPEGs in the initial registration of the dataset, the ground truth annotations were to begin with binarized with a threshold of 0 instead of 128, meaning that only the pure black pixels of the drawings were considered as part of ground truth foreground, while the smoothed gray pixels were not accounted for.
+This led to lower \acs{Dice} scores in general, as the ground truth then in practice was thinner and more sparse compared to the actual drawings.
 
-This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels darker than 128 now were considered foreground, and all pixels lighter than that were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
+This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels with higher intensities now were considered foreground, and all pixels with lower intensities were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
 However, only the hyperparameter optimization of the models was not redone for the new binarization format, and was thus performed with ground truth in the old binarization format.
-
 Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles  more than otherwise), while still preserving fairness and generalizability, as all model hyperparameters were tuned under the same conditions.
  
-\begin{figure}[htbp]
+\begin{figure}[htp]
 \centering
 
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered0/KHWc2104.png}}
-    \caption{KHWc2104 (old)}
+    \caption{\acs{KH}Wc2104 (old)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/KHWc2104.png}}
-    \caption{KHWc2104 (new)}
+    \caption{\acs{KH}Wc2104 (new)}
 \end{subfigure}
 
 \vspace{0.6em}
@@ -144,13 +145,13 @@ Arguably, this only affected the effectiveness of the optimization and what the 
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered0/MA1a.png}}
-    \caption{MA1a (old)}
+    \caption{\acs{MA}1a (old)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/MA1a.png}}
-    \caption{MA1a (new)}
+    \caption{\acs{MA}1a (new)}
 \end{subfigure}
 
 \vspace{0.6em}
@@ -158,16 +159,14 @@ Arguably, this only affected the effectiveness of the optimization and what the 
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered0/HT3.png}}
-    \caption{HT3 (old)}
+    \caption{\acs{HT}3 (old)}
 \end{subfigure}
 \hspace{0.02\textwidth}
 \begin{subfigure}[c]{0.45\textwidth}
     \centering
     \fbox{\includegraphics[width=\linewidth]{../src/data/ground_truth/registered2/HT3.png}}
-    \caption{HT3 (new)}
+    \caption{\acs{HT}3 (new)}
 \end{subfigure}
-
 \caption{Examples of images processed with the two different binarization thresholds; 0 (old) and 128 (new).}
 \label{fig:binarization_examples}
-
 \end{figure}

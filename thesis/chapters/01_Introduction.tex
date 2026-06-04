@@ -33,7 +33,7 @@ And due to the potential violation of \acf{IPR}, it was furthermore of particula
 \subsection{A problem of small data}
 The small size of the Linear A corpus, and the irregularities in quality of its raw documents, is a huge problem for the application of deep learning, as models created therefrom typically require large amounts of good quality data to perform well.
 
-For more informative and better quality data, there does exist an online repository of 3D scans of Aegean inscriptions\footnote{The term "Aegean inscription" refers to the ancient writings found in the Aegean sea of modern day Greece and Turkey, including the Linear A, Linear B, and Cretan Hieroglyphic scripts.}.
+For more informative and better quality data, there does exist an online repository of 3D scans of Aegean inscriptions\footnote{The term "Aegean inscription" refers to the ancient writings found in the Aegean sea of the Mediterranean, including the scripts Linear A, Linear B, and Cretan Hieroglyphics.}.
 That is, through the project INSCRIBE \parencite{INSCRIBE3D}, which sought to "produce the first complete digital corpus of all three Aegean undeciphered scripts".
 But this project ended in 2023, and has so far just 71 Linear A documents scanned \parencite{INSCRIBE3DViewer}.
 
@@ -53,9 +53,11 @@ Nevertheless, these methods all depend on deep learning, making them inconvenien
 
 \subsection{SAM and its applications}
 Ever since its release in 2023, \acs{SAM} has been extensively evaluated across a wide range of \acs{CV} tasks to investigate whether it can really "segment anything".
-Papers have evaluated its performance within niche domains, such as medical images \parencite{MedSAM}, camouflaged objects \parencite{CamSAM}, transparent objects \parencite{TransparentSAM}, hierarchical texts \parencite{HiSAM}, and even oracle bone inscriptions \parencite{OBIFloSAM}. 
+Papers have evaluated its performance within niche domains, such as medical images \parencite{MedSAM}, camouflaged objects \parencite{CamSAM}, transparent objects \parencite{TransparentSAM}, hierarchical texts \parencite{HiSAM}, and even oracle bone inscriptions \parencite{OBIFloSAM} and Maya hieroglyphs \parencite{MayaSAM}. 
 Most of these papers found that \acs{SAM} still tends to struggle with such domains, despite its impressive zero-shot\footnote{The term \textit{zeroshot} refers to model performance on hitherto unseen data.} generalization.
-Meanwhile, some of them also found that this performance can be significantly improved through architectural extensions and domain-specific fine-tuning, which unfortunately requires deep learning and a lot of data.
+Meanwhile, some of them also found that this performance can be significantly improved through architectural extensions \parencite{OBIFloSAM} and domain-specific fine-tuning \parencite{MedSam,MayaSAM}.
+While such fine-tuning does not always require very large datasets, it does require task-specific annotated data and model training, which was outside the scope of this thesis.
+which unfortunately requires deep learning and a lot of data.
 However, equally, it has been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
 And within the domain of 3D medical images, a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{sam2} has been recently demonstrated to surpass supervised methods like U-Net, and even the best fined-tuned versions of \acs{SAM} \parencite{fatesam}.
 Thus, it seemed reasonable to test out the limits of \acs{SAM}'s generalization and interactivity within the domain of Linear A document images, to investigate whether it could be used to accelerate the annotation workflow of Ester Salgarella.
@@ -69,15 +71,15 @@ To concretize the research, the problem statement was decomposed into three \acf
 \subsection{Research questions}
 \label{research_questions}
 \begin{enumerate}
-\item \textbf{\acs{RQ}1 (Segmentation quality)}: 
+\item \textbf{\acs{RQ}1 (Segmentation quality)}: \label{rq1}
 \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?}
 
 \textbf{Operationalization}: \acs{SAM}-based masks were compared to classical image-processing baselines using overlap metrics (i.e. \acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files using a self-made dataset of 60 documents.
-\item \textbf{\acs{RQ}2 (Interaction efficiency)}: 
+\item \textbf{\acs{RQ}2 (Interaction efficiency)}: \label{rq2}
 \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}
 
 \textbf{Operationalization}: Two self-developed segmentation tools - one SAM-based, one classical - were evaluated in a case study of 3 documents. The time spent in each tool by Ester Salgarella from image import to mask export was compared against the segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files).
-\item \textbf{\acs{RQ}3 (Workflow efficiency)}: 
+\item \textbf{\acs{RQ}3 (Workflow efficiency)}: \label{rq3}
 \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}
 
 \textbf{Operationalization}: The time it took Ester Salgarella to annotate manually compared to being assisted by two self-developed segmentation tools - one based on SAM, and the other based on a classical baseline - was measured in a case study of 3 documents.
@@ -86,6 +88,7 @@ To concretize the research, the problem statement was decomposed into three \acf
 \section{Impact -- innovation and application}
 
 \subsection{What already exists}
+The 
 
 \subsection{What is new?}
 

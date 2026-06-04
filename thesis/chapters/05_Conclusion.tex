@@ -3,23 +3,17 @@
 \section{Summary of findings per research question}
 
 
-\subsection{RQ1: Segmentation performance}
-First, to answer the question, \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?},
-a non-interactive segmentation experiment was performed to compare the performance of \acs{SAM} to classical image processing baselines in terms of segmentation quality.
+\subsection{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
+The first research question concerned the non-interactive segmentation quality of \acs{SAM} compared to classical image processing baselines.
+Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
+On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse} - despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
 
-The tested \acs{SAM} variants on 27 raw tablet images did not outperform the best classical baseline, \acs{Gaussian} thresholding.
-On the contrary, they all performed \textit{significantly worse} - even with inclusion of \acs{ICL} implementations and \acs{POI} prompt placement strategy.
+\subsection{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
+The second research question had to do with the efficiency of using \acs{SAM} as an interactive segmentation tool compared to a classical image processing baseline.
+Measured in a case study of 3 documents from the test set with Ester Salgarella in terms of time spent in the tool and segmentation quality of the exports, the \acs{SAM}-based tool was beaten by the classical one both in terms of time and segmentation quality.
 
-\subsection{RQ2: Interaction efficiency}
-Secondly, to answer the question, \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?},
-two interactive segmentation tools - one based on \acs{SAM}2, one based on \acs{Gaussian} thresholding - were developed and evaluated on time spent in each tool by Ester Salgarella from image import to mask export and segmentation quality (i.e. \acs{Dice}) relative to ground truth (SigLA's Krita files), in a case study of 3 documents.
-The .
-
-The \acs{SAM}2-based interactive tool did not show any potential of outperforming the \acs{Gaussian}-based one, as it both produced masks of lower quality (i.e. of lower \acs{Dice} scores), and took more time to use.
-
-\subsection{RQ3: Workflow efficiency}
-Finally, to answer the question, \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?},
-the time spent by Ester Salgarella to annotate manually compared to being assisted by the two self-developed tools was measured in a case study of 3 documents.
+\subsection{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
+The third research question concerned the time spent by Ester Salgarella to annotate manually compared to being assisted by the two self-developed tools was measured in a case study of 3 documents.
 
 The \acs{SAM}2-based interactive tool did not show any potential of saving time in the workflow, both in total, and when only considering the post-editing phase.
 Compared to the classical baselineworkflow of \acs{Gaussian} thresholding, it took more than twice the time to use.
