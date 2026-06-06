@@ -205,10 +205,10 @@ For each frame, the output mask is encoded by a learned memory encoder and store
 \label{fig:SAM2_architecture}
 \end{figure}
 
-The mask decoder did not change much from the original (\cref{fig:SAM_mask_decoder}), except for the passing of early visual features from the Hiera image encoder to the convolutional upsampling process of the mask decoder, improving the integrity of the output with the injection of high quality spatial context.
-However, also added were output markers for video tracking.
-And object pointers were added as lightweight vectors each keeping track of the semantic information of each object of interest.
-These object pointers are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
+\acs{SAM}2 was pre-trained on both still images and video, first on the \acs{SA-1B} image dataset \parencite{sam} and then on the \acf{SA-V} dataset \parencite{sam2}.
+The mask decoder did not change much from the original (\cref{fig:SAM_mask_decoder}), except for the passing of early visual features from the Hiera image encoder to the convolutional upsampling process, improving the integrity of the output mask.
+But also added were object pointers as lightweight vectors keeping track of the semantic information of each object of interest.
+These are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
 
 As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
 \acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
@@ -219,13 +219,17 @@ The memory and video-tracking machinery is only relevant to the \acs{FATESAM} ad
 Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
 As seen in \cref{fig:FATESAM_architecture}, it works in principle by making use of \acs{SAM}2's architecture and memory attention mechanism, by passing a few support images to its memory encoder, such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
 
-These support images are chosen by a ranking of feature similarity to the input to make sure they are as representative as possible.
-And this ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images.
+These support images $x_s^{i}$ are chosen by a ranking of feature similarity to the input $x^i$ to make sure that the support masks $y_s^{i}$ are as representative as possible.
+This ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images.
 
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/FATESAM-architecture.jpg}
-\caption{Architecture of \acs{FATESAM}, from \textcite{fatesam}. }
+\caption{Architecture of \acs{FATESAM}, from \textcite{fatesam}.
+At inference of the 2D-adaptation, support masks $y_s^{i}$ are chosen by the similarity of their corresponding image-encoded support images $\mathcal{E}(x_s^{i})$ to the image-encoded query image, $\mathcal{E}(x^i)$ and passed to memory attention $\mathcal{MA}$ as memory encoded embeddings $\mathcal{ME}(y_s^{i})$.
+However, unlike the original 3D setting, no adjacent
+prediction $\mathcal{ME}(y^{i-1})$ is relevant, since the Linear A images are
+treated as independent two-dimensional inputs.}
 \label{fig:FATESAM_architecture}
 \end{figure}
 
