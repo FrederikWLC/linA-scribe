@@ -288,44 +288,42 @@ Green points represent foreground point prompts, while red points represent back
 \end{figure}
 
 
-\subsection{Evaluation protocol and performance metrics}
+\subsection{Evaluation protocol for \acs{RQ}1}
 \label{subsec:evaluation}
-To determine whether one model performed significantly better than another, relevant metrics and statistical tests needed to be defined.
-Furthermore, to ensure a fair comparison, all models with hyperparameters were had to be optimized to their best performance on the validation set.
-Naturally, as a last check of \acs{SAM}'s efficiency, it was of particular interest to statistically compare its best performing version against the best performing classical baseline.
+To determine whether one model performed significantly better than another, a relevant metric (\acs{Dice}) and a statistical test (paired t-test) needed to be defined.
+Additionally, to ensure a fair comparison, all models with hyperparameters were optimized to their best performance on the validation set.
+What follows is a description of this evaluation protocol.
 
-What follows is a description of the choice of metrics, the optimization of model hyperparameters, and the statistical tests used in the evaluation.
-
-\subsubsection{Choice of metrics}
+\subsubsection{Choice of metric (\acs{Dice})}
 \label{subsubsec:metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are the \acf{Dice} and the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
-It is naturally more foregiving than the related segmentation metric \acs{IoU}, which is more strict and specifically used to evaluate segmentation results where small displacements are critical for results.
+It is naturally more forgiving than the related segmentation metric \acs{IoU}, which is more strict and specifically used to evaluate segmentation results where small displacements are critical for results.
 Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size \parencite{Metrics2025}:
 
 $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
 
-\noindent Thus, the raw metrics ended up consisting of the \acs{Dice} scores for each image, and each model.
+\noindent The raw metrics thus ended up consisting of \acs{Dice} scores produced per image for each model.
 
-\subsubsection{Hyperparameter optimization}
+\subsubsection{Hyperparameter optimization (\acs{TPE})}
 \label{subsubsec:hyperparameter_optimization}
-To ensure a fair comparison between the models, all models with hyperparameters were tuned to their best performance on the validation set in a series of 100 trials each using Optuna, a hyperparameter optimization framework.
+All models with hyperparameters were tuned to their best \acs{Dice} scores on the validation set in a series of 100 trials each using Optuna, a hyperparameter optimization framework.
 The optimization itself was performed using the \acf{TPE} algorithm \parencite{TPEHyperparameterOptimization2013,TPEHyperparameterOptimization2011},
 which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
 Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
 
-A \acs{TPE} works by building two probabilistic models: one for the configurations that have resulted in good performance, and another for those that have resulted in poor performance.
+It works by building two probabilistic models: one for the configurations that have resulted in good performance, and another for those that have resulted in poor performance.
 It then uses these models to select the next hyperparameter configuration to evaluate, selecting the one that maximizes the expected improvement.
 This way, it can focus the search on promising regions of the space of possible hyperparameters, removing the need to rely on chance or exhaustive search.
 
 
-\subsubsection{Statistical test}
+\subsubsection{Statistical test (paired t-test)}
 To determine whether the observed difference in \acs{Dice} scores between the two strongest models was statistically significant, a paired t-test was conducted.
 Specifically, a one-tailed paired t-test was used, as the alternative hypothesis was that \acs{SAM} would perform significantly better than the best classical baseline, instead of just significantly differently.
 The paired t-test has two main assumptions: 1. independence of tested observations, and 2. normality of the paired differences.
 The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on the results.
 Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
-In case the normality assumption were to be violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
+In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
 
 
 \section{Tool-side interaction} \label{Interaction efficiency}
@@ -422,7 +420,6 @@ Included in this prompt placement interface of the tool was a toolbar consisting
     \label{fig:sam_tool_export}
 \end{figure}
 
-\clearpage
 
 \subsection{Experimental design for evaluation of interaction efficiency}
 \label{subsec:experimental_design_interaction_efficiency}
