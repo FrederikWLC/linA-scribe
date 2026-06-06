@@ -37,9 +37,19 @@ The bottleneck of the raw tablet based approach seems to be the quality of the i
 The suggestions generated should therefore instead be inferred from the corpus drawings, which are of higher quality, carry more strucured information than the raw tablet images, and are what the researcher already primarily uses as reference in the annotation process.
 
 
+A complementary, higher-quality data source would be the 3D scans of the INSCRIBE project \parencite{INSCRIBE3D}, on which a 3D segmentation approach might prove useful.
+This would, however, require the project to resume and to scan the remainder of the corpus, a process that would arguably take longer than the manual production of digital drawings for the entire corpus.
+
 \subsection{Methodological extensions}
+Beyond a change of data source, the results suggest a need for a generalized and computationally efficient \acs{SAM} implementation, tuned to the greater domain of inscriptions, as the default model was not sufficient to demonstrate its potential capabilities within this domain.
+For such tuning to be possible, a sufficiently sized one-class-labeled dataset of general inscription segmentations would be required.
+As a proof of concept, domain tuning might not demand more than a few hundred annotated examples, as demonstrated for Mayan hieroglyphs \parencite{MayaSAM}.
+A model usable in practice, however, would likely require a dataset of at least a few thousand annotated images.
+Assembling a dataset of that size for Linear A alone is unrealistic given its small corpus, so it would likely be necessary to pool inscriptions from the closely related Aegean scripts such as Linear B, and possibly from epigraphic inscriptions more broadly, laying the groundwork for an epigraphically tuned \acs{SAM}.
+
 \subsection{Further automation opportunities}
-
-
-...The results therefore suggest a need for a generalized and computationally efficient SAM implementation to be tuned to the greater domain of inscriptions, as the default model is not sufficient enough to prove its potential capabilities there.
-For this potential tuning to be possible, there is a need of a sufficiently sized one-class-labeled dataset of general inscription segmentations.
+Until such a model and dataset exist, classical deterministic methods appear better suited to the task than \acs{SAM}, and manual annotation in Krita remains the most efficient option for producing digitized drawings of Linear A documents.
+This does not imply that the workflow holds no potential for automation, but rather that the approaches tested here are insufficient and that alternative ones should be explored.
+The most immediate opportunity lies in reframing the drawing step away from segmentation on raw document images, and instead deriving suggested starting points from the existing expert corpus drawings, which are already close to ground truth and could be processed through little more than binarization, rescaling, and smoothing.
+Looking further ahead, the metadata-labeling step of the annotation process, which this thesis did not address, presents an additional target for automation.
+And should an epigraphically tuned model eventually be realized, the same workflow could in principle be extended beyond Linear A to Linear B and other under-digitized epigraphic scripts, contributing to the broader field of digital epigraphy.
