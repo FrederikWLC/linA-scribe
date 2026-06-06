@@ -1,28 +1,35 @@
 %!TEX root = ../Thesis.tex
 \chapter{Conclusion}
-\section{Summary of findings per research question}
+The aim of this thesis was to investigate whether the drawing step of the annotation workflow of digitizing Linear A inscriptions can be partially automated by approaching the problem as a segmentation task on raw document images from \acs{GORILA}, using the \acf{SAM}.
+In short, under the tested conditions, the results indicate that \acs{SAM} was not practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
+This is illustrated by the following summaries of findings per research question.
 
-
-\subsection{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
-The first research question concerned the non-interactive segmentation quality of \acs{SAM} compared to classical image processing baselines.
+\section{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
+The first research question concerned the non-interactive segmentation quality of \acs{SAM} within the domain of Linear A document images compared to classical image processing baselines.
 Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
-On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse} - despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
+On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse}, despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
 
-\subsection{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
+\section{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
 The second research question had to do with the efficiency of using \acs{SAM} as an interactive segmentation tool compared to a classical image processing baseline.
-Measured in a case study of 3 documents from the test set with Ester Salgarella in terms of time spent in the tool and segmentation quality of the exports, the \acs{SAM}-based tool was beaten by the classical one both in terms of time and segmentation quality.
+This was measured in a case study of 3 documents from the test set with Ester Salgarella in terms of the time spent in the tool and segmentation quality of the exports.
+Despite the theoretical benefit of human interaction, the \acs{SAM}2-based tool seemed beaten by the \acs{Gaussian} thresholding one both in terms of time spent and segmentation quality.
 
-\subsection{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
-The third research question concerned the time spent by Ester Salgarella to annotate manually compared to being assisted by the two self-developed tools was measured in a case study of 3 documents.
+\section{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
+The third research question considered the workflow-related efficiency of using the \acs{SAM}-based tool compared to classical image processing and the baseline of manual annotation.
+Measured in a case study of 3 documents with Ester Salgarella, the time spent to complete the drawings manually in Krita was compared to being assisted by the mask exports of the previous case study as suggested starting points.
+None of the tools showed any potential of saving time in the workflow, both when considering the entire workflow (including the time spent in tool), and when considering only the post-editing phase.
+In fact, the tools even seemed to increase work time (SAM more so than the classical one), as their output masks required too much correction.
 
-The \acs{SAM}2-based interactive tool did not show any potential of saving time in the workflow, both in total, and when only considering the post-editing phase.
-Compared to the classical baselineworkflow of \acs{Gaussian} thresholding, it took more than twice the time to use.
-And compared to the manual workflow, it took more than thrice the time to use.
-\section{Overall contribution}
-The results suggest that \acs{SAM} in the forms tested is not suitable for segmentation of Linear A tablets.
-For each \acs{RQ}, \acs{SAM} failed compared to the baselines - even when guided by human interaction.
-Not only did it not live up to its supposedly \acs{SOTA} superiority in terms of mere segmentation quality.
-It also took more time to use, and did not save any time in the workflow whatsoever.
+\section{Overall conclusion}
+To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
+This was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference, which was low both in size and quality, consisting of screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}.
+But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on segmentation quality.
+Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baselines.
+This can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A tablets, which are characterized by several thin, fragmented signs as opposed to the more distinct "rounded" objects found in natural images.
+Thus, the results suggest that \acs{SAM} needs tuning to perform well on this task. 
+Although the results were clearly negative, they provide valuable insights into the shortcomings of \acs{SAM} within the domain of \acs{GORILA} raw document images, and suggest directions for future research and development to achieve a more automated workflow.
+
+
 \section{Future Work}
 \subsection{Alternative data sources}
 Since the raw tablet based \acs{ML} system developed did not perform well enough to be deemed helpful for the workflow, another approach seems necessary in order to achieve a more automated workflow.
