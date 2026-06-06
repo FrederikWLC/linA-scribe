@@ -248,19 +248,22 @@ It was hence deemed reasonable to assume that it would not contribute to the per
 
 \subsubsection{GFSAM} \label{subsubsec:GFSAM}
 The other kind of training-free \acs{ICL} adaptation of \acs{SAM} tested was the one-shot \acs{GFSAM} \parencite[see][]{gfsam}.
-As seen in \cref{fig:GFSAM_architecture}, it works by first extracting the features of the given support image $x^r$ and the query image $x^t$ by using the pre-trained image encoder DINOv2 \parencite{dinov2}.
+As seen in \cref{fig:GFSAM_architecture}, it works by first extracting the features of the given support image and the query image by using the pre-trained image encoder DINOv2 \parencite{dinov2}.
 As an adaptation to the data domain, the selection of this support image for \acs{GFSAM} was done in the same way as for \acs{FATESAM}, by ranking the feature similarity of the support images to the input image via Manhattan distance on the extracted features, and selecting the most similar one as one-shot support.
 
 With its Positive-Negative Alignment module, \acs{GFSAM} then computes two similarity maps between query and support features: one for positive/object similarity, and one for negative/background similarity.
 These maps are used to generate foreground point prompts for \acs{SAM}, which are then fed to the mask decoder that generates one mask per point prompt.
-A graph is then constructed of the coverage of the points laying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
+A graph is then constructed of the coverage of the points lying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
 The purpose of those gating processes is to filter out false-positive masks, where the former process makes sure a given point is actually foreground according to the similarity maps, and the latter ensures that the point is not a boundary-near outlier.
-At the very last, the masks associated with the remaining points are merged together to generate the final segmentation mask.
-However, if no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
+Finally, the masks associated with the remaining points are merged together to generate the final segmentation mask.
+If instead no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/GFSAM-architecture.jpg}
-\caption{Architecture of \acs{GFSAM}, from \textcite{gfsam}. }
+\caption{Architecture of \acs{GFSAM}, from \textcite{gfsam}.
+Features of the one-shot support and query images are first extracted with the pre-trained DINOv2 encoder, from which the Positive-Negative Alignment module computes object- and background-similarity maps.
+These maps give rise to foreground point prompts for \acs{SAM}, which generates one mask per point.
+ A graph of the points' coverage within each of these masks then removes weakly connected, false-positive points via Positive and Overshooting Gating, whereafter the masks of the surviving points are merged into the final segmentation mask.}
 \label{fig:GFSAM_architecture}
 \end{figure}
 
