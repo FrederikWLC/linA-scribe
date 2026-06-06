@@ -249,13 +249,12 @@ It was hence deemed reasonable to assume that it would not contribute to the per
 \subsubsection{GFSAM} \label{subsubsec:GFSAM}
 The other kind of training-free \acs{ICL} adaptation of \acs{SAM} tested was the one-shot \acs{GFSAM} \parencite[see][]{gfsam}.
 As seen in \cref{fig:GFSAM_architecture}, it works by first extracting the features of the given support image and the query image by using the pre-trained image encoder DINOv2 \parencite{dinov2}.
-As an adaptation to the data domain, the selection of this support image for \acs{GFSAM} was done in the same way as for \acs{FATESAM}, by ranking the feature similarity of the support images to the input image via Manhattan distance on the extracted features, and selecting the most similar one as one-shot support.
 
 With its Positive-Negative Alignment module, \acs{GFSAM} then computes two similarity maps between query and support features: one for positive/object similarity, and one for negative/background similarity.
 These maps are used to generate foreground point prompts for \acs{SAM}, which are then fed to the mask decoder that generates one mask per point prompt.
 A graph is then constructed of the coverage of the points lying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
 The purpose of those gating processes is to filter out false-positive masks, where the former process makes sure a given point is actually foreground according to the similarity maps, and the latter ensures that the point is not a boundary-near outlier.
-Finally, the masks associated with the remaining points are merged together to generate the final segmentation mask.
+Finally, the masks associated with the remaining points are merged together to generate the final mask.
 If instead no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
 \begin{figure}[htp]
 \centering
@@ -267,20 +266,23 @@ These maps give rise to foreground point prompts for \acs{SAM}, which generates 
 \label{fig:GFSAM_architecture}
 \end{figure}
 
+The implementation of \acs{GFSAM} in the evaluation was based on the official repository \parencite{GFSAMRepository} with its DINOv2 feature encoder using the ViT-L/14 checkpoint, and \acs{SAM} using the ViT-H checkpoint.
+As an adaptation to the data domain, the one-shot support image was selected in the same way as for \acs{FATESAM}: the support images were ranked by the Manhattan distance of their DINOv2 features to those of the query image, and the most similar one was selected as support.
+
 \subsubsection{Threshold-inferred automatic point prompts}
 \label{subsubsec:automatic_prompts}
 Another way to adapt \acs{SAM} to the specific characteristics of the domain was through the use of automatic prompts.
 As it is particularly difficult to automatically create meaningful box prompts without a trained object detection model, only point prompts were used for this adaptation.
 
-\noindent Inspired by \acf{POI} placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} (see \cref{fig:autoprompt_SAM} for a visual example) were derived from the output mask of the classical Gaussian adaptive thresholding baseline (see \cref{subsubsec:gaussian_baseline}),
-This was done by randomly sampling a number of foreground and background pixels from the classical output mask as prompts for \acs{SAM+pts}.
-Concretely, the foreground cloud of prompts were sampled from the foreground of the mask by $n_{fgd}$ points, while the background cloud of prompts were sampled from the erosion of the inverse of the mask by $n_{bgd}$ points.
-This gave in total 7 hyperparameters (see \cref{fig:hyperparameters_SAM}) for \acs{SAM+pts}.
+\noindent Inspired by \acf{POI} placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} were derived from the output mask of the Gaussian thresholding baseline (see \cref{subsubsec:gaussian_baseline}).
+This was done by randomly sampling a number of foreground and background pixels from the classical output mask as prompts for \acs{SAM}.
+Concretely, $n_{fgd}$ foreground points and $n_{bgd}$ background points were sampled from the foreground and the eroded background of the mask, respectively (see \cref{fig:autoprompt_SAM} for a visual example).
+Without the hyperparameters of \acs{Gaussian}, this method thus introduces three hyperparameters: $n_{fgd}$, $n_{bgd}$, and the erosion kernel size $d$.
 
 \begin{figure}[htp]
 \centering
     \fbox{\includegraphics[width=0.4\linewidth]{../src/data/results/autoprompt_displays/\exampleTabletName-SAM+pts-no-filter.jpg}}
-\caption{A visual example of prompt distribution for \acf{SAM+pts}, overlayed on \displayexampleTabletName.
+\caption{A visual example of prompt distribution for the \acs{POI} prompt strategy, overlaid on \displayexampleTabletName.
 Green points represent foreground point prompts, while red points represent background point prompts.}
 \label{fig:autoprompt_SAM}
 \end{figure}
