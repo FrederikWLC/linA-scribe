@@ -117,7 +117,7 @@ $$
 
 \noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
 
-Thus, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
+Hence, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
 \subsection{State-of-the-art}
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite{sam}.
@@ -147,7 +147,7 @@ Seen in \cref{fig:ViT_architecture}, these embedded patches are then passed thro
 \centering
     \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
 \caption{Architecture of \acs{SAM}, from \textcite{mobile_sam}.
-An input image is processed by a \acs{ViT}-based image encoder to produce an image embedding, which is then fed to a comparatively lightweight prompt-guided mask decoder along with embedded prompts to generate the final segmentation mask.}
+An input image is processed by a \acs{ViT}-based image encoder to produce an image embedding, which is then fed to a comparatively lightweight (also transformer-based) prompt-guided mask decoder along with embedded prompts to generate the final segmentation mask.}
 \label{fig:SAM_architecture}
 \end{figure}
 
@@ -155,7 +155,7 @@ An input image is processed by a \acs{ViT}-based image encoder to produce an ima
 \centering
     \includegraphics[width=\linewidth]{images/ViT-architecture.jpg}
 \caption{Architecture of the \acs{ViT}, from \textcite{imageworth16x16words}.
-An image is treated as a sequence of fixed-size patches, each embedded into a vector representation augmented with a positional encoding.
+An image is treated as a sequence of flattened fixed-size patches, each embedded into a vector representation augmented with a positional encoding.
 These embeddings are then passed through a repeated layered series of normalization, learned feed-forward \acfp{MLP}, and learned self-attention.}
 \label{fig:ViT_architecture}
 \end{figure}
@@ -177,7 +177,8 @@ To keep track of spatial coordinates and prompts, the image embedding, and the o
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM-mask-decoder.jpg}
-\caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}.}
+\caption{Architecture of \acs{SAM}'s mask decoder, from \textcite{sam}.
+The image embedding, embedded prompts, and learnable output tokens interact through self-attention and two-way cross-attention, after which the image embedding is upsampled by convolution and the output tokens are processed by two types of \acsp{MLP}: one whose output is combined with the upsampled image embedding via a dot product to generate the segmentation masks, and another that outputs a predicted IoU score per mask.}
 \label{fig:SAM_mask_decoder}
 \end{figure}
 
@@ -186,14 +187,23 @@ The output tokens are then processed in parallel by two types of \acsp{MLP}:
 one that generates the final segmentation masks by taking a dot product between each token and the upscaled image embedding,
 and another that outputs a predicted IoU score for each mask.
 
-As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, since it is the biggest and best performing one.
-And as per definition, the Mobile\acs{SAM} implementation used the lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively) - which is why it is computationally faster than the original.  
+For the implementation of \acs{SAM} in the evaluation, the ViT-H checkpoint was used, as it is the largest and best-performing of the available variants.
+Mobile\acs{SAM}, by definition, instead relied on the lighter \acs{ViT} variant TinyViT \parencite{TinyViT}, whose 5M parameters are far fewer than those of the \acs{SAM} encoders (ViT-H, ViT-L, and ViT-B, with 632M, 307M, and 86M parameters, respectively).
+It is this reduction in encoder size that makes Mobile\acs{SAM} computationally faster than the original.
 
 \subsubsection{SAM2}
 
-With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} - a hierarchical \acs{ViT}, which is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process, lowering attention complexity (see \cref{fig:Hiera_architecture}). 
-Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames, making masks between frames consistent enough to segment videos.
-It does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image encoded embeddings before being passed to the mask decoder (see \cref{fig:SAM2_architecture}).
+With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} - a hierarchical \acs{ViT}, which by lowering attention complexity is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process. 
+Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames to make masks between frames consistent enough to segment videos.
+As seen in \cref{fig:SAM2_architecture}, it does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image encoded embeddings before being passed to the mask decoder.
+\begin{figure}[htp]
+\centering
+    \includegraphics[width=\linewidth]{images/SAM2-architecture.jpg}
+\caption{Architecture of \acs{SAM}2, from \textcite{sam2}.
+A learned memory attention mechanism was added, allowing the model to segment videos.
+For each frame, the output mask is encoded by a learned memory encoder and stored in a memory bank, whose contents are attended to by the image encoded embeddings before being passed to the mask decoder.}
+\label{fig:SAM2_architecture}
+\end{figure}
 
 The mask decoder did not change much from the original, except for the passing of early visual features (stride 4 and stride 8) from the Hiera image encoder to the convolutional upsampling process of the mask decoder, improving the integrity of the output with the injection of high quality spatial context (see \cref{fig:SAM2_mask_decoder}).
 However, also added were output markers for video tracking.
@@ -201,28 +211,15 @@ More specifically, occlusion scores were implemented to determine whether an obj
 And object pointers were added as lightweight vectors each keeping track of the semantic information of each object of interest.
 And these object pointers are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
 
-As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
-\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
-
- \begin{figure}[htp]
-\centering
-    \includegraphics[width=\linewidth]{images/Hiera-architecture.jpg}
-\caption{Architecture of Hiera, adapted from \textcite{hiera}.}
-\label{fig:Hiera_architecture}
-\end{figure}
-
-\begin{figure}[htp]
-\centering
-    \includegraphics[width=\linewidth]{images/SAM2-architecture.jpg}
-\caption{Architecture of \acs{SAM}2, from \textcite{sam2}. }
-\label{fig:SAM2_architecture}
-\end{figure}
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM2-mask-decoder.jpg}
 \caption{Architecture of \acs{SAM}2's mask decoder, from \textcite{sam2}. }
 \label{fig:SAM2_mask_decoder}
 \end{figure}
+
+As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
+\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
 
 \subsubsection{FATESAM} \label{subsubsec:FATESAM}
 Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
