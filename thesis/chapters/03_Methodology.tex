@@ -205,28 +205,22 @@ For each frame, the output mask is encoded by a learned memory encoder and store
 \label{fig:SAM2_architecture}
 \end{figure}
 
-The mask decoder did not change much from the original, except for the passing of early visual features (stride 4 and stride 8) from the Hiera image encoder to the convolutional upsampling process of the mask decoder, improving the integrity of the output with the injection of high quality spatial context (see \cref{fig:SAM2_mask_decoder}).
+The mask decoder did not change much from the original (\cref{fig:SAM_mask_decoder}), except for the passing of early visual features from the Hiera image encoder to the convolutional upsampling process of the mask decoder, improving the integrity of the output with the injection of high quality spatial context.
 However, also added were output markers for video tracking.
-More specifically, occlusion scores were implemented to determine whether an object of interest is out of frame or not.
 And object pointers were added as lightweight vectors each keeping track of the semantic information of each object of interest.
-And these object pointers are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
-
-\begin{figure}[htp]
-\centering
-    \includegraphics[width=\linewidth]{images/SAM2-mask-decoder.jpg}
-\caption{Architecture of \acs{SAM}2's mask decoder, from \textcite{sam2}. }
-\label{fig:SAM2_mask_decoder}
-\end{figure}
+These object pointers are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
 
 As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
 \acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
+Since the tablets were segmented as individual still images, \acs{SAM}2's image predictor was used rather than the video predictor.
+The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in the next section.
 
 \subsubsection{FATESAM} \label{subsubsec:FATESAM}
 Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
-It works in principle by making use of \acs{SAM}2's memory attention mechanism, by passing the few-shot support images to its memory encoder (see \cref{fig:FATESAM_architecture}), such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
+As seen in \cref{fig:FATESAM_architecture}, it works in principle by making use of \acs{SAM}2's architecture and memory attention mechanism, by passing a few support images to its memory encoder, such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
 
 These support images are chosen by a ranking of feature similarity to the input to make sure they are as representative as possible.
-This ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images, extracted from the Hiera image encoder of \acs{SAM}2.
+And this ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images.
 
 \begin{figure}[htp]
 \centering
@@ -235,7 +229,7 @@ This ranking is computed ascendingly from the Manhattan distances between the im
 \label{fig:FATESAM_architecture}
 \end{figure}
 
-The implementation of \acs{FATESAM} in the evaluation was based on the official repository \parencite{fatesam_repo}, and the checkpoint used was \texttt{sam2\_hiera\_large}, as it was the best performing one comptatible with the repository.
+The implementation of \acs{FATESAM} in the evaluation was based on the official repository \parencite{fatesam_repo}, and the checkpoint used was \texttt{sam2\_hiera\_large}, as it was the best performing one used by the repository.
 Three support images were injected per query image, as this was the number of support images that was the number found to be most optimal in the paper \parencite{fatesam}.
 To adapt \acs{FATESAM} to single frame images, the object pointer functionality was turned off through Hydra/YAML overrides, which was necessary to avoid shape mismatches.
 In particular, the object-pointer encoder and object-score prediction heads were disabled by setting
@@ -243,7 +237,8 @@ In particular, the object-pointer encoder and object-score prediction heads were
 \texttt{pred\_obj\_scores},
 \texttt{pred\_obj\_scores\_mlp}, and 
 \texttt{fixed\_no\_obj\_ptr} all to false.
-In an ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
+Attempts were made to contact the authors of \acs{FATESAM} about the correctness of this adaptation, but no response was received.
+Interestingly, in the ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
 It was therefore deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
 
 \subsubsection{GFSAM} \label{subsubsec:GFSAM}
