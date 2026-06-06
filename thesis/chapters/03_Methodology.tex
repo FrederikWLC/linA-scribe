@@ -195,13 +195,13 @@ It is this reduction in encoder size that makes Mobile\acs{SAM} computationally 
 
 With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} - a hierarchical \acs{ViT}, which by lowering attention complexity is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process. 
 Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames to make masks between frames consistent enough to segment videos.
-As seen in \cref{fig:SAM2_architecture}, it does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image encoded embeddings before being passed to the mask decoder.
+As seen in \cref{fig:SAM2_architecture}, it does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image-encoded embeddings before being passed to the mask decoder.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM2-architecture.jpg}
 \caption{Architecture of \acs{SAM}2, from \textcite{sam2}.
 A learned memory attention mechanism was added, allowing the model to segment videos.
-For each frame, the output mask is encoded by a learned memory encoder and stored in a memory bank, whose contents are attended to by the image encoded embeddings before being passed to the mask decoder.}
+For each frame, the output mask is encoded by a learned memory encoder and stored in a memory bank, whose contents are attended to by the image-encoded embeddings before being passed to the mask decoder.}
 \label{fig:SAM2_architecture}
 \end{figure}
 
@@ -216,26 +216,27 @@ Since the tablets were segmented as individual still images, \acs{SAM}2's image 
 The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in the next section.
 
 \subsubsection{FATESAM} \label{subsubsec:FATESAM}
-Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fined-tuned versions of \acs{SAM}.
-As seen in \cref{fig:FATESAM_architecture}, it works in principle by making use of \acs{SAM}2's architecture and memory attention mechanism, by passing a few support images to its memory encoder, such that the mask decoder ends up with context to generate similar segmentation masks for the input query image.
+Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fine-tuned versions of \acs{SAM}.
+As seen in \cref{fig:FATESAM_architecture}, it works in principle by making use of \acs{SAM}2's architecture and memory attention mechanism, by passing a few support images to its memory encoder, such that the mask decoder ends up with context to generate a similar segmentation mask for the input query image.
 
-These support images $x_s^{i}$ are chosen by a ranking of feature similarity to the input $x^i$ to make sure that the support masks $y_s^{i}$ are as representative as possible.
-This ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images.
+At inference of the 2D-adaptation made, support masks $y_s^{j}$ (rather than support mask volumes $y_s^{ij}$ with index slice $i$) are chosen by the similarity of their corresponding image-encoded support images $\mathcal{E}(x_s^{j})$ to the image-encoded query image $\mathcal{E}(x)$ to make sure that they are as representative as possible.
+Like the original, this ranking is computed ascendingly from the Manhattan distances between the image-encoded features of the input and the support images.
+As memory encoded embeddings $\mathcal{ME}(y_s^{j})$, these support masks are then passed to memory attention $\mathcal{MA}$ together with the image-encoded query image $\mathcal{E}(x)$, whereafter the output is passed on to the mask decoder $\mathcal{D}$ to generate the final mask ${y}$.
 
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/FATESAM-architecture.jpg}
 \caption{Architecture of \acs{FATESAM}, from \textcite{fatesam}.
-At inference of the 2D-adaptation, support masks $y_s^{i}$ are chosen by the similarity of their corresponding image-encoded support images $\mathcal{E}(x_s^{i})$ to the image-encoded query image, $\mathcal{E}(x^i)$ and passed to memory attention $\mathcal{MA}$ as memory encoded embeddings $\mathcal{ME}(y_s^{i})$.
-However, unlike the original 3D setting, no adjacent
-prediction $\mathcal{ME}(y^{i-1})$ is relevant, since the Linear A images are
-treated as independent two-dimensional inputs.}
+At inference of the 2D-adaptation, support masks $y_s^{j}$ are first chosen (a) by the similarity of their corresponding image-encoded support images $\mathcal{E}(x_s^{j})$ to the image-encoded query image $\mathcal{E}(x)$ and then passed (b,c) to memory attention $\mathcal{MA}$ as memory encoded embeddings $\mathcal{ME}(y_s^{j})$.
+Unlike the original's 3D inference, no adjacent
+predictions $\mathcal{ME}(y^{i-1})$ are relevant, since a Linear A image is
+treated as an independent 2D input frame $x$.}
 \label{fig:FATESAM_architecture}
 \end{figure}
 
-The implementation of \acs{FATESAM} in the evaluation was based on the official repository \parencite{fatesam_repo}, and the checkpoint used was \texttt{sam2\_hiera\_large}, as it was the best performing one used by the repository.
-Three support images were injected per query image, as this was the number of support images that was the number found to be most optimal in the paper \parencite{fatesam}.
-To adapt \acs{FATESAM} to single frame images, the object pointer functionality was turned off through Hydra/YAML overrides, which was necessary to avoid shape mismatches.
+The adaptation of \acs{FATESAM} in the evaluation was based on the official repository \parencite{fatesam_repo}, and the checkpoint used was \texttt{sam2\_hiera\_large}, as it was the best performing one used by the repository.
+Three support images were injected per query image, as this was the number of support units that was found to be most optimal in the paper \parencite{fatesam}.
+To further adapt \acs{FATESAM} to single frame images, the object pointer functionality was turned off through Hydra/YAML overrides, which was necessary to avoid shape mismatches.
 In particular, the object-pointer encoder and object-score prediction heads were disabled by setting
 \texttt{use\_obj\_ptrs\_in\_encoder},
 \texttt{pred\_obj\_scores},
@@ -243,25 +244,25 @@ In particular, the object-pointer encoder and object-score prediction heads were
 \texttt{fixed\_no\_obj\_ptr} all to false.
 Attempts were made to contact the authors of \acs{FATESAM} about the correctness of this adaptation, but no response was received.
 Interestingly, in the ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
-It was therefore deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
+It was hence deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
 
 \subsubsection{GFSAM} \label{subsubsec:GFSAM}
 The other kind of training-free \acs{ICL} adaptation of \acs{SAM} tested was the one-shot \acs{GFSAM} \parencite[see][]{gfsam}.
-It works by first extracting the features of the given support image with DINOv2 \parencite{dinov2}, (see \cref{fig:GFSAM_architecture}).
-With its Positive-Negative Alignment module, it then computes two similarity maps between query and support features, one for positive/object similarity, and one for negative/background similarity.
-These maps are then used to generate foreground point prompts for \acs{SAM}, which are then fed to the mask decoder that generates one mask per point prompt.
+As seen in \cref{fig:GFSAM_architecture}, it works by first extracting the features of the given support image $x^r$ and the query image $x^t$ by using the pre-trained image encoder DINOv2 \parencite{dinov2}.
+As an adaptation to the data domain, the selection of this support image for \acs{GFSAM} was done in the same way as for \acs{FATESAM}, by ranking the feature similarity of the support images to the input image via Manhattan distance on the extracted features, and selecting the most similar one as one-shot support.
+
+With its Positive-Negative Alignment module, \acs{GFSAM} then computes two similarity maps between query and support features: one for positive/object similarity, and one for negative/background similarity.
+These maps are used to generate foreground point prompts for \acs{SAM}, which are then fed to the mask decoder that generates one mask per point prompt.
 A graph is then constructed of the coverage of the points laying within each of the generated masks, whereafter the removal of some of the points representing weakly connected components is determined through processes referred to as Positive Gating and Overshooting Gating.
 The purpose of those gating processes is to filter out false-positive masks, where the former process makes sure a given point is actually foreground according to the similarity maps, and the latter ensures that the point is not a boundary-near outlier.
 At the very last, the masks associated with the remaining points are merged together to generate the final segmentation mask.
-And if no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
+However, if no points remain after the gating processes, the mask with the highest predicted IoU score is selected as the final mask.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/GFSAM-architecture.jpg}
 \caption{Architecture of \acs{GFSAM}, from \textcite{gfsam}. }
 \label{fig:GFSAM_architecture}
 \end{figure}
-
-As an adaptation to the data, the selection of support images for \acs{GFSAM} was done in the same way as for \acs{FATESAM}, by ranking the feature similarity of the support images to the input image via Manhattan distance on the extracted features from DINOv2, and selecting the most similar one as one-shot support.
 
 \subsubsection{Threshold-inferred automatic point prompts}
 \label{subsubsec:automatic_prompts}
