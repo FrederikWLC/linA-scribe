@@ -1,21 +1,21 @@
 %!TEX root = ../Thesis.tex
 \chapter{Methodology}
-This chapter describes in detail the operationalization of answering the question of whether a \acs{SAM}-based segmentation tool can accelerate the annotation workflow of Linear A documents (see \cref{research_questions} for an overview of the individual \acsp{RQ}).
+This chapter describes in detail the operationalization done to answer the question of whether a \acs{SAM}-based segmentation tool can accelerate the annotation workflow of Linear A documents (see \cref{research_questions} for an overview of the individual \acsp{RQ}).
 Overall, this operationalization was achieved through a comprehensive evaluation of segmentation quality (see \cref{Segmentation quality}), and a case study involving Dr. Ester Salgarella measuring the interaction efficiency (see \cref{Interaction efficiency}) and workflow efficiency (see \cref{Workflow efficiency}) of a self-developed \acs{SAM}-based segmentation tool.
 In that way, these three abstract virtues were decomposed into independent measurable metrics, making it possible to concretely answer the research questions, and where the potential benefits and drawbacks of \acs{SAM} lie.
 \subsection{Development environment and tools}
 
-All software written for this thesis was made publicly available on GitHub \parencite{source_code}.
+All software written and data collected for this thesis was made publicly available on GitHub \parencite{source_code}.
 Python 3.13 was used for all code development except frontend.
 The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} and \acs{SAM} implementation libraries needed.
-Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, and set up the development environment.
+Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, when seeting up the development environment.
 The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
 
 \section{Non-interactive segmentation} \label{Segmentation quality}
 To answer the question of \hyperref[rq1]{\acs{RQ}1}: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
-All models were tuned by hyperparameter optimization to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
+All models were tuned through hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}) to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
-The following subsections therefore give an explanation of the segmentation problem itself and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
+The following subsections give an explanation of the segmentation problem itself, and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
 
 \subsection{The problem in mathematical terms}
 
@@ -30,12 +30,12 @@ $$ B(x,y) = \begin{cases}
 \noindent In a threshold-based approach for example, the predicate function can be expressed as $f(I,x,y) = I(x,y) > T$, where $T$ is the threshold value that determines the cutoff between foreground and background pixels \parencite[p.~743]{DigitalImageProcessing}.
 The predicate function does not, however, have to depend only on the individual pixel value being classified.
 It can for example also be defined based on an attribute computed from the global image context (see global thresholding with Otsu in \cref{subsubsec:otsu_baseline}).
-Or it can be determined from the local context of the pixel neighborhood (see local adaptive thresholding in \cref{subsubsec:gaussian_baseline}), which can be expressed by kernel convolution working on neighborhood intensities of a window $w \in \mathbb{R}^{m \times n}$ around each pixel \parencite[p.~157,159]{DigitalImageProcessing} (here $a=(m-1)/2$ and $b=(n-1)/2$ are the vertical and horizontal half-widths of $w$, respectively, assuming odd dimensions):
+Or it can be determined from the local context of each pixel's neighborhood (see local adaptive thresholding in \cref{subsubsec:gaussian_baseline}), which can be expressed by kernel convolution working on neighborhood intensities of a window $w \in \mathbb{R}^{m \times n}$ around each pixel \parencite[p.~157,159]{DigitalImageProcessing} (where $a=(m-1)/2$ and $b=(n-1)/2$ are the vertical and horizontal half-widths of $w$, respectively, assuming odd dimensions):
 
 $$ (w * I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 
-\noindent Even the entire image can be given as context with external pointers, as in the case of \acs{SAM}, where the predicate function can be understood as a learned, non-linear black-box function that takes both image and prompts to produce the binary output mask.
-Thus, the segmentation problem could evidently be approached by many different methods, each with their own contextual arguments and inner workings $f$.
+\noindent Even the entire image can be given as context combined with external context, as in the case of \acs{SAM} (see \cref{subsubsec:SAM_architecture}), where the inner workings of its transformer-based structure - traditionally used in \acs{NLP} and \acfp{LLM} - can be understood as a learned, non-linear black-box function that takes both image and prompts to produce the binary output mask.
+Thus, the segmentation problem can evidently be approached by many different methods, each with their own contextual arguments and inner workings $f$.
 And of those evaluated, it was just a matter of choosing the best one (for the evaluation details used to do that, see \cref{subsec:evaluation}).
 
 \subsection{Baseline model configuration}
@@ -48,19 +48,19 @@ The classical baseline models against which \acs{SAM} was evaluated (from simple
 Together, they cover a range of classic segmentation techniques that might be used for binary foreground extraction.
 Besides a description of the pre-filtering method used for all of them, what follows is a brief description of each of these methods, including their characteristics, how they work, and their implementation details.
 
-\subsubsection{Bilateral pre-filtering}
+\subsubsection{Bilateral pre-filtering} \label{subsubsec:bilateral_pre_filtering}
 As a pre-filtering step for all the classical models, a bilateral filter \parencite[see][]{TomasiManduchi1998} was applied to the input image before feeding it to the classical methods.
-In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at blurring out noise while preserving edges thanks to its combined distance and intensity-dependent weighting.
-Discretely \parencite[see][]{Pan2025InnovativeBilateral}, its output value $I_{\mathrm{bf}}(p)$ at a given two-dimensional pixel position $p$ (where $q$ is the two-dimensional position of one of its neighbors within the kernel window with size $d$) can be defined as follows:
+In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at blurring out noise while preserving edges, thanks to its combined distance and intensity-dependent weighting.
+Discretely \parencite[see][]{Pan2025InnovativeBilateral}, its output value $I_{\mathrm{bf}}(p)$ at a given two-dimensional pixel position $p$ (where $q$ is one of its neighbors within the kernel window with size $d$) can be defined as follows:
 $$I_{\mathrm{bf}}(p)=
 \frac{\sum_q I(q)\,W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}
 {\sum_q W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}$$
 
-\noindent Here, the spatial weight based on the distance between pixels $p$ and $q$, and the color range weight based on the intensity difference between $p$ and $q$ are respectively given by:
+\noindent Here, the spatial weight $W_{\mathrm{space}}(p,q)$ based on the distance between pixels $p$ and $q$, and the color range weight $W_{\mathrm{color}}(p,q)$  based on the intensity difference between $p$ and $q$ are respectively given by:
 $$W_{\mathrm{space}}(p,q)=\exp(-\frac{\|p-q\|^2}{2\sigma_{\mathrm{space}}^2})$$
 $$W_{\mathrm{color}}(p,q)=\exp(-\frac{\|I(p)-I(q)\|^2}{2\sigma_{\mathrm{color}}^2})$$
 
-\noindent It thus takes three hyperparameters: the kernel window diameter $d$, the spatial standard deviation $\sigma_{\mathrm{space}}$, and the intensity standard deviation $\sigma_{\mathrm{color}}$.
+\noindent The method thus takes three hyperparameters: the kernel window diameter $d$, the spatial standard deviation $\sigma_{\mathrm{space}}$, and the intensity standard deviation $\sigma_{\mathrm{color}}$.
 However, inspired by \parencite{OpenCVBilateralFilter}, it was decided to use the same $\sigma$ value for both spatial and color weights for the implementation, as this simplified the hyperparameter tuning (see \cref{subsubsec:hyperparameter_optimization}) without significantly compromising the filter's performance.
 
 \subsubsection{Global thresholding (Otsu's method)}
@@ -72,14 +72,14 @@ It is therefore expected to perform poorly on images with erosion, uneven lighti
 
 Here is how it works:
 First, let pixels of the raw image be divided into $L$ shades of gray $[1,2,...,L]$.
-Then, let each pixel be assigned one of two classes $C_0$ or $C_1$, guided by a threshold $T$,
+Then, let each pixel be assigned one of two classes $C_0$ and $C_1$, guided by a threshold $T$,
  where $C_0$ contains the shades $[1,2,...,T]$, and $C_1$ contains the rest $[T+1,T+2,...,L]$.
 Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $T^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
 $$ T^{*} = \underset{1 \leq T < L}{\arg \max} ~ \sigma^2_B(T) $$
 The between-class variance $\sigma^2_B$ is then defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
  $$ \sigma^2_B(T) = \omega_0(T) \omega_1(T) [\mu_1(T)-\mu_0(T)]^2$$
 
-
+\noindent Without the bilateral pre-filter, this method has no hyperparameters.
 \subsubsection{Local adaptive thresholding (Gaussian)}
 \label{subsubsec:gaussian_baseline}
 Local adaptive thresholding works by computing a threshold for each pixel based on its local neighborhood.
@@ -92,14 +92,14 @@ $$ B(x,y) = \begin{cases}
     0 & \text{otherwise} \end{cases} $$
 
 To compute $T(x,y)$, there are a few weighting functions to choose from.
-For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels by assigning weights based on distance from the kernel center.
-With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as \parencite{opencv_adaptive_threshold}:
+For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels on the computed threshold by assigning weights based on distance from the kernel center.
+With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as \parencite[see][p.~761]{opencv_adaptive_threshold}:
 $$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
 
-In general, the weight at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel) \parencite[p.~167]{DigitalImageProcessing}:
+In general, the weight in the Gaussian kernel at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel) \parencite[p.~167]{DigitalImageProcessing}:
 $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) $$
 
-This gave in total 4 hyperparameters for this baseline (see \cref{fig:hyperparameters_gaussian} for a list of these):
+\noindent Thus, without the bilateral pre-filter, this method has two hyperparameters: the kernel size $d$, and the constant $C$.
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
 Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
@@ -109,62 +109,70 @@ $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}
 Next, \textit{non-maxima suppression} \parencite[p.~730-731]{DigitalImageProcessing} is applied to retain only local maxima of $M_s(x,y)$ along the gradient direction $\theta_s(x,y)$, resulting in thinner edges.
 This is then followed by \textit{hysteresis thresholding} \parencite[p.~732]{DigitalImageProcessing}, classifying pixels as strong, weak, or non-edges with a low threshold $T_l$ and a high threshold $T_h$, only preserving weak edges if connected to strong edges.
 
-Inspired by \parencite{autocanny}, for the implementation, these thresholds were automatically determined by setting
+Inspired by \parencite{autocanny}, for the implementation, these thresholds were automatically determined by introducing a hyperparameter $\sigma$ that controls the sensitivity of the edge detection (where $v$ is the median of the grayscale values of the given image):
 $$
 T_l = \max\bigl(0, (1 - \sigma)\, v\bigr), \quad
 T_h = \min\bigl(255, (1 + \sigma)\, v\bigr)
 $$
-turning $\sigma$ into a hyperparameter that together with the grayscale median of the given image $v$ controlled the sensitivity of the edge detection.
 
-In an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
-This gave in total 2 hyperparameters (see \cref{fig:hyperparameters_CannyFill} for a list of these).
+\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
 
+Thus, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
 \subsection{State-of-the-art}
 To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite{sam}.
 Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its different use cases require different trade-offs in terms of accuracy, speed, and domain adaptation, there are many different variants of \acs{SAM}.
+For the sake of fairness, it seemed only reasonable to test out the following range of them:\footnote{Due to access restrictions of the checkpoints (weight files) necessary for running the newly released \acs{SAM}3 \parencite{sam3}, it was not included in the evaluation.}
+\begin{itemize}
+    \item The original \acs{SAM} \parencite[see][]{sam}, and its computationally efficient variant Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}
+    \item The newer \acs{SAM}2 \parencite[see][]{sam2}
+    \item The few-shot variant \acs{FATESAM} \parencite[see][]{fatesam} and one-shot variant \acs{GFSAM} \parencite[see][]{gfsam}
+\end{itemize}
 
-For the sake of fairness, it seemed only reasonable to test out a range of them, including of course the original, the computationally efficient Mobile\acs{SAM} \parencite[see][]{mobile_sam_v2}, and the newer \acs{SAM}2 \parencite[see][]{sam2}.
-\footnote{Due to access restrictions, the checkpoints (weight files) necessary for running the newly released \acs{SAM}3 \parencite{sam3}, it was not included in the evaluation.}
-Additionally, a small ablation study was conducted on these base models to investigate whether these benefitted from the use of bilateral pre-filtering (see \cref{fig:bilateral_filtering}) of the input image, and or automatic threshold-derived point prompts (see \cref{subsubsec:automatic_prompts}).
-Furthermore, due to their potential of being better at accommodating to niche domains, \acf{ICL} implementations of \acs{SAM} - like \acf{FATESAM}, and \acf{GFSAM} - were also included in the evaluation.
+\noindent Together, these variants span the axes of relevance, recency and \acs{ICL} capabilities that should make for a fair test.
+
+Furthermore, for additional fairness, a small ablation study was conducted on the base models (\acs{SAM}, Mobile\acs{SAM}, \acs{SAM}2) to investigate whether these variants benefitted from the use of bilateral pre-filtering (see \cref{subsubsec:bilateral_pre_filtering}), and automatic threshold-derived point prompts (see \cref{subsubsec:automatic_prompts}).
 
 To be able to run all these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} - a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
-
 The following subsections describe the architecture of the chosen variants, and how they were implemented in the evaluation.
 
 \subsubsection{SAM architecture}
 \label{subsubsec:SAM_architecture}
-For the original \acs{SAM} and Mobile\acs{SAM}, the model architecture consists of an image encoder, and a comparatively lightweight prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
-The image encoder used is a \acf{ViT} whose purpose is similar to that of a \acf{CNN}, processing an input image to extract its features.
-But instead of convolutional layers, a \acs{ViT} is a transformer-based encoder traditionally used in \acf{NLP} and \acfp{LLM}.
-As an alternative to words, it treats an image as a sequence of fixed size patches (regions of the image) embedded into vector representations with positional encodings, similar to how tokens work in \acs{NLP} (see \cref{fig:ViT_architecture}).
-These embedded patches are then processed through a repeated series of normalization, feed-forward \acfp{MLP}, and in-between those, a mechanism known as self-attention that weighs the patches according to their relevance to eachother.
+Used by \acs{SAM} and Mobile\acs{SAM}, the first \acs{SAM} model architecture released \parencite{sam} consists of an image encoder, and a comparatively lightweight prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
+This image encoder takes the form of a \acf{ViT}, that similarly to a \acf{CNN} processes an input image in order to extract its features \parencite{imageworth16x16words}.
+Instead of relying on just convolutional layers, however, a \acs{ViT} adapts the transformer architecture originally developed for \acs{NLP} to the image domain.
+Rather than words, an image is treated as a sequence of fixed-size patches (regions of the image), each of which is embedded into a vector representation and augmented with a positional encoding, analogous to how tokens are handled in \acs{NLP}.
+Seen in \cref{fig:ViT_architecture}, these embedded patches are then passed through a repeated layered series of normalization, learned feed-forward \acfp{MLP}, and, in between, a learned mechanism known as self-attention that weighs the embeddings according to their relevance to one another.
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/SAM-architecture.jpg}
-\caption{Architecture of \acs{SAM}, from \textcite{mobile_sam}. }
+\caption{Architecture of \acs{SAM}, from \textcite{mobile_sam}.
+An input image is processed by a \acs{ViT}-based image encoder to produce an image embedding, which is then fed to a comparatively lightweight prompt-guided mask decoder along with embedded prompts to generate the final segmentation mask.}
 \label{fig:SAM_architecture}
 \end{figure}
 
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{images/ViT-architecture.jpg}
-\caption{Architecture of the \acs{ViT}, from \textcite{imageworth16x16words}. }
+\caption{Architecture of the \acs{ViT}, from \textcite{imageworth16x16words}.
+An image is treated as a sequence of fixed-size patches, each embedded into a vector representation augmented with a positional encoding.
+These embeddings are then passed through a repeated layered series of normalization, learned feed-forward \acfp{MLP}, and learned self-attention.}
 \label{fig:ViT_architecture}
 \end{figure}
 
-More specifically \parencite[see][]{vaswani2023attentionneed}, given the input embedding $X$, self-attention computes the projections; quieries: $Q$, keys: $K$, and values: $V$, as products of $X$ with respective learned matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
-$$ Attention(Q,K,V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
-Here, the $\mathrm{softmax}$ function normalizes the output to a probability distribution (putting each element on the interval $]0, 1[$, with their sum being 1), which is then multiplied by $V$ (again turned into logits / non-normalized probabilities).
+More specifically \parencite[according to][]{vaswani2023attentionneed}, given an input embedding $X$, self-attention computes three projections; the queries $Q$, keys $K$, and values $V$, as products of $X$ with their respective learned matrices, and passes the information on as a new matrix (where $d_k$ is the dimension of $Q$ and $K$):
+$$ \mathrm{Attention}(Q,K,V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+Here, the $\mathrm{softmax}$ normalization function turns the scaled query--key similarities $\frac{QK^T}{\sqrt{d_k}}$ into a set of attention weights (each on the interval $]0, 1[$, in total summing to 1), which determine how the value vectors $V$ are combined into the input of the next layer.
 
-Thanks to this attention mechanism, after a number of these series-layers, the \acs{ViT} finally outputs an image embedding containing the spatial context of the image.\parencite[see][for how \acsp{ViT} work in general]{imageworth16x16words}
-It is this image embedding, combined with embedded prompts from the prompt encoder (referred to as prompt tokens) that are fed to the mask decoder to generate the final segmentation mask.
-However, before this happens, the prompt encoder takes any given sparse prompts (i.e. box or point prompts) as embeddings by summing their positional encodings with learned type-specifc embeddings (one foreground/background embedding per point prompt, and two opposite corner embeddings per box prompt).
+Finally, the \acs{ViT} outputs an image embedding that captures the spatial context of the image.
+It is this image embedding, combined with embedded prompts from the prompt encoder (referred to as prompt tokens), that is fed to the mask decoder in order to generate the final segmentation mask.
+Before this can happen, however, the prompt encoder must convert any given sparse prompts (i.e. box or point prompts) into embeddings, which is done by summing their positional encodings with learned type-specific embeddings (one foreground/background embedding per point prompt, and two opposite-corner embeddings per box prompt).
 
-These are then fed to the lightweight mask decoder (which is also transformer-based) along with the image-embedding from the \acs{ViT}, and 3 learnable output token embeddings (see \cref{fig:SAM_mask_decoder}).
-Self-attention is applied to the prompt and output tokens, and two-way cross-attention (same as self-attention but with one embedding as queries, and the other as keys and values, and vice-versa) is applied between the tokens and image embedding for them to influence and attend one another.
-To keep track of spatial coordinates and prompts, positional encodings and the original prompt embeddings are added as input at every attention layer.
+Seen in \cref{fig:SAM_mask_decoder}, these are then fed to the lightweight mask decoder (which is also transformer-based) along with the image-embedding from the \acs{ViT}, and three learnable output token embeddings (see \cref{fig:SAM_mask_decoder}).
+However, for a generation of single output masks, which is what was used in this thesis for all models except \acs{GFSAM}, the mask is generated from just a single output token \parencite[p. 17]{sam}, 
+
+Self-attention is then applied to the prompt and output tokens, and two-way cross-attention (same as self-attention but with one embedding as queries, and the other as keys and values, and vice-versa) is applied between the tokens and image embedding for them to influence and attend one another.
+To keep track of spatial coordinates and prompts, the image embedding, and the original prompt embeddings along with their positional encodings are added as input at every attention layer.
 
 \begin{figure}[htp]
 \centering
@@ -174,10 +182,9 @@ To keep track of spatial coordinates and prompts, positional encodings and the o
 \end{figure}
 
 At the end of this process, the image embedding is upsampled by convolution to the original image resolution.
-The three output tokens are then processed in parallel by two separate \acsp{MLP}:
-one that generates their final segmentation masks by a dot product with the output and the upscaled image embedding,
-and another one that outputs a predicted IoU score for each mask.
-For single output masks, the mask is generated from a fourth output token \parencite[p. 17]{sam}.
+The output tokens are then processed in parallel by two types of \acsp{MLP}:
+one that generates the final segmentation masks by taking a dot product between each token and the upscaled image embedding,
+and another that outputs a predicted IoU score for each mask.
 
 As for the implementation of \acs{SAM} in the evaluation, the checkpoint used was ViT-H, since it is the biggest and best performing one.
 And as per definition, the Mobile\acs{SAM} implementation used the lighter \acs{ViT} implementation TinyViT \parencite{TinyViT} with only 5M parameters compared to those of \acs{SAM} (ViT-H, ViT-L, ViT-B with 632M, 307M, and 86M, respectively) - which is why it is computationally faster than the original.  
