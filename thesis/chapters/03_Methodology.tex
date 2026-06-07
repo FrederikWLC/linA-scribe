@@ -120,7 +120,7 @@ $$
 Hence, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
 \subsection{State-of-the-art}
-To be compared against the classical baselines was the generalized deep learning \acf{SAM} \parencite{sam}.
+To be compared against the classical baselines was the foundational \acf{SAM} \parencite{sam} pre-trained on a huge dataset of natural images \acs{SA-1B}.
 Due to its popularity as a \acs{SOTA} segmentation model, and the fact that its different use cases require different trade-offs in terms of accuracy, speed, and domain adaptation, there are many different variants of \acs{SAM}.
 For the sake of fairness, it seemed only reasonable to test out the following range of them:\footnote{Due to access restrictions of the checkpoints (weight files) necessary for running the newly released \acs{SAM}3 \parencite{sam3}, it was not included in the evaluation.}
 \begin{itemize}
@@ -139,7 +139,7 @@ The following subsections describe the architecture of the chosen variants, and 
 \subsubsection{SAM architecture}
 \label{subsubsec:SAM_architecture}
 Used by \acs{SAM} and Mobile\acs{SAM}, the first \acs{SAM} model architecture released \parencite{sam} consists of an image encoder, and a comparatively lightweight prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
-This image encoder takes the form of a \acf{ViT}, that similarly to a \acf{CNN} \parencite{LeCun1998} processes an input image in order to extract its features \parencite{imageworth16x16words}. % NEW: LeCun1998 -- LeCun et al. (1998), Gradient-based learning applied to document recognition, Proc. IEEE 86(11)
+This image encoder takes the form of a \acf{ViT}, that similarly to a \acf{CNN} \parencite{LeCun1998} processes an input image in order to extract its features \parencite{imageworth16x16words}.
 Instead of relying on just convolutional layers, however, a \acs{ViT} adapts the transformer architecture originally developed for \acs{NLP} \parencite{vaswani2023attentionneed} to the image domain.
 Rather than words, an image is treated as a sequence of fixed-size patches (regions of the image), each of which is embedded into a vector representation and augmented with a positional encoding, analogous to how tokens are handled in \acs{NLP}.
 Seen in \cref{fig:ViT_architecture}, these embedded patches are then passed through a repeated layered series of normalization, learned feed-forward \acfp{MLP}, and, in between, a learned mechanism known as self-attention that weighs the embeddings according to their relevance to one another.
@@ -307,6 +307,7 @@ $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|
 \subsubsection{Hyperparameter optimization (\acs{TPE})}
 \label{subsubsec:hyperparameter_optimization}
 All models with hyperparameters were tuned to their best \acs{Dice} scores on the validation set (see \cref{sec:dataset}) in a series of 100 trials each using Optuna \parencite{optuna2019}, a hyperparameter optimization framework.
+This included only all classical models, as well as the \acs{SAM} variants with automatic prompts and bilateral pre-filtering.
 The optimization itself was performed using the \acf{TPE} algorithm \parencite{TPEHyperparameterOptimization2013,TPEHyperparameterOptimization2011},
 which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
 Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
@@ -324,7 +325,6 @@ The first assumption is already satisfied a priori, since the segmentation perfo
 However, the second assumption depends on the results.
 Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test \parencite{ShapiroWilk1965}. % NEW: ShapiroWilk1965 -- S. S. Shapiro & M. B. Wilk (1965), An analysis of variance test for normality, Biometrika 52(3-4)
 In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
-
 
 \section{Tool-side interaction} \label{Interaction efficiency}
 To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To what extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.

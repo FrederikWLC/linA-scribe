@@ -110,12 +110,12 @@ The registered ground truth images were then binarized with a threshold of 128, 
 \section{Limitations and biases}
 \subsection{Quality of the raw document images}
 \label{subsec:quality_limitation}
-Due to the weak quality of the raw document images, they carry only parts of the visual information of the tablets they represent.
-This results from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots.
-With each of these steps, information was lost as a consequence of simplified representation.
-When the drawings of \acs{GORILA} were made \parencite{EtudesCretoises21}, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets.
-Therefore, the document images used are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
+When the drawings of \acs{GORILA} were made \parencite{EtudesCretoises21}, the researchers had access to the physical documents, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages.
+The raw document images of the the created dataset, however, provide only a limited two-dimensional representation of those documents, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
+This has resulted from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots.
+Therefore, these document images are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
 That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods \parencite{DataCentricAI}.
+
 \subsection{Alignment to the ground truth}
 \label{subsec:alignment_limitation}
 Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
@@ -124,7 +124,7 @@ Ester's annotations were never constructed by overlaying them on the raw images,
 
 As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawing style of the drawings is also especially biased with dots and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
 Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate that.
-This is seen by the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
+This can too have lead to the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
 \subsection{Binarization of the drawings}
 \label{subsec:binarization}
@@ -133,7 +133,7 @@ This led to lower \acs{Dice} scores in general, as the ground truth then in prac
 
 This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels with higher intensities now were considered foreground, and all pixels with lower intensities were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
 However, the hyperparameter optimization alone (see \cref{subsubsec:hyperparameter_optimization}) was not redone for the new binarization format, and was thus performed on ground truth in the old binarization format.
-Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles more than otherwise), while still preserving fairness, as all model hyperparameters were tuned under the same conditions.
+Arguably, this only affected the effectiveness of the optimization, the performance of models with hyperparameters, and what those models were optimized for (penalizing non-conservative segmentation styles more than otherwise), while still preserving fairness, as all model hyperparameters were tuned under the same conditions.
 
 \begin{figure}[htp]
 \centering

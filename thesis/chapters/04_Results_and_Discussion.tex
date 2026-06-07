@@ -204,6 +204,12 @@ Performing the paired t-test yielded a test statistic of $t \approx \pgfmathprin
 Thus, as $\pgfmathprintnumber[sci,precision=3]{0.0004618332770736502} < \alpha = 0.05$, the null hypothesis could be rejected, and it could be concluded that \acs{Gaussian} significantly outperformed \acs{SAM+pts}-no-filter in terms of \acs{Dice} score.
 In other words, the best tested variant of \acs{SAM} clearly performed \textit{significantly worse} in comparison to the best tested classical segmentation method for non-interactive segmentation of Linear A tablets.
 
+\subsubsection{Why \acs{SAM} fails} \label{why_sam_fails}
+The significant underperformance of \acs{SAM} compared to \acs{Gaussian} can be attributed to the fact that \acs{SAM} was pre-trained on natural images via \acs{SA-1B} \parencite{sam} and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents.
+Even with the help of \acs{ICL} strategies, \acs{SAM} was not able to leverage the additional context to outperform the strongest classical baseline.
+The Linear A domain of thin obstructed engravings (\cref{sec:dataset}) is thus too different from the "rounded" natural segmentation masks that \acs{SAM} is used to segment, for \acs{ICL} to be effective.
+To outperform classical methods, \acs{SAM} would likely need to be fine-tuned on a sufficiently large dataset of annotated Linear A images, which was unfortunately not available during the time of this study.
+
 \clearpage
 
 \section{Tool-side segmentation performance} \label{rq2results}
@@ -271,7 +277,7 @@ In fact, the total time spent doing the classical baseline workflow was more tha
     \label{fig:workflow_time}
 \end{figure}
 
-\subsection{Higher \acs{Dice} seemingly implies time-saving}
+\subsection{Higher \acs{Dice} seemingly implies time-saving} \label{subsec:time_saving_dice}
 When looking at the post-editing times taken in Krita as a function of the tool-export \acs{Dice} scores, it seems that higher \acs{Dice} scores do imply time-saving in post-editing (see \cref{fig:post_edit_time_by_dice}).
 This is not surprising, as higher \acs{Dice} scores indicate closer resemblance to ground truth, which should require less time to refine in Krita.
 Thus, the reason that the tools did not save any time, was in all likelihood due to the low resemblance of the exports to ground truth, as indicated by their low \acs{Dice} scores.
@@ -287,7 +293,7 @@ This can be explained by their size-difference, which also shows in \cref{fig:in
     \label{fig:post_edit_time_by_dice}
 \end{figure}
 
-\section{Consolidated discussion}
+\section{Consolidated discussion} \label{consolidated_discussion}
 The overall results suggest that \acs{SAM} in the forms tested is not suitable for segmentation of Linear A tablets.
 For each \acs{RQ}, \acs{SAM} failed compared to the baselines -- even when guided by human interaction.
 Not only did it not live up to its supposedly \acs{SOTA} superiority in terms of mere segmentation quality.
@@ -299,8 +305,7 @@ Still, none of the data obtained showed potential for time-saving.
 And none showed potential for \acs{SAM} outperforming the best classical baseline.
 
 When taking the domain and data quality into account (see \cref{subsec:quality_limitation}), this underperformance is not too surprising.
-The raw document images used for inference are screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}. 
-They therefore provide only a limited two-dimensional representation, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
+Being screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}, the raw document images used for inference lack crucial information for distinguishing between damage and engraving that the primary evidence has.
 During the second case study, Dr. Salgarella gave the impression that even she herself could not clearly distinguish tablet damage from inscriptions based on the raw images alone.
 If even an expert cannot do that, it is not surprising that a segmentation model cannot do it either.
 
