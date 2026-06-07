@@ -32,10 +32,10 @@ The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 
 \end{table}
 
 Surprisingly so, the non-interactive \acs{SAM}2 variants performed worse than the original \acs{SAM}, both when and when not prompted.
-The \acs{POI}-based prompting strategy demonstratively did not work on \acs{SAM}2, as shown by the \acs{SAM}2 variants with this strategy performing worse than when unprompted.
+The \acs{POI}-based prompting strategy demonstrably did not work on \acs{SAM}2, as shown by the \acs{SAM}2 variants with this strategy performing worse than when unprompted.
 However, for the other vanilla (non-Hiera) \acs{ViT}-based \acs{SAM} variants, the \acs{POI}-based prompting strategy did work, and was even necessary to obtain any meaningful performance whatsoever.
 This is not surprising, as zero-shot \acs{SAM} has never seen this type of images before, since it was exclusively trained on natural images.
-Thus, it can be stated that when it comes to images of inscribed tablets of Linear A, without any external guidance, the model does not know what to segment, 
+Thus, it can be stated that when it comes to images of inscribed tablets of Linear A, without any external guidance, the model does not know what to segment.
 
 \subsection{Comparison to \acs{ICL} \acs{SAM}}
 \label{subsec:comparison_icl_sam}
@@ -65,7 +65,7 @@ The variant with blank support images (\acs{FATESAM}2D-blank) performing worst o
 The manipulation of \acs{SAM}2's memory encoder and memory attention mechanism thus worked reasonably well for few-shot inference given just 3 of the raw document images and their ground truth masks as reference with 6 to choose from.
 
 But still, this additional few-shot domain context was clearly not enough to outperform the threshold-derived \acs{POI}-based zero-shot \acs{SAM}.
-The domain of contigous natural images is clealy too ingrained in the \acs{SAM}2's weights for its inference to be adapted via \acs{ICL} alone.
+The domain of contiguous natural images is clearly too ingrained in the \acs{SAM}2's weights for its inference to be adapted via \acs{ICL} alone.
 As a general error, \acs{FATESAM}2D suffered from undersegmentation rather than oversegmentation (as seen in \cref{fig:comparison_icl_sam}).
 This might have been due to the big class imbalance between foreground and background in the support images, with background dominating compared to the thin and small engravings.
 
@@ -103,7 +103,7 @@ This fits with the observation from the previous \cref{subsec:ablation_sam} that
     \fbox{\includegraphics[width=\linewidth]{../src/data/results/scribed/HT7a-SAM+pts-no-filter.jpg}}
     \caption{S+p-n \pgfmathprintnumber[fixed,precision=2]{0.258}}
 \end{subfigure}
-\caption{Visual comparison of output masks per \acs{ICL} model and best \acs{SAM} variant from \cref{subsec:ablation_sam} based on the segmentation of PH2 (easy), shown with \acs{Dice} scores next to the raw image and ground truth.
+\caption{Visual comparison of output masks per \acs{ICL} model and best \acs{SAM} variant from \cref{subsec:ablation_sam} based on the segmentation of HT7a (easy), shown with \acs{Dice} scores next to the raw image and ground truth.
 This is one of the instances where \acs{FATESAM}2D performed better than the best zero-shot \acs{SAM} implementation, but due to its tendency of undersegmentation, this was generally not the case.}
 \label{fig:comparison_icl_sam}
 \end{figure}
@@ -181,7 +181,7 @@ What follows is the documentation of that normality test, the paired t-test, and
 \label{subsubsec:normality_residuals}
 As the QQplot in \cref{fig:qqplot} shows, the paired differences in \acs{Dice} scores between \acs{Gaussian} and \acs{SAM+pts}-no-filter appeared to be approximately normally distributed.
 Furthermore, the Shapiro-Wilk test for normality of these paired differences yielded a p-value of $\pgfmathprintnumber[fixed,precision=3]{0.0562033322217413} > \alpha = 0.05$, indicating that the null hypothesis of normality could not be rejected.
-Thus, there was no need for a parametric test like Wilcoxon, as the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
+Thus, there was no need for a non-parametric test like Wilcoxon, as the normality assumption for the paired t-test was satisfied, and its results could be considered valid.
 \begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation/qqplots/Dice_Gaussian_vs_SAM+pts-no-filter.png}
@@ -208,7 +208,7 @@ In other words, the best tested variant of \acs{SAM} clearly performed \textit{s
 \subsubsection{Why \acs{SAM} fails} \label{why_sam_fails}
 The significant underperformance of \acs{SAM} compared to \acs{Gaussian} can be attributed to the fact that \acs{SAM} was pre-trained on natural images via \acs{SA-1B} \parencite{sam} and therefore lacks the domain-specific knowledge to perform well on the task of segmenting grayscaled Linear A documents.
 Even with the help of \acs{ICL} strategies, \acs{SAM} was not able to leverage the additional context to outperform the strongest classical baseline.
-The Linear A domain of thin obstructed engravings (\cref{sec:dataset}) is thus too different from the contigous natural segmentation masks that \acs{SAM} is used to segment, for \acs{ICL} or \acs{POI} strategies to be effective.
+The Linear A domain of thin obstructed engravings (\cref{sec:dataset}) is thus too different from the contiguous natural segmentation masks that \acs{SAM} is used to segment, for \acs{ICL} or \acs{POI} strategies to be effective.
 To outperform classical methods, \acs{SAM} would likely need to be fine-tuned on a sufficiently large dataset of annotated Linear A images, which was unfortunately not available during the time of this study.
 
 \clearpage
@@ -234,7 +234,7 @@ And it is this burden of interaction that seems to have been the reason for the 
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/interaction_count.png}
     \caption{The amount of prompts Ester placed per image using the interactive \acs{SAM}-based tool.
-    No foregound point prompts were placed, suggesting that the user was compensating only for over-segmentation.}
+    No foreground point prompts were placed, suggesting that the user was compensating only for over-segmentation.}
     \label{fig:interaction_count}
 \end{figure}
 
@@ -311,16 +311,16 @@ During the second case study, Dr. Salgarella gave the impression that even she h
 If even an expert cannot do that, it is not surprising that a segmentation model cannot do it either.
 
 But what these results suggest, is not only that the available data is poor.
-As \acs{SAM} performed significantly worse than the strongest classical baseline on the same data (\cref{rq1results}), it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
+As \acs{SAM} performed significantly worse than the strongest classical baseline on the same data (\cref{rq1results}), it also tells us that \acs{SAM}'s generalization capabilities are not sufficient within this domain.
 For \acs{SAM} to be useful, not only is there a need for a more suitable data source.
 To be able to adapt it to the domain at all, there is seemingly also a need for a sufficiently sized dataset.
-Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \cite{MayaSAM}), to be able to create a model that can be used in practice, a dataset containing anywhere from a few hundred to millions of annotated images could be necessary \parencite[p.2]{ontuningdataset}.
+Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \parencite{MayaSAM}), to be able to create a model that can be used in practice, a dataset containing anywhere from a few hundred to millions of annotated images could be necessary \parencite[p~.2]{ontuningdataset}.
 Creating a hypothetical dataset of a sufficient size might therefore require collecting inscriptions other than just Linear A -- such as the other closely related Aegean scripts like Linear B, and maybe even just epigraphical inscriptions in general.
 
 Until a model tuned to such a dataset is developed, however, the results seem to suggest that classical deterministic methods are better suited for the task.
 But most importantly, they suggest that manual annotation in Krita so far remains the best option for producing digitized drawings of Linear A documents.
 Nevertheless, that is not to say that there is no potential for automation in the workflow.
-Rather, it means that the tested approaches are not sufficient enough to be helpful for it, and that alternative approaches should be explored in future work.
+Rather, it means that the tested approaches are not sufficient to be helpful for it, and that alternative approaches should be explored in future work.
 
 In particular, approaching the drawing step of Ester's annotation workflow as a segmentation task on raw document images does not seem to be very useful.
 And considering the quality of these images, it probably never will be -- even when tuning on a big hypothetical dataset like the one mentioned.

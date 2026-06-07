@@ -16,7 +16,7 @@ All reported results of this Thesis are based on the test set, while the validat
 
 Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
 The raw document images from \acs{GORILA} are screenshots of grayscale images placed within the scanned printed edition of the corpus (see \cref{subsec:quality_limitation}).
-Furthermore, the ground truth annotations from SigLA are naturally characterized by several thin, fragmented signs as opposed to the more distinct, contigous\footnote{The term \textit{contigous} refers to objects that are spatially connected rather than broken into fragments.} natural objects that \acs{SAM} is used to segment.
+Furthermore, the ground truth annotations from SigLA are naturally characterized by several thin, fragmented signs as opposed to the more distinct, contiguous\footnote{The term \textit{contiguous} refers to objects that are spatially connected rather than broken into fragments.} natural objects that \acs{SAM} is used to segment.
 For an example of a raw document image and its corresponding ground truth annotation, see \cref{fig:ht7b_example}.
 \begin{figure}[htp]
 \centering
@@ -111,7 +111,7 @@ The registered ground truth images were then binarized with a threshold of 128, 
 \subsection{Quality of the raw document images}
 \label{subsec:quality_limitation}
 When the drawings of \acs{GORILA} were made \parencite{EtudesCretoises21}, the researchers had access to the physical documents, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages.
-The raw document images of the the created dataset, however, provide only a limited two-dimensional representation of those documents, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
+The raw document images of the created dataset, however, provide only a limited two-dimensional representation of those documents, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
 This has resulted from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots.
 Therefore, these document images are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
 That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods \parencite{DataCentricAI}.

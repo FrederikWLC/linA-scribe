@@ -3,16 +3,16 @@
 This chapter describes in detail the operationalization done to answer the question of whether a \acs{SAM}-based segmentation tool can accelerate the annotation workflow of Linear A documents (see \cref{research_questions} for an overview of the individual \acsp{RQ}).
 Overall, this operationalization was achieved through a comprehensive evaluation of segmentation quality (see \cref{Segmentation quality}), and a case study involving Dr. Ester Salgarella measuring the interaction efficiency (see \cref{Interaction efficiency}) and workflow efficiency (see \cref{Workflow efficiency}) of a self-developed \acs{SAM}-based segmentation tool.
 In that way, these three abstract virtues were decomposed into independent measurable metrics, making it possible to concretely answer the research questions, and where the potential benefits and drawbacks of \acs{SAM} lie.
-\subsection{Development environment and tools}
+\section{Development environment and tools}
 
 All software written and data collected for this thesis was made publicly available on GitHub \parencite{source_code}.
 Python 3.13 was used for all code development except frontend.
-The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} and \acs{SAM} implementation libraries needed.
-Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, when seeting up the development environment.
-The particular version was chosen, as it was the second latest stable release at the time of development \parencite{python313release}, with the risk of Python 3.14 still not having full support by all libraries. % NEW: python313release -- Python release schedule / 3.13 release announcement (python.org)
+The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} (e.g OpenCV, Optuna, etc.) and \acs{SAM} implementation libraries needed.
+Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, when setting up the development environment.
+The particular version was chosen, as it was the second latest stable release at the time of development \parencite{python313release}, with the risk of Python 3.14 still not having full support by all libraries.
 
 \section{Non-interactive segmentation} \label{Segmentation quality}
-To answer the question of \hyperref[rq1]{\acs{RQ}1}: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
+To answer the question of \hyperref[rq1]{\acs{RQ}1}: \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
 All models were tuned through hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}) to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
 The following subsections give an explanation of the segmentation problem itself, and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer \hyperref[rq1]{\acs{RQ}1}.
@@ -102,7 +102,7 @@ $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) 
 \noindent Thus, without the bilateral pre-filter, this method has two hyperparameters: the kernel size $d$, and the constant $C$.
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
-Canny edge detection \parencite{Canny1986} is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges. % NEW: Canny1986 -- J. Canny (1986), A Computational Approach to Edge Detection, IEEE TPAMI 8(6)
+Canny edge detection \parencite{Canny1986} is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
 First, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the orientation $\theta_s(x,y)$ are computed \parencite[p.~730]{DigitalImageProcessing}:
 $$M_s(x,y) = \|\ \nabla I_{s}(x,y) \|\ = \sqrt{\left(\frac{\partial I_{s}}{\partial x}\right)^2 + \left(\frac{\partial I_{s}}{\partial y}\right)^2}$$ 
 $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}/\partial x} \right)$$
@@ -115,8 +115,7 @@ T_l = \max\bigl(0, (1 - \sigma)\, v\bigr), \quad
 T_h = \min\bigl(255, (1 + \sigma)\, v\bigr)
 $$
 
-\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask \parencite{DigitalImageProcessing}. % TODO: add page ref for the morphological operations chapter
-
+\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask \parencite[p. 636-638]{DigitalImageProcessing}.
 Hence, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
 \subsection{State-of-the-art}
@@ -169,7 +168,7 @@ It is this image embedding, combined with embedded prompts from the prompt encod
 Before this can happen, however, the prompt encoder must convert any given sparse prompts (i.e. box or point prompts) into embeddings, which is done by summing their positional encodings with learned type-specific embeddings (one foreground/background embedding per point prompt, and two opposite-corner embeddings per box prompt).
 
 Seen in \cref{fig:SAM_mask_decoder}, these are then fed to the lightweight mask decoder (which is also transformer-based) along with the image-embedding from the \acs{ViT}, and three learnable output token embeddings (see \cref{fig:SAM_mask_decoder}).
-However, for a generation of single output masks, which is what was used in this thesis for all models except \acs{GFSAM}, the mask is generated from just a single output token \parencite[p. 17]{sam}, 
+However, for a generation of single output masks, which is what was used in this thesis for all models except \acs{GFSAM}, the mask is generated from just a single output token \parencite[p.~17]{sam}.
 
 Self-attention is then applied to the prompt and output tokens, and two-way cross-attention (same as self-attention but with one embedding as queries, and the other as keys and values, and vice-versa) is applied between the tokens and image embedding for them to influence and attend one another.
 To keep track of spatial coordinates and prompts, the image embedding, and the original prompt embeddings along with their positional encodings are added as input at every attention layer.
@@ -211,7 +210,7 @@ But also added were object pointers as lightweight vectors keeping track of the 
 These are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
 
 As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
-\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra \parencite{HydraFramework}. % NEW: HydraFramework -- Yadan (2019), Hydra: a framework for elegantly configuring complex applications, github.com/facebookresearch/hydra
+\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra \parencite{HydraFramework}.
 Since the tablets were segmented as individual still images, \acs{SAM}2's image predictor was used rather than the video predictor.
 The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in \cref{subsubsec:FATESAM}.
 
@@ -243,7 +242,7 @@ In particular, the object-pointer encoder and object-score prediction heads were
 \texttt{pred\_obj\_scores\_mlp}, and 
 \texttt{fixed\_no\_obj\_ptr} all to false.
 Attempts were made to contact the authors of \acs{FATESAM} about the correctness of this adaptation, but no response was received.
-Interestingly, in the ablation study of object pointers in \acs{SAM}2 \parencite[see][p. 15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
+Interestingly, in the ablation study of object pointers in \acs{SAM}2 \parencite[see][p.~15]{sam2}, its importance was only evaluated on video datasets and included on that basis.
 It was hence deemed reasonable to assume that it would not contribute to the performance of \acs{FATESAM} on single frame images, and thus could be turned off without compromising performance.
 
 \subsubsection{GFSAM} \label{subsubsec:GFSAM}
@@ -277,7 +276,7 @@ As it is particularly difficult to automatically create meaningful box prompts w
 \noindent Inspired by \acf{POI} placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} were derived from the output mask of the Gaussian thresholding baseline (see \cref{subsubsec:gaussian_baseline}).
 This was done by randomly sampling a number of foreground and background pixels from the classical output mask as prompts for \acs{SAM}.
 Concretely, $n_{fgd}$ foreground points and $n_{bgd}$ background points were sampled from the foreground and the eroded background of the mask, respectively (see \cref{fig:autoprompt_SAM} for a visual example).
-Without the hyperparameters of \acs{Gaussian}, this method thus introduces three hyperparameters: $n_{fgd}$, $n_{bgd}$, and the erosion kernel size $d$.
+Without the hyperparameters of \acs{Gaussian}, this method thus introduces three hyperparameters: $n_{fgd}$, $n_{bgd}$, and the erosion kernel size $d$ \parencite[p. 636-37,639]{DigitalImageProcessing}.
 
 \begin{figure}[htp]
 \centering
@@ -319,12 +318,12 @@ This way, it can focus the search on promising regions of the space of possible 
 
 \subsubsection{Statistical test (paired t-test)}
 To determine whether the observed difference in \acs{Dice} scores between the two strongest models was statistically significant, a paired t-test was conducted.
-Specifically, a one-tailed paired t-test was used, as the alternative hypothesis was that \acs{SAM} would perform significantly better than the best classical baseline, instead of just significantly differently.
+Specifically, a one-tailed paired t-test was used, as the alternative hypothesis was that \acs{SAM} would perform significantly worse than the best classical baseline, instead of just significantly differently.
 The paired t-test has two main assumptions: 1. independence of tested observations, and 2. normality of the paired differences \parencite{Rainio2024}.
 The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on the results.
-Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test \parencite{ShapiroWilk1965}. % NEW: ShapiroWilk1965 -- S. S. Shapiro & M. B. Wilk (1965), An analysis of variance test for normality, Biometrika 52(3-4)
-In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
+Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test \parencite{ShapiroWilk1965}.
+In case the normality assumption was violated, the non-parametric Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
 
 \section{Tool-side interaction} \label{Interaction efficiency}
 To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To what extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
@@ -343,11 +342,11 @@ These tests took place the 5th, 8th and 12th of May (see \cref{appendix:usabilit
 \subsection{Architecture}
 The architecture of the tool (see \cref{fig:tool-architecture}) was developed as a web-application using Svelte as the frontend framework, and FastAPI as the backend framework, hosted via Render \parencite{Render}.
 Because it was made a web application, it could be run remotely on any device through a web browser, without the need for installation, making it more easily accessible and ideal for online user testing with Ester Salgarella.
-To make the development environment more consistent with production, the application was containerized using Docker \parencite{DockerDocs}, which made it easier to deploy and run on any machine without worrying about dependencies and environment setup. % NEW (optional): DockerDocs -- Docker official documentation
+To make the development environment more consistent with production, the application was containerized using Docker \parencite{DockerDocs}, which made it easier to deploy and run on any machine without worrying about dependencies and environment setup.
 
-Svelte was chosen for the frontend mostly due to its reactive state management, making it well-suited for building interactive user interfaces, as this functionality removes the need for re-inserting state variables every time they change \parencite{SvelteDocs}. % NEW (optional): SvelteDocs -- Svelte official documentation
+Svelte was chosen for the frontend mostly due to its reactive state management, making it well-suited for building interactive user interfaces, as this functionality removes the need for re-inserting state variables every time they change \parencite{SvelteDocs}. 
 FastAPI was chosen as the backend, as it is Python based, and therefore able to serve the Python segmentation models implemented, which was essential for the tool's functionality.
-It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server \parencite{FastAPIDocs}. % NEW (optional): FastAPIDocs -- FastAPI official documentation
+It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server \parencite{FastAPIDocs}.
 
 \input{charts/tool-architecture.tex}
 
@@ -460,9 +459,9 @@ Due to scope limitations, it was only the process before that splitting into lay
 \subsection{The adaptation (export to Krita)}
 \label{subsection:export_to_krita}
 When the segmentation of a document within the tool was complete, it was designed to allow for export to JPEG, PNG, or OpenRaster (\texttt{.ora}) format.
-The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively \parencite{OpenRasterSpec}. % NEW: OpenRasterSpec -- OpenRaster specification (freedesktop.org / OpenRaster wiki)
+The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively \parencite{OpenRasterSpec}. 
 This is simpler in structure and easier to read and write for external programs than the \texttt{.kra} file format, since it was specifically designed as an open exchange format between graphics editors.
-Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only \parencite{KritaDocs}. % NEW: KritaDocs -- Krita documentation, .kra file format
+Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only \parencite{KritaDocs}. 
 
 Additionally, OpenRaster (\texttt{.ora}) format is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly opened there for further manual editing and annotation.
 And as Krita was already part of Ester's workflow, it was only natural to make the exported starting point suggestions from the tools directly compatible with it, to make the transition from tool to manual post-editing as seamless as possible.
