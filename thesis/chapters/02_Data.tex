@@ -8,13 +8,14 @@ As ground truth, annotations provided by Ester Salgarella from SigLA \parencite{
 What follows in this chapter is a description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
 
 \section{Characteristics and construction}
+\label{sec:dataset}
 The dataset was made to consist of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
 Each of these image pairs was categorized into one of three difficulty levels (easy, medium, hard) based on the visual quality of the inscriptions (see \cref{sec:difficulty_classification}).
 They were then randomly split into three subsets: test (27 images), validation (27 images), and support (6 images), with each one having an equal proportion of images from each of the three difficulty levels.
-All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization, and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
+All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}), and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
 
 Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
-The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only source including the whole publicized corpus of the Linear A inscriptions.
+The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality (see \cref{subsec:quality_limitation}), being the only source including the whole publicized corpus of the Linear A inscriptions.
 For an example of a raw document image and its corresponding ground truth annotation, see \cref{fig:ht7b_example}.
 \begin{figure}[htp]
 \centering
@@ -99,19 +100,22 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \end{figure}
 
 \subsection{Image registration and preprocessing}
+\label{subsec:registration}
 To obtain any kind of meaningful comparison between model outputs and ground truth, the raw document images and their ground truth annotations had to be aligned and registered to each other.
 This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw document counterparts, and aligning by translation and rotation, using the raw document images as background reference.
-After this, the registered ground truth images were binarized with a threshold of 128, meaning that all pixels with higher intensities were considered foreground, and all pixels with lower intensities were considered background.
+After this, the registered ground truth images were binarized with a threshold of 128, meaning that all pixels with higher intensities were considered foreground, and all pixels with lower intensities were considered background (see \cref{subsec:binarization} for an initial issue with this step).
 \clearpage
 
 \section{Limitations and biases}
 \subsection{Quality of the raw document images}
+\label{subsec:quality_limitation}
 Due to the weak quality of the raw document images, they carry only parts of the visual information of the tablets they represent.
 This results from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots, with each step yielding some loss of information.
-When the drawings of \acs{GORILA} were made, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets.
+When the drawings of \acs{GORILA} were made \parencite{EtudesCretoises21}, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets.
 Therefore, the document images used are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
-That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods.
+That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods \parencite{DataCentricAI}.
 \subsection{Alignment to the ground truth}
+\label{subsec:alignment_limitation}
 Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
 This misalignment was a source of noise in the evaluation.
 Ester's annotations were never constructed by overlaying them on the raw images, but rather by doing so on the accompanied corpus drawings, only using the raw images as reference.
@@ -121,13 +125,14 @@ Thus, the raw images and the ground truth annotations were never perfectly align
 This is seen by the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
 \subsection{Binarization of the drawings}
+\label{subsec:binarization}
 Due to a missing threshold step of the registered JPEGs in the initial registration of the dataset, the ground truth annotations were to begin with binarized with a threshold of 0 instead of 128, meaning that only the pure black pixels of the drawings were considered as part of ground truth foreground, while the smoothed gray pixels were not accounted for.
 This led to lower \acs{Dice} scores in general, as the ground truth then in practice was thinner and more sparse compared to the actual drawings.
 
 This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels with higher intensities now were considered foreground, and all pixels with lower intensities were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
-However, the hyperparameter optimization alone was not redone for the new binarization format, and was thus performed on ground truth in the old binarization format.
+However, the hyperparameter optimization alone (see \cref{subsubsec:hyperparameter_optimization}) was not redone for the new binarization format, and was thus performed on ground truth in the old binarization format.
 Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles more than otherwise), while still preserving fairness, as all model hyperparameters were tuned under the same conditions.
- 
+
 \begin{figure}[htp]
 \centering
 

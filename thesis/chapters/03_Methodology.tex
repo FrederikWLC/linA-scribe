@@ -306,7 +306,7 @@ $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|
 
 \subsubsection{Hyperparameter optimization (\acs{TPE})}
 \label{subsubsec:hyperparameter_optimization}
-All models with hyperparameters were tuned to their best \acs{Dice} scores on the validation set in a series of 100 trials each using Optuna, a hyperparameter optimization framework.
+All models with hyperparameters were tuned to their best \acs{Dice} scores on the validation set (see \cref{sec:dataset}) in a series of 100 trials each using Optuna \parencite{optuna2019}, a hyperparameter optimization framework.
 The optimization itself was performed using the \acf{TPE} algorithm \parencite{TPEHyperparameterOptimization2013,TPEHyperparameterOptimization2011},
 which is a Bayesian optimization method that models the relationship between hyperparameters and performance to efficiently explore the hyperparameter space and find the optimal ones.
 Hence, it is more sophisticated than a random search, which just samples different hyperparameter combinations without considering the results of past evaluations.
