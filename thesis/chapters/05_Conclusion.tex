@@ -4,30 +4,30 @@ The aim of this thesis was to investigate whether the drawing step of the annota
 In short, under the tested conditions, the results indicate that \acs{SAM} was not practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
 This is illustrated by the following summaries of findings per research question.
 
-\section{Findings per \acs{RQ}}
-\subsection{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
+\section{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
 The first research question concerned the non-interactive segmentation quality of \acs{SAM} within the domain of Linear A document images compared to classical image processing baselines.
-Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
-On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse} than this classical baseline, despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
+Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants (including zero-shot and few-shot variants, and use of \acs{POI} prompt placement) outperformed the strongest classical baseline, \acs{Gaussian} thresholding with a mean \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{0.3272506453060173}.
+Instead, the strongest \acs{SAM} variant, with a mean \acs{Dice} score of \pgfmathprintnumber[fixed,precision=3]{0.26263640013862244}, performed \textit{significantly worse} than this classical baseline, as shown in a one-tailed paired t-test with test statistic $t\approx \pgfmathprintnumber[fixed,precision=3]{3.73744358804111}$, and $p \approx \pgfmathprintnumber[sci,precision=3]{0.0004618332770736502}$.
 
-\subsection{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
+\section{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
 The second research question had to do with the efficiency of using \acs{SAM} as an interactive segmentation tool compared to a classical image processing baseline.
-This was measured in a case study of 3 documents from the test set with Ester Salgarella in terms of the time spent in the tool and segmentation quality of the exports.
-Despite the theoretical benefit of human interaction, the \acs{SAM}2-based tool seemed beaten by the \acs{Gaussian} thresholding one, both in terms of time spent and segmentation quality.
+This was measured in a case study of 3 documents from the test set with Ester Salgarella in terms of the time spent in the tool and the segmentation quality of the exports.
+Using the interactive \acs{SAM}-based tool, Ester placed more than 60 prompts per image, spending far more time than with the classical tool, while also achieving a comparatively lower segmentation quality of the exports.
+Thus, it did not seem that \acs{SAM}'s interactive capabilities could translate into practical efficiency to overcome its non-interactive underperformance on the domain.
 
-\subsection{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
+\section{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
 The third research question considered the workflow-related efficiency of using the \acs{SAM}-based tool compared to classical image processing and the baseline of manual annotation.
 Measured in a case study of 3 documents with Ester Salgarella, the time spent to complete the drawings manually in Krita was compared to being assisted by the mask exports of the developed tools as suggested starting points.
 None of these tools showed any potential of saving time in the workflow, both when considering the entire workflow duration (including the time spent in tool), and when considering only the post-editing phase.
-In fact, they even seemed to \textit{increase} work time (SAM more so than the classical one), as their output masks required too much correction.
+Because the output masks required too much correction, both tool-assisted workflows appeared to \textit{increase} total work time, as the classical baseline took more than twice as long as the manual one, while the \acs{SAM}-based workflow took more than three times (and almost four times) as long.
 
 \section{Overall conclusion}
 To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets (see \cref{rq3results}).
 The reason that the tool did not save any time, seemed to be due to the low quality of its output masks (see \cref{subsec:time_saving_dice}).
-This was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference (see \cref{subsec:quality_limitation}), which were low both in size and quality, consisting of screenshots of grayscale photographs embedded in the scanned print edition of the corpus.
+This underperformance was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference (see \cref{subsec:quality_limitation}), which were low both in size and quality, consisting of screenshots of grayscale photographs embedded in the scanned print edition of the corpus.
 But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on the same data (see \cref{rq1results}).
 Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baseline (see \cref{rq2results}).
-This underperformance can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents (see \cref{why_sam_fails}).
+This underperformance can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents (see \cref{why_sam_fails}) -- even with the help of \acs{ICL}.
 
 Not even the comparatively stronger tool based on the classical baseline seemed to save any time in the workflow, as its exported masks also required too much correction (see \cref{rq3results}).
 Thus, the established manual drawing process in Krita still seems to remain the best option for the drawing step of the annotation workflow.

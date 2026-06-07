@@ -7,7 +7,7 @@ In that way, these three abstract virtues were decomposed into independent measu
 
 All software written and data collected for this thesis was made publicly available on GitHub \parencite{source_code}.
 Python 3.13 was used for all code development except frontend.
-The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} (e.g OpenCV, Optuna, etc.) and \acs{SAM} implementation libraries needed.
+The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} (e.g. OpenCV, Optuna, etc.) and \acs{SAM} implementation libraries needed.
 Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, when setting up the development environment.
 The particular version was chosen, as it was the second latest stable release at the time of development \parencite{python313release}, with the risk of Python 3.14 still not having full support by all libraries.
 
@@ -115,7 +115,7 @@ T_l = \max\bigl(0, (1 - \sigma)\, v\bigr), \quad
 T_h = \min\bigl(255, (1 + \sigma)\, v\bigr)
 $$
 
-\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask \parencite[p. 636-638]{DigitalImageProcessing}.
+\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask \parencite[p.~636--638]{DigitalImageProcessing}.
 Hence, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
 \subsection{State-of-the-art}
@@ -276,7 +276,7 @@ As it is particularly difficult to automatically create meaningful box prompts w
 \noindent Inspired by \acf{POI} placement in \parencite{promptSAM}, automatic point prompts for \acs{SAM} were derived from the output mask of the Gaussian thresholding baseline (see \cref{subsubsec:gaussian_baseline}).
 This was done by randomly sampling a number of foreground and background pixels from the classical output mask as prompts for \acs{SAM}.
 Concretely, $n_{fgd}$ foreground points and $n_{bgd}$ background points were sampled from the foreground and the eroded background of the mask, respectively (see \cref{fig:autoprompt_SAM} for a visual example).
-Without the hyperparameters of \acs{Gaussian}, this method thus introduces three hyperparameters: $n_{fgd}$, $n_{bgd}$, and the erosion kernel size $d$ \parencite[p. 636-37,639]{DigitalImageProcessing}.
+Without the hyperparameters of \acs{Gaussian}, this method thus introduces three hyperparameters: $n_{fgd}$, $n_{bgd}$, and the erosion kernel size $d$ \parencite[p.~636--637,639]{DigitalImageProcessing}.
 
 \begin{figure}[htp]
 \centering
@@ -330,7 +330,7 @@ To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To what extent can 
 The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
 \subsection{Development}
 The tool was developed in close collaboration with Ester Salgarella, in an attempt to make it fit her workflow and needs as much as possible.
-However, before any user tests were conducted, a \acf{MVP} was developed based on the workflow that she had described throughout the fortnightly supervisor meetings attended during the writing of this Thesis from February 2nd 2026, and the few sporadic meetings and written exchanges since November 2025 that took place during the planning of the project proposal.
+However, before any user tests were conducted, a \acf{MVP} was developed based on the workflow that she had described throughout the fortnightly supervisor meetings attended during the writing of this thesis from February 2nd 2026, and the few sporadic meetings and written exchanges since November 2025 that took place during the planning of the project proposal.
 When this \acs{MVP} was ready, three usability tests were conducted with Ester, two of them online, and the last one in-person at \acf{AIAS}.
 
 During these usability tests, Ester was asked to perform the segmentation of at least one document with each method of the tool, while thinking aloud and giving feedback on the user experience.

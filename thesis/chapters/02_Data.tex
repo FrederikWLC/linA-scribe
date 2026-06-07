@@ -12,9 +12,9 @@ What follows in this chapter is a description of this dataset, documenting its c
 The dataset was made to consist of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
 Each of these image pairs was categorized into one of three difficulty levels (easy, medium, hard) based on the visual quality of the inscriptions (see \cref{sec:difficulty_classification}).
 They were then randomly split into three subsets: test (27 images), validation (27 images), and support (6 images), with each one having an equal proportion of images from each of the three difficulty levels.
-All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}), and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
+All reported results of this thesis are based on the test set, while the validation set was used for hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}), and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
 
-Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
+Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p.~29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
 The raw document images from \acs{GORILA} are screenshots of grayscale images placed within the scanned printed edition of the corpus (see \cref{subsec:quality_limitation}).
 Furthermore, the ground truth annotations from SigLA are naturally characterized by several thin, fragmented signs as opposed to the more distinct, contiguous\footnote{The term \textit{contiguous} refers to objects that are spatially connected rather than broken into fragments.} natural objects that \acs{SAM} is used to segment.
 For an example of a raw document image and its corresponding ground truth annotation, see \cref{fig:ht7b_example}.
@@ -124,7 +124,7 @@ Ester's annotations were never constructed by overlaying them on the raw images,
 
 As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawing style of the drawings is also especially biased with dots and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
 Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate that.
-This can too have lead to the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
+This can too have led to the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
 \subsection{Binarization of the drawings}
 \label{subsec:binarization}

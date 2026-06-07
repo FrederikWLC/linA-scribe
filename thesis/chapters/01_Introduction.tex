@@ -13,10 +13,10 @@ This is significantly smaller than that of its younger counterpart, which now sp
 But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents \parencite{RILA-S1,CNRLinearACorpus2025}.
 
 Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
-While photographs accompanied by expert drawings of nearly the entire corpus, \acf{GORILA}, are available online through \acf{Cefael}, these are only available in print form \parencite{EtudesCretoises21}.
+While photographs accompanied by expert drawings of nearly the entire corpus, \acf{GORILA}, are available online through \acf{Cefael}, these are only available as scans of the printed edition \parencite{EtudesCretoises21}.
 This motivated the development of the palæographical\footnote{The term \textit{palæographical} refers to the study of historical writing systems.} database \textit{The Signs of Linear A} (SigLA), which seeks to "[develop] a systematic, exhaustive and user-friendly open access database of all Linear A inscriptions [...] in order to carry out statistical and palæographic analyses within the epigraphic\footnote{The term \textit{epigraphic} refers to the study of inscriptions.} corpus" \parencite{SalgarellaCastellanSigLA2020}.
 This database has already been utilized as a source for computational analysis and \acf{NLP} of Linear A \parencite{LogogramNLP}.
-However, until a most recent addition of four documents in May 2026 and a few changes to its source code since April 2026, the latest expansion of SigLA had been in 2021 \parencite{SigLAAboutPage,SigilGitLab}. 
+However, until a recent addition of four documents in May 2026 and a few changes to its source code since April 2026, the latest expansion of SigLA had been in 2021 \parencite{SigLAAboutPage,SigilGitLab}. 
 And the project has so far managed to document just 776 of all currently known inscriptions \parencite{SigLASearchDocuments}.
 
 \subsection{A problem of manual digitization}
@@ -24,14 +24,14 @@ And the project has so far managed to document just 776 of all currently known i
 The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita \parencite{KritaDocs}.
 For each document, she manually created her own annotated drawings based on the \acs{GORILA} originals, stored by \acs{Cefael} as poor quality gray-scale raw tablet images accompanied by expert drawings.
 From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be imported as JSON and Krita files to SigLA \parencite{SalgarellaCastellanSigLA2020}.
-According to her (personal communication), this has been a highly time-consuming undertaking -- and the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not yet contain the entire available corpus.
+According to her (personal communication), this has been a highly time-consuming undertaking -- and the necessity of this kind of labor-intensive work has arguably been the biggest reason why SigLA still does not contain the entire available corpus.
 
 
 The aim of this project was therefore to investigate whether parts of this process can be automated through processing of the tablet images from \acs{GORILA}.
 Furthermore, due to the potential violation of \acf{IPR}, it was of particular interest, whether the annotation process could begin from the raw source images themselves, without relying on the undigitized but already completed expert drawings.
 
 \subsection{A problem of small data}
-The small size of the Linear A corpus, and the irregularities in quality of its raw documents, is a huge problem for the application of deep learning, as models created therefrom typically require large amounts of high-quality data to perform well \parencite{Goodfellow2016,DataCentricAI}.
+The small size of the Linear A corpus, and the irregularities in quality of its raw documents, are huge problems for the application of deep learning, as models created therefrom typically require large amounts of high-quality data to perform well \parencite{Goodfellow2016,DataCentricAI}.
 
 For more informative and better quality data, there does exist an online repository of 3D scans of Aegean inscriptions\footnote{The term \textit{Aegean inscription} refers to the ancient writings found near the Aegean sea, including the scripts Linear A, Linear B, and Cretan Hieroglyphic.}.
 That is, through the project INSCRIBE \parencite{INSCRIBE3D}, which via photogrammetry\footnote{\textit{Photogrammetry} is a technique used to create 3D models from overlapping 2D images.} sought to "produce the first complete digital corpus of all three Aegean undeciphered scripts".
@@ -46,8 +46,8 @@ Therefore, it was of particular interest to map the capabilities and limitations
 \section{Related work}
 Within the last decade, the field of document annotation has seen significant advancements through the use of machine learning.
 Take for example the EU-funded generic \acs{CNN}-based framework for historical document processing \textit{dhSegment} \parencite{dhsegment}.
-Or the more recent work on segmentation of stone inscriptions \parencite{DeepLearningSegmentation}, where \acs{SAM} and other state-of-the-art methods are beaten as benchmarks by their stacked U-Net \parencite{UNET2015} and \acs{GAN} \parencite{GAN2014} architecture.
-Or even the \acs{YOLO} \parencite{YOLO} based approach to segmentation of Palmyrene Aramaic inscriptions \parencite{YOLOSegmentation} that augment\footnote{The term \textit{augmenting} refers to the process of increasing the size of a dataset.} their dataset with a \acf{GAN} to increase performance.
+Or the more recent work on segmentation of stone inscriptions \parencite{DeepLearningSegmentation}, where \acs{SAM} and other state-of-the-art methods are beaten as benchmarks by their stacked U-Net \parencite{UNET2015} and \acf{GAN} \parencite{GAN2014} architecture.
+Or even the \acs{YOLO} \parencite{YOLO} based approach to segmentation of Palmyrene Aramaic inscriptions \parencite{YOLOSegmentation} that augments\footnote{The term \textit{augmenting} refers to the process of increasing the size of a dataset.} its dataset with a \acs{GAN} to increase performance.
 
 Nevertheless, these methods all depend on deep learning, making them inconvenient for domains of small data, which instead seem to require a generalized foundation model and interactive approach such as \acs{SAM}.
 
@@ -63,7 +63,7 @@ Thus, it seemed reasonable to test out the limits of \acs{SAM}'s generalization 
 
 \section{Problem statement}
 As previously stated, the aim of this project was to investigate whether the drawing step of the process of creating annotated drawings like the ones in SigLA can be automated by working on the raw tablet images from \acs{GORILA}.
-More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) using interactive and generalized \acs{CV} -- specifically the \acf{SAM} -- can accelerate the workflow of the drawing step, while maintaining high-quality outputs that are still compatible with a database like SigLA.
+More specifically, whether some kind of semi-automatic segmentation tool (given just the raw tablet images as input) using interactive and generalized \acs{CV} -- specifically the \acs{SAM} -- can accelerate the workflow of the drawing step, while maintaining high-quality outputs that are still compatible with a database like SigLA.
 But what would be the relative segmentation quality of such a tool? How interaction efficient would it be exactly? And by how much could it potentially improve the efficiency of the workflow?
 To concretize the research, the problem statement was decomposed into three \acfp{RQ} -- each accompanied by their respective operationalization (see the following subsection for details).
 
