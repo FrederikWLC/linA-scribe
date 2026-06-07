@@ -4,6 +4,8 @@ This repository is documenting the development of a semi-automatic tool meant to
 
 The `src/data/` folder is now also included here, as to present all.
 It includes `src/dataresults/` for the data of RQ1, and within that `src/data/results/workflow/` for the data of RQ2 and RQ3.
-Furthermore, it includes the 60 raw document images of the dataset within `src/data/raw/` and their corresponding registered ground truth images within `src/data/ground_truth/registered`.
+Furthermore, it includes the 60 raw document images of the dataset within `src/data/raw/` and their corresponding registered ground truth images within `src/data/ground_truth/registered`. 
+
+The ones binarized correctly with a threshold of 128 (used for the test and support set) are found in `src/data/ground_truth/registered2`, while those binarized in the old way with a threshold of 0 (used for validation set) can be found in `src/data/ground_truth/registered0`.
 
 
