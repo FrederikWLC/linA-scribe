@@ -21,7 +21,7 @@ The following subsections give an explanation of the segmentation problem itself
 
 The task of extracting the foreground (engraving and outline) from the background of an image of a writing support can be conceptualized as a binary image segmentation and classification problem at the pixel level, where each pixel is classified as either belonging to the foreground or the background.
 Although this segmentation is binary, it is single-class in the sense that all foreground pixels are treated as a single foreground class, without distinguishing between different types of foreground, like tablet outlines, sign types, etc.
-This segmentation process can be mathematically described as a mapping that - given some predicate function $f$, and an input image $I$ - produces a binary mask $B$ of the same dimensions, where each pixel value indicates whether it belongs to the foreground (by convention denoted as 1) or the background (denoted as 0):
+This segmentation process can be mathematically described as a mapping that, given some predicate function $f$, and an input image $I$, produces a binary mask $B$ of the same dimensions, where each pixel value indicates whether it belongs to the foreground (by convention denoted as 1) or the background (denoted as 0):
 
 $$ B(x,y) = \begin{cases}
     1 & \text{if } f(I,x,y) \\
@@ -34,7 +34,7 @@ Or it can be determined from the local context of each pixel's neighborhood (see
 
 $$ (w * I)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} w(i,j) I(x-i, y-j) $$
 
-\noindent Even the entire image can be given as context combined with external context, as in the case of \acs{SAM} (see \cref{subsubsec:SAM_architecture}), where the inner workings of its transformer-based structure - traditionally used in \acs{NLP} and \acfp{LLM} - can be understood as a learned, non-linear black-box function that takes both image and prompts to produce the binary output mask.
+\noindent Even the entire image including external guidance can be given as context, as in the case of \acs{SAM} (see \cref{subsubsec:SAM_architecture}), where the inner workings of its transformer-based structure can be understood as a learned, non-linear black-box function that takes both image and prompts to produce the binary output mask.
 Thus, the segmentation problem can evidently be approached by many different methods, each with their own contextual arguments and inner workings $f$.
 And of those evaluated, it was just a matter of choosing the best one (for the evaluation details used to do that, see \cref{subsec:evaluation}).
 
@@ -133,7 +133,7 @@ For the sake of fairness, it seemed only reasonable to test out the following ra
 
 Furthermore, for additional fairness, a small ablation study was conducted on the base models (\acs{SAM}, Mobile\acs{SAM}, \acs{SAM}2) to investigate whether these variants benefitted from the use of bilateral pre-filtering (see \cref{subsubsec:bilateral_pre_filtering}), and automatic threshold-derived point prompts (see \cref{subsubsec:automatic_prompts}).
 
-To be able to run all these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} - a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
+To be able to run all these computationally demanding variants of \acs{SAM}, model execution was outsourced to Modal \parencite[see][]{modal_docs} -- a serverless cloud computing platform usually used for \acs{ML} inference, tuning and training.
 The following subsections describe the architecture of the chosen variants, and how they were implemented in the evaluation.
 
 \subsubsection{SAM architecture}
@@ -193,7 +193,7 @@ It is this reduction in encoder size that makes Mobile\acs{SAM} computationally 
 
 \subsubsection{SAM2}
 
-With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} - a hierarchical \acs{ViT}, which by lowering attention complexity is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process. 
+With the release of \acs{SAM}2 \parencite{sam2}, the image encoder was changed to Hiera \parencite{hiera} -- a hierarchical \acs{ViT}, which by lowering attention complexity is more parameter efficient than vanilla \acs{ViT}s, as tokens are pooled together at different stages of the encoding process. 
 Additionally, a memory attention mechanism was added for consistency, allowing the model to attend to segmentation outputs of previous frames to make masks between frames consistent enough to segment videos.
 As seen in \cref{fig:SAM2_architecture}, it does so by storing a memory-encoded version of the mask output of each previous frame in a memory bank that are then attended to by the image-encoded embeddings before being passed to the mask decoder.
 \begin{figure}[htp]
@@ -216,7 +216,7 @@ Since the tablets were segmented as individual still images, \acs{SAM}2's image 
 The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in the next section.
 
 \subsubsection{FATESAM} \label{subsubsec:FATESAM}
-Within the domain of 3D medical images, \acs{FATESAM} - a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fine-tuned versions of \acs{SAM}.
+Within the domain of 3D medical images, \acs{FATESAM} -- a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fine-tuned versions of \acs{SAM}.
 As seen in \cref{fig:FATESAM_architecture}, it works in principle by making use of \acs{SAM}2's architecture and memory attention mechanism, by passing a few support images to its memory encoder, such that the mask decoder ends up with context to generate a similar segmentation mask for the input query image.
 
 At inference of the 2D-adaptation made, support masks $y_s^{j}$ (rather than support mask volumes $y_s^{ij}$ with index slice $i$) are chosen by the similarity of their corresponding image-encoded support images $\mathcal{E}(x_s^{j})$ to the image-encoded query image $\mathcal{E}(x)$ to make sure that they are as representative as possible.
@@ -327,7 +327,7 @@ In case the normality assumption was violated, the non-parametric domain-specifi
 
 
 \section{Tool-side interaction} \label{Interaction efficiency}
-To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To which extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
+To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To what extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
 The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
 \subsection{Tool development}
 The tool was developed in close collaboration with Ester Salgarella, in an attempt to make it fit her workflow and needs as much as possible.
@@ -341,12 +341,12 @@ These tests took place the 5th, 8th and 12th of May (see \cref{appendix:usabilit
 
 
 \subsection{Tool architecture}
-The architecture of the tool was developed as a web-application using Svelte as the frontend framework, and FastAPI as the backend framework, hosted via Render.
+The architecture of the tool (see \cref{fig:tool-architecture}) was developed as a web-application using Svelte as the frontend framework, and FastAPI as the backend framework, hosted via Render \parencite{Render}.
 Because it was made a web application, it could be run remotely on any device through a web browser, without the need for installation, making it more easily accessible and ideal for online user testing with Ester Salgarella.
 To make the development environment more consistent with production, the application was containerized using Docker, which made it easier to deploy and run on any machine without worrying about dependencies and environment setup.
 
 Svelte was chosen for the frontend mostly due to its reactive state management, making it well-suited for building interactive user interfaces, as this functionality removes the need for re-inserting state variables every time they change.
-FASTAPI was chosen as the backend, as it is Python based, and therefore able to serve the Python segmentation models implemented, which was essential for the tool's functionality.
+FastAPI was chosen as the backend, as it is Python based, and therefore able to serve the Python segmentation models implemented, which was essential for the tool's functionality.
 It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server.
 
 \input{charts/tool-architecture.tex}
@@ -370,7 +370,7 @@ And at last, the user could then export this mask in a format of their choice (s
 
 
 \subsubsection{Integration of the classical method}
-Chosen to represent classical segmentation methods was the best classical method from the non-interactive evaluation described in the previous section: Gaussian adaptive thresholding (see \cref{Segmentation quality}).
+Chosen to represent classical segmentation methods was the best classical method from the non-interactive evaluation, Gaussian adaptive thresholding (see \cref{Segmentation quality,subsec:classical_comparison}).
 On the basis of user feedback during the usability tests (see \cref{appendix:usability-tests}), a slider was added as an interactive way to control the coarseness of the segmentation.
 A range of "granularity" was given $[-50,100]$, where 0 represented the default hyperparameters of the model.
 The higher the value of this "granularity" slider, the more coarse the segmented mask would turn out, and the lower the value, the more fine-grained it would be.
@@ -385,19 +385,21 @@ A view of this method and the granularity slider can be seen in \cref{fig:classi
 
 \subsubsection{Integration of SAM}
 Chosen to represent \acs{SAM} was the vanilla version of \acs{SAM}2.
-This choice was made due to its theoretical \acs{SOTA} superiority, as it was deemed that the non-interactive evaluation described in the previous section could not be used to conclude how the methods would perform when used interactively.
-It was decided to make full use of the interactive capabilities, including both box prompts, and foreground and background point prompts, as this seemed to be the best way to represent its potential.
+This choice introduced an internal-external selection asymmetry, as the classical method was selected based on the preceding empirical evaluation (\cref{subsec:classical_comparison}), whereas vanilla \acs{SAM}2 was selected on external empirical grounds due to its documented \acs{SOTA} performance in general interactive segmentation \parencite{sam2}.
+This was deemed appropriate because the non-interactive evaluation described in the previous section could not determine how \acs{SAM} would perform when used interactively.
+
+It was decided to make full use of its interactive capabilities, including both box prompts, and foreground and background point prompts, as this seemed to be the best way to represent its potential.
 But there was one problem.
-The mask decoder for \acs{SAM} (and \acs{SAM}2 for that matter) only takes one box prompt at a time, which is not ideal when wanting to segment multiple signs of interest within the same tablet.
-To circumvent this, the prompts given to it when boxes were present were processed in the mask decoder so that a separate mask was generated once for each $n$ box prompts placed, also passing the point prompts within it (see \cref{fig:sam_tool} for the associated user interface).
+The mask decoder for \acs{SAM}2 (and \acs{SAM} for that matter) only takes one box prompt at a time, which is not ideal when wanting to segment multiple signs of interest within the same tablet.
+To circumvent this, the prompts given to it when boxes were present were processed in the mask decoder so that a separate mask was generated once for each $n$ box prompts placed, also passing only the point prompts within it (see \cref{fig:sam_tool} for the associated user interface).
 These $n$ masks were then at last merged together by a pixel-wise logical OR operation to generate the final segmentation mask.
+
 This was still sensible computationally, as predictions were split up such that the image encoder was only executed once on image import, while the mask decoder (as described in \cref{subsubsec:SAM_architecture}) is lightweight enough that it could be executed multiple times without a significant increase in latency.
+And even though one strongly oversegmented mask from any single box could inflate the combined result, each predicted mask was expected to remain largely confined to the prompted region due to the nature of box prompts.
 
-
-
-Included in this prompt placement interface of the tool was a toolbar consisting of the following tool buttons (see \cref{fig:sam_tool} and \cref{fig:sam_tool_export} for in-tool views of the SAM-based tool, with the toolbar on the left):
+Included in the prompt placement interface of the tool was a toolbar consisting of the following tool buttons (see \cref{fig:sam_tool} and \cref{fig:sam_tool_export} for in-tool views of the SAM-based tool, with the toolbar on the left):
 \begin{itemize}
-    \item \texttt{Box prompt}: When selected, allowed the user to place box prompts on the canvas by clicking the pixelcoordinates of the corners that should define the box.
+    \item \texttt{Box prompt}: When selected, allowed the user to place box prompts on the canvas by clicking the pixel coordinates of the corners that should define the box.
     \item \texttt{Foreground prompt}: When selected, allowed the user to place foreground point prompts on the canvas by clicking on the pixel coordinates they want to include in the segmentation.
     \item \texttt{Background prompt}: When selected, allowed the user to place background point prompts on the canvas by clicking on the pixel coordinates they want to exclude from the segmentation.
     \item \texttt{Eraser}: When selected, allowed the user to remove any placed prompts by clicking on them.
@@ -421,7 +423,7 @@ Included in this prompt placement interface of the tool was a toolbar consisting
 \end{figure}
 
 
-\subsection{Experimental design for evaluation of interaction efficiency}
+\subsection{Experimental design for \acs{RQ}2}
 \label{subsec:experimental_design_interaction_efficiency}
 To evaluate the interaction efficiency of the \acs{SAM}-based tool, a case study was conducted with Ester Salgarella, where she was asked to perform the segmentation of 3 documents from the test set (one from each difficulty category) with each method of the tool.
 In a wish to obtain statistical power, an inclusion of all 27 test images was initially preferred, but due to time constraints, only 3 documents made it to the evaluation.
@@ -429,45 +431,56 @@ That reduced sample size made the evaluation exploratory and case-study-based ra
 However, it still allowed for a direct comparison of the interaction efficiency of the two tools, using quantitative indicators of both time expenditure (minutes), and the quality of the outputs they generated (\acs{Dice}).
 The interaction burden could then further be exploratorily decomposed into the time taken for the models to execute, and for \acs{SAM}-based tool, the amount and types of prompts placed.
 
-The experiment itself was conducted in-person with Ester Salgarella as the participant at \acf{AIAS} on the 12th of June on the same day as the last usability and acceptance test.
+The experiment itself was conducted in-person with Ester Salgarella as the participant at \acs{AIAS} on the 12th of May on the same day as the last usability and acceptance test.
 Specifically, she was instructed to make use of the tool method evaluated on the document given until she deemed that she could not further improve the segmentation output, whereafter she should export the final mask as it was.
+The order of the methods tested was not randomized: the classical tool was tested first, followed by the \acs{SAM}-based tool.
+Possible order effects, such as fatigue, are therefore treated as a methodological constraint.
 Tool interaction was recorded by the help of live screen recordings via Microsoft Teams, wherefrom the model execution time, the prompts placed, and the time taken from image import to mask export were all measured.
 The exports of each tool were also saved on disk, so that \acs{Dice} scores could later be computed therefrom.
 
 \section{Workflow integration} \label{Workflow efficiency}
-To answer the question of \hyperref[rq3]{\acs{RQ}3}: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the tools described in the previous section (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
+To answer the question of \hyperref[rq3]{\acs{RQ}3}: \textit{How much reduction in annotation time can be achieved using the proposed tool compared to fully manual digitization, under controlled experimental conditions?}, another case study of 3 documents was conducted with Ester Salgarella, where the time taken to finish polishing the segmentation outputs exported from the two developed tools (see \cref{Interaction efficiency}) was measured, and compared to the time taken to do the same drawings fully manually.
 
-The following subsections go into more details on the precautions taken in an attempt to fit the tool into the workflow, the experimental design for the evaluation of workflow efficiency, and the definition of the workflow efficiency metric.
+The following subsections go into more details on the workflow definition, the attempt made to fit the tool into it, and the experimental design for the evaluation of this workflow efficiency.
 
 \subsection{Definition of the workflow}
 \label{subsection:definition_of_workflow}
 The tool was designed to fit into Ester's existing workflow as much as possible, to make it more likely that she would be able to use it with minimal friction, and to make the evaluation of its efficiency more ecologically valid.
 To do that, however, it was necessary to first understand her workflow in detail.
+\Cref{fig:tool-workflow} illustrates this workflow and where the tool was designed to fit into it, up to the marked \textit{scope cutoff}.
 
 \input{charts/tool-workflow.tex}
 
 When Ester does the annotation of a document from the \acs{GORILA} corpus, she first imports a screenshot of the \acs{GORILA} corpus drawing into Krita, creating a new layer on top of it to do the segmentation drawing.
 She draws this drawing with a digital pen on a displayless pressure-sensitive Wacom drawing pad.
-And while doing that, she looks for any possible mistakes in the signs, with the original image, and her mental map of the sign types as guidance, correcting them by erasing and redrawing.
-At last, when she is satisfied with the drawing, she splits each sign into a separate layer, adds metadata, and exports to JSON format.
+While doing that, she looks for any possible mistakes in the signs, with the original image, and her mental map of the sign types as guidance, correcting them by erasing and redrawing.
+At last, when she is satisfied with the drawing, she splits each sign into a separate layer, adds metadata, and imports to SigLA as JSON and Krita files.
+
 Due to scope limitations, it was only the process before that splitting into layers and adding of metadata that this project aimed to improve.
-\subsection{Export to Krita}
+\subsection{The adaptation (export to Krita)}
 \label{subsection:export_to_krita}
 When the segmentation of a document within the tool was complete, it was designed to allow for export to JPEG, PNG, or OpenRaster (\texttt{.ora}) format.
 The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively.
-This is simpler in structure and easier to read and write for external programs than the \texttt{.kra} file format, since it was specificially designed as an open exchange format between graphics editors.
+This is simpler in structure and easier to read and write for external programs than the \texttt{.kra} file format, since it was specifically designed as an open exchange format between graphics editors.
 Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only.
 
 Additionally, OpenRaster (\texttt{.ora}) format is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly opened there for further manual editing and annotation.
 And as Krita was already part of Ester's workflow, it was only natural to make the exported starting point suggestions from the tools directly compatible with it, to make the transition from tool to manual post-editing as seamless as possible.
 This file format also made it possible for the tool export to include the original image as a layer, and the generated mask as another, so that the former could be used as a guiding reference for post-editing of the latter.
 
-\subsection{Experimental design for evaluation of workflow efficiency}
-The workflow efficiency case study was built upon the data obtained from the in-tool case study described in the previous section (see \cref{subsection:definition_of_workflow}).
-These two case studies can therefore be seen as a single one, as one was merely an extension of the other.
-Thus, both of them suffered from the same time-constraint-caused limitations in terms of sample size and statistical power, making them exploratory and case-study-based rather than statistically powered.
+\subsection{Experimental design for \acs{RQ}3} \label{subsec:experimental_design_workflow_efficiency}
+To evaluate the workflow efficiency of the two developed tools (see \cref{Interaction efficiency}), the time it took Ester Salgarella to do the manual annotation workflow in Krita was compared in a case study of 3 documents to the time taken when doing the complete workflow of each of these tools.
+The workflow efficiency metric was defined as the sum of tool time (image import to mask export) and drawing time in Krita -- which for the tools was defined by post-editing time (polishing the tool-suggested mask draft until completion).
 
-The drawings were made in Krita using the displayless pressure-sensitive Wacom drawing pad with a pen input used in her original workflow (see).
-The case study involved Ester Salgarella post-editing the tool exports from the interaction efficiency study in Krita, recording the time taken, to compare it to the time taken to do the same drawings fully manually.
-Since Ester expressed a lack of guiding reference to know when the drawing was complete - even with the originally imported raw tablet images included as layers - the corresponding \acs{GORILA} corpus drawing for each document was also included as a layer in the exported \texttt{.ora} file by manually importing it and aligning it with the other two layers before letting Ester start the post-editing.
+Thus, this workflow efficiency case study was built upon the tool-related data (of tool time and mask exports) obtained from the in-tool case study (see \cref{Interaction efficiency,subsec:experimental_design_interaction_efficiency}).
+Hence, both studies suffered from the same time-constraint-caused limitations in terms of sample size and statistical power, making them exploratory and case-study-based rather than statistically powered.
+
+The drawings in Krita were made using the displayless pressure-sensitive Wacom drawing pad with a pen input used in Ester's original workflow (see \cref{fig:tool-workflow}).
+The case study was not done in-person, but consisted of Ester Salgarella remotely post-editing the tool exports from the interaction efficiency study in Krita, recording the time taken on her phone.
+For the manual workflow, she was then asked to do the same drawings, but from scratch without any tool-suggested mask draft.
 And as a proof of completion, Ester was asked to send the finished \texttt{.ora} files back again.
+
+Even with the originally imported raw tablet images included as layers in the exported \texttt{.ora} files, Ester expressed a lack of guiding reference to know when the drawing was complete.
+Therefore, the corresponding \acs{GORILA} corpus expert drawing for each document was manually imported, aligned with the other two layers, and included as an additional layer in the exported \texttt{.ora} file before letting Ester start the post-editing.
+For the manual workflow, all of these layers except the tool-suggested draft were also included, to make the comparison as fair as possible.
+
