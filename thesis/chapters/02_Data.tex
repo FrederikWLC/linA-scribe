@@ -15,7 +15,8 @@ They were then randomly split into three subsets: test (27 images), validation (
 All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}), and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
 
 Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
-The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality (see \cref{subsec:quality_limitation}), being the only source including the whole publicized corpus of the Linear A inscriptions.
+The raw document images from \acs{GORILA} are screenshots of grayscale images placed within the scanned printed edition of the corpus (see \cref{subsec:quality_limitation}).
+Furthermore, the ground truth annotations from SigLA are naturally characterized by several thin, fragmented signs as opposed to the more distinct "rounded" natural objects that \acs{SAM} is used to segment.
 For an example of a raw document image and its corresponding ground truth annotation, see \cref{fig:ht7b_example}.
 \begin{figure}[htp]
 \centering
@@ -38,7 +39,7 @@ For an example of a raw document image and its corresponding ground truth annota
 \subsection{Difficulty classification}
 \label{sec:difficulty_classification}
 To make the dataset more representative, each image included in the dataset was chosen according to its visual quality and the clarity of the inscriptions, and categorized into three difficulty levels (easy, medium, hard), such that the distribution of images across these levels was balanced.
-This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
+This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of document breakages or general damage to the inscriptions.
 The concrete criteria used to classify the difficulty sets were as follows:
 \begin{itemize}
     \item \textbf{Easy:} labeled as such for documents with clear engravings, good contrast, minimal noise, and constant lighting.
@@ -103,14 +104,15 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \label{subsec:registration}
 To obtain any kind of meaningful comparison between model outputs and ground truth, the raw document images and their ground truth annotations had to be aligned and registered to each other.
 This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw document counterparts, and aligning by translation and rotation, using the raw document images as background reference.
-After this, the registered ground truth images were binarized with a threshold of 128, meaning that all pixels with higher intensities were considered foreground, and all pixels with lower intensities were considered background (see \cref{subsec:binarization} for an initial issue with this step).
+The registered ground truth images were then binarized with a threshold of 128, meaning that all pixels with higher intensities were considered foreground, and all pixels with lower intensities were considered background (see \cref{subsec:binarization}).
 \clearpage
 
 \section{Limitations and biases}
 \subsection{Quality of the raw document images}
 \label{subsec:quality_limitation}
 Due to the weak quality of the raw document images, they carry only parts of the visual information of the tablets they represent.
-This results from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots, with each step yielding some loss of information.
+This results from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots.
+With each of these steps, information was lost as a consequence of simplified representation.
 When the drawings of \acs{GORILA} were made \parencite{EtudesCretoises21}, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets.
 Therefore, the document images used are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
 That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods \parencite{DataCentricAI}.

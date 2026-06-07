@@ -6,7 +6,7 @@ This is illustrated by the following summaries of findings per research question
 
 \section{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
 The first research question concerned the non-interactive segmentation quality of \acs{SAM} within the domain of Linear A document images compared to classical image processing baselines.
-Measured with \acs{Dice} scores \cref{subsec:evaluation} on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
+Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
 On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse}, despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
 
 \section{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
@@ -23,10 +23,10 @@ In fact, the tools even seemed to increase work time (SAM more so than the class
 \section{Overall conclusion}
 To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
 This was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference (see \cref{subsec:quality_limitation}), which were low both in size and quality, consisting of screenshots of grayscale photographs embedded in the scanned print edition of the corpus.
-But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on segmentation quality (see \cref{rq1results}).
-
+But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on the same data (see \cref{rq1results}).
 Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baseline (\cref{rq2results}).
-This can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A tablets, which are characterized by several thin, fragmented signs as opposed to the more distinct "rounded" objects found in natural images.
+
+This can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents.
 Thus, the results suggest that \acs{SAM} needs tuning to perform well on this task. 
 Although the results were clearly negative, they provide valuable insights into the shortcomings of \acs{SAM} within the domain of \acs{GORILA} raw document images, and suggest directions for future research and development to achieve a more automated workflow.
 
