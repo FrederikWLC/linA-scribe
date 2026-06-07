@@ -2,10 +2,10 @@
 \chapter{Data}
 \section{Sources}
 The dataset used in this thesis was constructed from 60 images of raw Linear A inscriptions, and their corresponding ground truth annotations.
-\acs{Cefael} \parencite{EtudesCretoises21} was chosen as the source for raw document images, since it is the only online and widely publicly available source of the printed five volume corpus - \acf{GORILA}. 
+\acs{Cefael} \parencite{EtudesCretoises21} was chosen as the source for raw document images, since it is the only online and widely publicly available source of the printed five-volume corpus -- \acs{GORILA}. 
 As ground truth, annotations provided by Ester Salgarella from SigLA \parencite{SalgarellaCastellanSigLA2020} were chosen instead of the annotated drawings from the corpus, as the former are more up to date, and of better quality.
 
-What follows in this chapter is a detailed description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
+What follows in this chapter is a description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
 
 \section{Characteristics and construction}
 The dataset was made to consist of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
@@ -14,7 +14,7 @@ They were then randomly split into three subsets: test (27 images), validation (
 All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization, and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
 
 Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
-The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only widely publicly available images of the Linear A inscriptions.
+The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only source including the whole publicized corpus of the Linear A inscriptions.
 For an example of a raw document image and its corresponding ground truth annotation, see Figure \ref{fig:ht7b_example}.
 \begin{figure}[htp]
 \centering
@@ -44,8 +44,8 @@ The concrete criteria used to classify the difficulty sets were as follows:
     \item \textbf{Hard:} labeled to those with poor contrast, significant noise, and substantial damage making it hard even for the naked eye to read the inscriptions.
     \item \textbf{Medium:} labeled to all those inbetween the qualities of easy and hard.
 \end{itemize}
-Reviewing the first 30 images, Ester Salgarella gave feedback that the easy and medium images initially looked too similar.
-Consequently, some borderline cases were reclassified before the remaining 30 images were added.
+Reviewing roughly half of the initial images chosen, Ester Salgarella gave feedback that the easy and medium images looked too similar.
+Consequently, some borderline cases were reclassified before the remaining images were added.
 For visual examples of images within each of these difficulties, see \cref{fig:difficulty_examples}.
 
 
@@ -101,15 +101,16 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \subsection{Image registration and preprocessing}
 To obtain any kind of meaningful comparison between model outputs and ground truth, the raw document images and their ground truth annotations had to be aligned and registered to each other.
 This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw document counterparts, and aligning by translation and rotation, using the raw document images as background reference.
-
+After this, the registered ground truth images were binarized with a threshold of 128, meaning that all pixels with higher intensities were considered foreground, and all pixels with lower intensities were considered background.
 \clearpage
 
 \section{Limitations and biases}
-\subsection{Quality of the raw tablet images}
-Due to the weak quality of the raw tablet images, they carry only parts of the visual information of the tablets they represent.
-When the drawings of \acs{GORILA} were made, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets. 
-Therefore, these tablet images are far from the best source of data there is, being however, the only source publicly available.
-That lack of good quality data can unfortunately limits the output quality of segmentations constructed therefrom.
+\subsection{Quality of the raw document images}
+Due to the weak quality of the raw document images, they carry only parts of the visual information of the tablets they represent.
+This results from the quality-degrading chain through which they were produced: being grayscale photographs of primary evidence embedded into the scanned printed edition of the corpus, later extracted as screenshots, with each step yielding some loss of information.
+When the drawings of \acs{GORILA} were made, the researchers had access to the tablets themselves, meaning they could see what the images did not pick up, and better discern actual engravings from mere damages to the tablets.
+Therefore, the document images used are in theory far from the best source of data there is, being, however, in practice the only source including the whole publicized corpus.
+That lack of high-quality data can unfortunately limit the output quality of segmentations constructed therefrom, as it is data that is the bottleneck for machine learning methods.
 \subsection{Alignment to the ground truth}
 Even after image registration, ground truth images still did not perfectly align with the raw images, affecting the obtained segmentation quality.
 This misalignment was a source of noise in the evaluation.
