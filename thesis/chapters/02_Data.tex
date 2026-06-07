@@ -15,7 +15,7 @@ All reported results of this Thesis are based on the test set, while the validat
 
 Only inscriptions with clay as writing support were included, as they are the most common, representing over 90\% of the Linear A corpus \parencite[p. 29]{Salgarella2025}, and were the only ones for which SigLA ground truth annotations were already available.
 The raw document images from \acs{Cefael} are screenshots of grayscale images placed within the scanned printed edition of the corpus, and are thus not of the highest quality, being the only source including the whole publicized corpus of the Linear A inscriptions.
-For an example of a raw document image and its corresponding ground truth annotation, see Figure \ref{fig:ht7b_example}.
+For an example of a raw document image and its corresponding ground truth annotation, see \cref{fig:ht7b_example}.
 \begin{figure}[htp]
 \centering
 \begin{subfigure}[t]{0.4\textwidth}
@@ -40,9 +40,9 @@ To make the dataset more representative, each image included in the dataset was 
 This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
 The concrete criteria used to classify the difficulty sets were as follows:
 \begin{itemize}
-    \item \textbf{Easy:} labeled as such for documents with clear ingravings, good contrast, minimal noise, and constant lighting.
+    \item \textbf{Easy:} labeled as such for documents with clear engravings, good contrast, minimal noise, and constant lighting.
     \item \textbf{Hard:} labeled to those with poor contrast, significant noise, and substantial damage making it hard even for the naked eye to read the inscriptions.
-    \item \textbf{Medium:} labeled to all those inbetween the qualities of easy and hard.
+    \item \textbf{Medium:} labeled to all those in between the qualities of easy and hard.
 \end{itemize}
 Reviewing roughly half of the initial images chosen, Ester Salgarella gave feedback that the easy and medium images looked too similar.
 Consequently, some borderline cases were reclassified before the remaining images were added.
@@ -116,7 +116,7 @@ Even after image registration, ground truth images still did not perfectly align
 This misalignment was a source of noise in the evaluation.
 Ester's annotations were never constructed by overlaying them on the raw images, but rather by doing so on the accompanied corpus drawings, only using the raw images as reference.
 
-As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawing style of the drawings is also especially biased with dots and and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
+As seen in \cref{fig:difficulty_examples_ht3_gt}, the drawing style of the drawings is also especially biased with dots and lines representing damages on the tablets, which are not present in the same way visually in the raw images.
 Thus, the raw images and the ground truth annotations were never perfectly aligned to begin with, and the manual registration process could only do so much to mitigate that.
 This is seen by the low \acs{Dice} values obtained for all models in the results (see \cref{rq1results}).
 
@@ -125,7 +125,7 @@ Due to a missing threshold step of the registered JPEGs in the initial registrat
 This led to lower \acs{Dice} scores in general, as the ground truth then in practice was thinner and more sparse compared to the actual drawings.
 
 This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels with higher intensities now were considered foreground, and all pixels with lower intensities were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
-However, only the hyperparameter optimization of the models was not redone for the new binarization format, and was thus performed with ground truth in the old binarization format.
+However, the hyperparameter optimization alone was not redone for the new binarization format, and was thus performed on ground truth in the old binarization format.
 Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles more than otherwise), while still preserving fairness, as all model hyperparameters were tuned under the same conditions.
  
 \begin{figure}[htp]
