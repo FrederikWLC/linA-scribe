@@ -8,7 +8,7 @@ As ground truth, annotations provided by Ester Salgarella from SigLA \parencite{
 What follows in this chapter is a detailed description of this dataset, documenting its characteristics, its construction process, and its limitations and biases.
 
 \section{Characteristics and construction}
-The dataset was made to consists of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
+The dataset was made to consist of 60 chosen image pairs of raw documents and their corresponding ground truth annotations.
 Each of these image pairs was categorized into one of three difficulty levels (easy, medium, hard) based on the visual quality of the inscriptions (see \cref{sec:difficulty_classification}).
 They were then randomly split into three subsets: test (27 images), validation (27 images), and support (6 images), with each one having an equal proportion of images from each of the three difficulty levels.
 All reported results of this Thesis are based on the test set, while the validation set was used for hyperparameter optimization, and the support set was used for \acs{ICL} variants of \acs{SAM} (see \cref{subsubsec:FATESAM,subsubsec:GFSAM}).
@@ -36,7 +36,7 @@ For an example of a raw document image and its corresponding ground truth annota
 
 \subsection{Difficulty classification}
 \label{sec:difficulty_classification}
-The dataset was categorized into three difficulty levels (easy, medium, hard) based on the visual quality of the raw images and the clarity of the inscriptions.
+To make the dataset more representative, each image included in the dataset was chosen according to its visual quality and the clarity of the inscriptions, and categorized into three difficulty levels (easy, medium, hard), such that the distribution of images across these levels was balanced.
 This classification was performed manually by inspecting each image and considering factors such as contrast, noise, and the presence of tablet breakages or general damage to the inscriptions.
 The concrete criteria used to classify the difficulty sets were as follows:
 \begin{itemize}
@@ -44,6 +44,8 @@ The concrete criteria used to classify the difficulty sets were as follows:
     \item \textbf{Hard:} labeled to those with poor contrast, significant noise, and substantial damage making it hard even for the naked eye to read the inscriptions.
     \item \textbf{Medium:} labeled to all those inbetween the qualities of easy and hard.
 \end{itemize}
+Reviewing the first 30 images, Ester Salgarella gave feedback that the easy and medium images initially looked too similar.
+Consequently, some borderline cases were reclassified before the remaining 30 images were added.
 For visual examples of images within each of these difficulties, see \cref{fig:difficulty_examples}.
 
 
@@ -97,8 +99,8 @@ For visual examples of images within each of these difficulties, see \cref{fig:d
 \end{figure}
 
 \subsection{Image registration and preprocessing}
-To obtain any kind of meaningful comparison between model outputs and ground truth, the raw images and their ground truth annotations had to be aligned and registered to each other.
-This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw counterparts, and aligning by translation and rotation, using the raw images as background reference.
+To obtain any kind of meaningful comparison between model outputs and ground truth, the raw document images and their ground truth annotations had to be aligned and registered to each other.
+This was done manually in Krita for all 60 image pairs by downscaling the ground truth images to the individual scales of their raw document counterparts, and aligning by translation and rotation, using the raw document images as background reference.
 
 \clearpage
 
@@ -123,7 +125,7 @@ This led to lower \acs{Dice} scores in general, as the ground truth then in prac
 
 This issue was for the evaluation later corrected to a threshold of 128, meaning that all pixels with higher intensities now were considered foreground, and all pixels with lower intensities were considered background (see \cref{fig:binarization_examples} for visual examples of the two different ways of binarization).
 However, only the hyperparameter optimization of the models was not redone for the new binarization format, and was thus performed with ground truth in the old binarization format.
-Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles  more than otherwise), while still preserving fairness and generalizability, as all model hyperparameters were tuned under the same conditions.
+Arguably, this only affected the effectiveness of the optimization and what the models were optimized for (penalizing non-conservative segmentation styles more than otherwise), while still preserving fairness, as all model hyperparameters were tuned under the same conditions.
  
 \begin{figure}[htp]
 \centering
