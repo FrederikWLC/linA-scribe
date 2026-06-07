@@ -1,58 +1,12 @@
 %!TEX root = ../Thesis.tex
 \chapter{An Appendix}
 
-\subsection{Examples of hyperparameter configurations}
-\label{appendix:hyperparam}
-
-\begin{figure}[htp]
-\centering
-\figcross
-\begin{enumerate}
-    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-\end{enumerate}
-\caption{Hyperparameters for \acf{Gaussian}.}
-\label{fig:hyperparameters_gaussian}
-\end{figure}
-
-\begin{figure}[htp]
-\centering
-\figcross
-\begin{enumerate}
-    \item $\sigma$: the constant used to determine the thresholds $T_l$ and $T_h$ for the hysteresis thresholding,
-    \item $d_{closing}$: the diameter of the kernel window for the morphological closing of the edges
-\end{enumerate}
-\caption{Hyperparameters for \acf{CannyFill}.}
-\label{fig:hyperparameters_CannyFill}
-\end{figure}
-
-\begin{figure}
-\centering
-\figcross
-\begin{enumerate}
-    \item $C$: the constant subtracted from the Gaussian-weighted sum to compute the local threshold (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{gaussian}$: the diameter of the kernel window for Gaussian adaptive thresholding (see \cref{subsubsec:gaussian_baseline}),
-    \item $d_{bilateral}$: the diameter of the kernel window for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $\sigma$: the spatial and intensity standard deviation for bilateral pre-filtering (see \cref{subsubsec:gaussian_baseline}),
-    \item $n_{fgd\_points}$: the number of foreground point prompts to be sampled from the foreground of the first Gaussian thresholded mask,
-    \item $n_{bgd\_points}$: the number of background point prompts to be sampled from the sure background region,
-    \item $d_{gap\_erosion}$: the kernel size for erosion used to create a gap between the foreground and background regions.
-\end{enumerate}
-\caption{Hyperparameters for \acf{SAM+pts}}
-\label{fig:hyperparameters_SAM}
-\end{figure}
-
-\clearpage
 
 
-\section{Interactive tool development}
-
-\subsection{Usability tests}
+\section{Usability tests}
 \label{appendix:usability-tests}
 
-\subsubsection{Requirement analysis and first usability test}
+\subsection{The first usability test}
 The 5th of May, a requirement analysis and first usability test of a MVP was performed with Ester through a video call.
 That MVP was composed of two tools: a classical method (Gaussian), and an interactive SAM version (MobileSAM).
 After trying out the tools, she gave the impression that she could probably use the outputs as draft drawings to be completed with a pen, which might save her some time.
@@ -65,7 +19,7 @@ But she was worried that the interaction with SAM would take longer than simply 
 The box-prompt workflow was not completely successful during the test.
 Due to bugs, boxes mostly did not work. and when they did, the segmented forms were not useful.
 
-\subsubsection{Second (small) usability test}
+\subsection{Second (small) usability test}
 
 The 8th of May, another usability test was performed on an updated MVP with Ester through a video call.
 Now, the box prompts worked, and the MobileSAM was replaced with SAM2.1.
@@ -73,7 +27,7 @@ The segmentation quality per box-prompted sign was noticeably better than previo
 Together with Lukas Esterle, the conclusions were to make a slider for the classical model to decrease and increase granularity.
 It was also suggested that box prompts for SAM could be computationally preselected based on the mask from the classical model, but this was discarded as it was not deemed needed.
 
-\subsubsection{Third usability and final acceptance test}
+\subsection{Final acceptance test}
 
 The 12th of May, a third usability test was conducted in person at AIAS in Århus, including the first part of the usability experiment.
 As all 45 images could not be drawn all at once, the .ora exports from the tool were saved, and finished at a later time in batches by Ester on her own, for each of them recording the time it took to do so.

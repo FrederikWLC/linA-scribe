@@ -4,13 +4,13 @@
 \section{Background}
 
 When the British archaeologist Arthur Evans in the beginning of the 20th century went to excavate Knossos on Crete, he found a huge amount of clay tablets written in a previously unknown linear script.
-Some documents were clearly of a newer script, which he called \textit{Linear B}, while others were of an older one, which he named \textit{Linear A}.
-Some fifty years later, the British amateur archaeologist Michael Ventris finally succeeded in deciphering the newer script Linear B, which he proved to be representing Mycenaean Greek, the earliest attested form of Greek.
+Some documents were clearly of a newer script, which he called \textit{Linear B}, while others were of an older one, which he named \textit{Linear A} \parencite{Salgarella2020}.
+Some fifty years later, the British amateur archaeologist Michael Ventris finally succeeded in deciphering the newer script Linear B, which he proved to be representing Mycenaean Greek, the earliest attested form of Greek \parencite{VentrisChadwick1956}. % NEW: VentrisChadwick1956 -- Ventris & Chadwick (1956), Documents in Mycenaean Greek, Cambridge University Press
 But the same hypothesis did not hold for the older script Linear A, whose encoded language remained unknown, still yet to be deciphered.
 
 A key obstacle to its decipherment has been the small size of its corpus, lately consisting of only around 2,500 inscriptions, and about 1,400 if only including those well-preserved enough to be readable \parencite[p.~13]{Salgarella2025}.
 This is significantly smaller than that of its younger counterpart, which now spans more than 4,500 inscriptions that are also comparatively longer and better preserved \parencite[p.~46]{Salgarella2025}.
-But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents \parencite{RILA-S1,CNRLinearACorpus2025}
+But new inscriptions are still being discovered, with the corpus most recently extended in 2025 by over 100 new documents \parencite{RILA-S1,CNRLinearACorpus2025}.
 
 Another challenge has been the lack of digital representations of these inscriptions, in a form suitable for statistical analysis.
 While photographs accompanied by expert drawings of nearly the entire corpus - \acf{GORILA} - are available online through \acf{Cefael}, these are only available in print form \parencite{EtudesCretoises21}.
@@ -21,7 +21,7 @@ And the project has so far managed to document just 776 of all currently known i
 
 \subsection{A problem of manual digitization}
 
-The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita.
+The drawings currently stored on SigLA were made by Ester Salgarella using the painting tool Krita \parencite{KritaDocs}.
 For each document, she manually created her own annotated drawings based on the \acs{GORILA} originals, stored by \acs{Cefael} as poor quality gray-scale raw tablet images accompanied by expert drawings.
 From these, she proceeded to create layered Krita files with metadata for each sign, which could then at last be imported as JSON and Krita files to SigLA \parencite{SalgarellaCastellanSigLA2020}.
 According to her (personal communication), this has been a highly time-consuming undertaking - and the necessity of this kind of labor-intensive work has arguably been the biggest reason to why SigLA still does not yet contain the entire available corpus.
@@ -31,7 +31,7 @@ The aim of this project was therefore to investigate whether parts of this proce
 Furthermore, due to the potential violation of \acf{IPR}, it was of particular interest, whether the annotation process could begin from the raw source images themselves, without relying on the undigitized but already completed expert drawings.
 
 \subsection{A problem of small data}
-The small size of the Linear A corpus, and the irregularities in quality of its raw documents, is a huge problem for the application of deep learning, as models created therefrom typically require large amounts of high-quality data to perform well.
+The small size of the Linear A corpus, and the irregularities in quality of its raw documents, is a huge problem for the application of deep learning, as models created therefrom typically require large amounts of high-quality data to perform well \parencite{Goodfellow2016,DataCentricAI}.
 
 For more informative and better quality data, there does exist an online repository of 3D scans of Aegean inscriptions\footnote{The term \textit{Aegean inscription} refers to the ancient writings found near the Aegean sea, including the scripts Linear A, Linear B, and Cretan Hieroglyphics.}.
 That is, through the project INSCRIBE \parencite{INSCRIBE3D}, which via photogrammetry\footnote{\textit{Photogrammetry} is a technique used to create 3D models from overlapping 2D images.} sought to "produce the first complete digital corpus of all three Aegean undeciphered scripts".
@@ -46,19 +46,18 @@ Therefore, it was of particular interest to map the capabilities and limitations
 \section{Related work}
 Within the last decade, the field of document annotation has seen significant advancements through the use of machine learning.
 Take for example the EU-funded generic \acs{CNN}-based framework for historical document processing \textit{dhSegment} \parencite{dhsegment}.
-Or the more recent work on segmentation of stone inscriptions \parencite{DeepLearningSegmentation}, where \acs{SAM} and other state-of-the-art methods are beaten as benchmarks by their stacked U-Net and \acs{GAN} architecture.
-Or even the \acs{YOLO} and Roboflow based approach to segmentation of Palmyrene Aramaic inscriptions \parencite{YOLOSegmentation} that augment\footnote{The term \textit{augmenting} refers to the process of increasing the size of a dataset.} their dataset with a \acf{GAN} to increase performance.
+Or the more recent work on segmentation of stone inscriptions \parencite{DeepLearningSegmentation}, where \acs{SAM} and other state-of-the-art methods are beaten as benchmarks by their stacked U-Net \parencite{UNET2015} and \acs{GAN} \parencite{GAN2014} architecture.
+Or even the \acs{YOLO} \parencite{YOLO} based approach to segmentation of Palmyrene Aramaic inscriptions \parencite{YOLOSegmentation} that augment\footnote{The term \textit{augmenting} refers to the process of increasing the size of a dataset.} their dataset with a \acf{GAN} to increase performance.
 
-Nevertheless, these methods all depend on deep learning, making them inconvenient for domains of small data, which instead seem to require a generalized and interactive approach such as \acs{SAM}.
+Nevertheless, these methods all depend on deep learning, making them inconvenient for domains of small data, which instead seem to require a generalized foundation model and interactive approach such as \acs{SAM}.
 
 \subsection{SAM and its applications}
-Ever since its release in 2023, \acs{SAM} has been extensively evaluated across a wide range of \acs{CV} tasks to investigate whether it can really "segment anything".
+Ever since its release in 2023 \parencite{sam}, \acs{SAM} has been extensively evaluated across a wide range of \acs{CV} tasks to investigate whether it can really "segment anything".
 Papers have evaluated its performance within niche domains, such as medical images \parencite{MedSAM}, camouflaged objects \parencite{CamSAM}, transparent objects \parencite{TransparentSAM}, hierarchical texts \parencite{HiSAM}, and even oracle bone inscriptions \parencite{OBIFloSAM} and Maya hieroglyphs \parencite{MayaSAM}. 
 Most of these papers found that \acs{SAM} still tends to struggle with such domains, despite its impressive zero-shot\footnote{The term \textit{zeroshot} refers to model inference/prediction on hitherto unseen data.} generalization.
 Meanwhile, some of them also found that this performance can be significantly improved through architectural extensions \parencite{OBIFloSAM} and domain-specific fine-tuning \parencite{MedSAM,MayaSAM}.
-While such fine-tuning does not always require very large datasets, it does require task-specific annotated data and model training, which was outside the scope of this thesis.
-which unfortunately requires deep learning and a lot of data.
-However, equally, it has been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
+While such fine-tuning does not always require very large datasets to work as a proof of concept \parencite[see][]{MayaSAM}, it does require a lot of data to work in practice, and depends on model training and large-scale data registration, which was outside the scope of this thesis \parencite{DataCentricAI}.
+However, it has also been shown that \acs{SAM}'s performance can significantly improve through effective prompt engineering alone \parencite{promptSAM}, requiring no deep learning at all.
 And within the domain of 3D medical images, a training-free few-shot\footnote{The term \textit{few-shot} refers to model inference/prediction with only a few examples.} adaptation of \acs{SAM}2 \parencite[see][]{sam2} has been recently demonstrated to surpass supervised methods like U-Net, and even the best fined-tuned versions of \acs{SAM} \parencite{fatesam}.
 Thus, it seemed reasonable to test out the limits of \acs{SAM}'s generalization and interactivity within the domain of Linear A document images, to investigate whether it could be used to accelerate the annotation workflow of Ester Salgarella.
 
@@ -74,7 +73,7 @@ To concretize the research, the problem statement was decomposed into three \acf
 \item \textbf{\acs{RQ}1 (Segmentation quality)}: \label{rq1}
 \textit{How well does a \acs{SAM}-based segmentation approach perform quantitatively in terms of segmentation accuracy, compared to simple classical image processing baselines when applied to Linear A document images?}
 
-\textbf{Operationalization}: \acs{SAM}-based masks were compared to classical image-processing baselines using overlap metrics (i.e. \acs{Dice}) against the ground truth segmentations derived from SigLA's Krita files using a self-made dataset of 60 documents.
+\textbf{Operationalization}: \acs{SAM}-produced masks were compared to those of classical image-processing baselines using overlap metrics (i.e. \acs{Dice}) against the ground truth derived from SigLA's Krita files in a self-made dataset of 60 documents.
 \item \textbf{\acs{RQ}2 (Interaction efficiency)}: \label{rq2}
 \textit{To what extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}
 
@@ -102,4 +101,4 @@ Once such a tool proves effective, it could potentially also be applied to Linea
 Hopefully, the work will inspire further research and development within the field of digital epigraphy, particularly concerning automation of the annotation processes of Linear A - and perhaps even in the broader context of small corpus epigraphic writing systems, where the lack of big and high-quality data heavily restricts deep-learning approaches.
 
 \section{Overview of the thesis}
-The rest of this thesis is structured into four main chapters (Data, Methodology, Results and Discussion, and Conclusion), all split individually into sections concerning each of the three research questions.
+The rest of this thesis is structured into four main chapters (Data, Methodology, Results \& Discussion, and Conclusion), all split individually into sections concerning each of the three research questions.

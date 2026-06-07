@@ -17,7 +17,7 @@ This was closely followed by its bilateral pre-filtered variant, and its Mobile\
 \begin{figure}[htp]
 \centering
 \includegraphics[width=\linewidth]{../src/data/results/ablation_sam/plots/Dice_score_comparison}
-\caption{Dice Score performance per \acs{SAM} variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
+\caption{Mean \acs{Dice} scores per \acs{SAM} variant. Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
 The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 (S2), with (+p) or without automatic point prompts, and with (b) or without (n) a bilateral pre-filter.}
 \label{fig:dice_sam_ablation}
 \end{figure}
@@ -25,13 +25,13 @@ The ablations evaluated were Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 
 \begin{table}[htp]
 \centering
 \renewcommand{\arraystretch}{1.25}
-\caption{Average \acs{Dice} scores of the in total 12 tested permutations of Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 (S2), with and without automatic classical threshold-derived point prompts, and with and without bilateral filter.}
+\caption{Mean \acs{Dice} scores of the in total 12 tested permutations of Mobile\acs{SAM} (M), \acs{SAM} (S), and \acs{SAM}2 (S2), with and without automatic classical threshold-derived point prompts, and with and without bilateral filter.}
 \vspace{0.5em}
 \input{tables/ablation.tex}
 \label{tab:sam-variants-summary}
 \end{table}
 
-Surprisingly so, the \acs{SAM}2 variants performed worse than the original \acs{SAM}, both when and when not prompted.
+Surprisingly so, the non-interactive \acs{SAM}2 variants performed worse than the original \acs{SAM}, both when and when not prompted.
 The \acs{POI}-based prompting strategy demonstratively did not work on \acs{SAM}2, as shown by the \acs{SAM}2 variants with this strategy performing worse than when unprompted.
 However, for the other vanilla (non-Hiera) \acs{ViT}-based \acs{SAM} variants, the \acs{POI}-based prompting strategy did work, and was even necessary to obtain any meaningful performance whatsoever.
 This is not surprising, as zero-shot \acs{SAM} has never seen this type of images before, since it was exclusively trained on natural images.
@@ -47,14 +47,14 @@ It seems that the \acs{ICL} strategy of \acs{GFSAM} is not effective within the 
 \begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation_sam/plots/Dice_score_comparison.png}
-    \caption{\acs{Dice} scores of the \acs{ICL} models against the best performing zero-shot \acs{SAM} implementation.
+    \caption{Mean \acs{Dice} scores of the \acs{ICL} models against the best performing zero-shot \acs{SAM} implementation.
     Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.
-    Compared were \acs{GFSAM}, the 2D-adapted \acs{FATESAM}2D, its automatic point prompted version \acs{FATESAM}2D+pts, and \acs{FATESAM}2D-blank, which was given blank support images.}
+    Compared were: the strongest \acs{SAM} variant from \cref{subsec:ablation_sam}, \acs{SAM+pts}-no-filter (\pgfmathprintnumber[fixed,precision=3]{0.26263640013862244}), \acs{GFSAM} (\pgfmathprintnumber[fixed,precision=3]{0.14735636150568918}), the 2D-adapted \acs{FATESAM}2D (\pgfmathprintnumber[fixed,precision=3]{0.25571675578635145}), its automatic point prompted version \acs{FATESAM}2D+pts (\pgfmathprintnumber[fixed,precision=3]{0.1413776612399098}), and \acs{FATESAM}2D-blank (\pgfmathprintnumber[fixed,precision=3]{0.0520320524403346}), which was given blank support images.}
     \label{fig:dice_icl_comparison}
 \end{figure}
 
 \subsubsection{Why \acs{GFSAM} fails}
-\acs{GFSAM}'s particularly poor performance was clearly due to the fact that it - for almost all instances - segmented the whole tablet instead of the inscriptions within it (as shown in \cref{fig:comparison_icl_sam}).
+\acs{GFSAM}'s particularly poor performance was clearly due to the fact that it, for almost all instances, segmented the whole tablet instead of the inscriptions within it (as shown in \cref{fig:comparison_icl_sam}).
 This indicates that the one-shot strategy of \acs{GFSAM} is generally not effective for this domain of non-natural images. 
 It is very likely that no point ever passed its gating processes, always returning the mask with the highest predicted \acs{IoU} score instead, which was the whole tablet, as it is always the most salient and clearly separated object in the image.
 Specifically, \acs{GFSAM}'s overshooting gating process seems to have been the culprit, as it is designed to filter out points that are near the boundary of a mask, which for a thin engraving is always the case.
@@ -62,7 +62,7 @@ Specifically, \acs{GFSAM}'s overshooting gating process seems to have been the c
 \subsubsection{Why \acs{FATESAM}2D (sort of) works}
 \acs{FATESAM}2D's comparatively better performance can be attributed to the support images actually providing useful information to the model.
 The variant with blank support images (\acs{FATESAM}2D-blank) performing worst of all (see \cref{fig:dice_icl_comparison}), is a proof of this, as the inference hence does not work without any meaningful support images.
-The manipulation of \acs{SAM}2's memory encoder and memory attention mechanism thus worked reasonably well for few-shot inference given just the raw tablet images.
+The manipulation of \acs{SAM}2's memory encoder and memory attention mechanism thus worked reasonably well for few-shot inference given just 3 of the raw document images and their ground truth masks as reference with 6 to choose from.
 
 But still, this additional few-shot context was clearly not enough to outperform the threshold-derived \acs{POI}-based zero-shot \acs{SAM}.
 As a general error, \acs{FATESAM}2D suffered from undersegmentation rather than oversegmentation (as seen in \cref{fig:comparison_icl_sam}).
@@ -119,7 +119,7 @@ In fact, it \textit{significantly} underperformed compared to \acs{Gaussian}, as
 \begin{figure}[htp]
 \centering
     \includegraphics[width=\linewidth]{../src/data/results/evaluation/plots/Dice_score_comparison.png}
-    \caption{\acs{Dice} scores of the classical baselines compared to the best \acs{SAM} variant found in \cref{subsec:comparison_icl_sam} and \cref{subsec:ablation_sam}.
+    \caption{Mean \acs{Dice} scores of the classical baselines; CannyFill (\pgfmathprintnumber[fixed,precision=3]{0.1832489064945111}), Otsu (\pgfmathprintnumber[fixed,precision=3]{0.2240188867488452}), and Gaussian (\pgfmathprintnumber[fixed,precision=3]{0.3272506453060173}), compared to the best \acs{SAM} variant found in \cref{subsec:comparison_icl_sam} and \cref{subsec:ablation_sam}, \acs{SAM+pts}-no-filter (\pgfmathprintnumber[fixed,precision=3]{0.26263640013862244}).
     Split by difficulty. With error bars representing the standard error of the mean. Ordered descendingly from the left by mean performance.}
 \label{fig:dice_comparison}
 \end{figure}
@@ -206,7 +206,7 @@ In other words, the best tested variant of \acs{SAM} clearly performed \textit{s
 
 \clearpage
 
-\section{Tool-side segmentation performance}
+\section{Tool-side segmentation performance} \label{rq2results}
 The first case study of 3 documents showed that the interactive version of \acs{SAM}2 with box prompts and point prompts not only took more time to use than the classical baseline (due to the burden of interaction), but also did not perform better in terms of segmentation quality, even with the help of human input (see \cref{fig:dice_by_tool_time}).
 
 \begin{figure}[htp]
@@ -256,7 +256,7 @@ And it is this burden of interaction that seems to have been the reason for the 
 \end{figure}
 \clearpage
 
-\section{Workflow impact}
+\section{Workflow impact} \label{rq3results}
 
 The second case study of the 3 documents showed that none of the two tools were able to save time in the workflow, as the total workflow time spent was higher than the time spent on manual annotation in Krita (see \cref{fig:workflow_time}).
 Even just based on the time spent on post-editing alone, the tools did not save time compared to just drawing manually from scratch.
@@ -282,35 +282,35 @@ This can be explained by their size-difference, which also shows in \cref{fig:in
 \begin{figure}[htp]
     \centering
     \includegraphics[width=\linewidth]{../src/data/results/workflow/post_edit_time_by_dice.png}
-    \caption{Post-editing time taken in Krita as a function of tool-export Dice scores.
+    \caption{Post-editing time taken in Krita as a function of tool-export \acs{Dice} scores.
     The trend line cannot be considered statistically significant (as $n=6$), but points in the direction of a negative correlation.}
     \label{fig:post_edit_time_by_dice}
 \end{figure}
 
 \section{Consolidated discussion}
 The overall results suggest that \acs{SAM} in the forms tested is not suitable for segmentation of Linear A tablets.
-For each \acs{RQ}, \acs{SAM} failed compared to the baselines - even when guided by human interaction.
+For each \acs{RQ}, \acs{SAM} failed compared to the baselines -- even when guided by human interaction.
 Not only did it not live up to its supposedly \acs{SOTA} superiority in terms of mere segmentation quality.
 It also took more time to use, and did not save any time in the workflow whatsoever.
 
-Nevertheless, it is important to point out that the results of the two case studies (in contrast to the non-interactive evaluation) - due to the small sample size of 3 documents, and the fact that only one user (Dr. Ester Salgarella) was involved - are not statistically generalizable.
+Nevertheless, it is important to point out that the results of the two case studies (in contrast to the non-interactive evaluation) -- due to the small sample size of 3 documents, and the fact that only one user (Dr. Ester Salgarella) was involved -- are not statistically generalizable.
 Thus, the results of these case studies should be interpreted as indicative of the \textit{potential} impact of the tools on the workflow, rather than conclusive evidence of their actual impact.
 Still, none of the data obtained showed potential for time-saving.
 And none showed potential for \acs{SAM} outperforming the best classical baseline.
 
-When taking the domain and data quality into account, this underperformance is not too surprising.
+When taking the domain and data quality into account (see \cref{subsec:quality_limitation}), this underperformance is not too surprising.
 The raw document images used for inference are screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}. 
 They therefore provide only a limited two-dimensional representation, through which crucial information for distinguishing between damage and engraving, such as apparent depth and texture, may have been lost.
 During the second case study, Dr. Salgarella gave the impression that even she herself could not clearly distinguish tablet damage from inscriptions based on the raw images alone.
 If even an expert cannot do that, it is not surprising that a segmentation model cannot do it either.
 
 But what these results suggest, is not only that the available data is poor.
-As \acs{SAM} performed worse than the strongest classical baseline on the same data, it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
+As \acs{SAM} performed significantly worse than the strongest classical baseline on the same data (\cref{rq1results}), it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
 For \acs{SAM} to be useful, not only is there a need for a more suitable data source.
 To be able to adapt it to the domain at all, there is seemingly also a need for a sufficiently sized dataset.
 Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \cite{MayaSAM}).
 To be able to create a model that can be used in practice, a dataset of at least a few thousand annotated images would likely be necessary.
-Creating a hypothetical dataset of such size might require collecting inscriptions other than just Linear A - such as the other closely related Aegean scripts like Linear B, and maybe even epigraphical inscriptions in general - laying the groundwork for the creation of an epigraphically tuned \acs{SAM}. 
+Creating a hypothetical dataset of such size might require collecting inscriptions other than just Linear A -- such as the other closely related Aegean scripts like Linear B, and maybe even epigraphical inscriptions in general -- laying the groundwork for the creation of an epigraphically tuned \acs{SAM}. 
 
 Until such a model is developed, however, the results seem to suggest that classical deterministic methods are better suited for the task.
 But most importantly, they suggest that manual annotation in Krita so far remains the best option for producing digitized drawings of Linear A documents.
@@ -318,7 +318,7 @@ Nevertheless, that is not to say that there is no potential for automation in th
 Rather, it means that the tested approaches are not sufficient enough to be helpful for it, and that alternative approaches should be explored in future work.
 
 In particular, approaching the drawing step of Ester's annotation workflow as a segmentation task on raw document images does not seem to be very useful.
-And considering the quality of these images, it probably never will be - even when tuning on a big hypothetical dataset like the one mentioned.
+And considering the quality of these images, it probably never will be -- even when tuning on a big hypothetical dataset like the one mentioned.
 However, if the INSCRIBE \parencite{INSCRIBE3D} project were to resume and succeed in producing high-quality 3D scans for the entire corpus, a 3D segmentation approach might very well prove useful.
 The process of producing such a complete set of scans, however, would arguably take longer than Ester merely manually producing digital drawings for the entire corpus.
 

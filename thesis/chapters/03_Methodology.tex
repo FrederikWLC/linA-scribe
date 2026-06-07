@@ -9,13 +9,13 @@ All software written and data collected for this thesis was made publicly availa
 Python 3.13 was used for all code development except frontend.
 The choice of this programming language was made primarily due to it being the language of choice for the \acs{ML} and \acs{SAM} implementation libraries needed.
 Its big community, and library support, and package manager (pip) also made it exceptionally easy to install and manage dependencies, when seeting up the development environment.
-The particular version was chosen, as it was the second latest stable release at the time of development, with the risk of Python 3.14 still not having full support by all libraries.
+The particular version was chosen, as it was the second latest stable release at the time of development \parencite{python313release}, with the risk of Python 3.14 still not having full support by all libraries. % NEW: python313release -- Python release schedule / 3.13 release announcement (python.org)
 
 \section{Non-interactive segmentation} \label{Segmentation quality}
 To answer the question of \hyperref[rq1]{\acs{RQ}1}: \textit{How does the initial segmentation quality of SAM compare to that of classic segmentation methods?}, the initial fully-automatic segmentation quality of \acs{SAM} was evaluated against a set of classical baseline models, using a suitable segmentation metric (i.e. \acs{Dice} score) computed from the pairs of predicted and ground truth masks.
 All models were tuned through hyperparameter optimization (see \cref{subsubsec:hyperparameter_optimization}) to their best performance on the dataset, and the best performing version of \acs{SAM} was compared against the best performing baseline model.
 
-The following subsections give an explanation of the segmentation problem itself, and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer RQ1.
+The following subsections give an explanation of the segmentation problem itself, and document the configuration of the baseline and state-of-the-art models, as well as the evaluation protocol used to answer \hyperref[rq1]{\acs{RQ}1}.
 
 \subsection{The problem in mathematical terms}
 
@@ -50,7 +50,7 @@ Besides a description of the pre-filtering method used for all of them, what fol
 
 \subsubsection{Bilateral pre-filtering} \label{subsubsec:bilateral_pre_filtering}
 As a pre-filtering step for all the classical models, a bilateral filter \parencite[see][]{TomasiManduchi1998} was applied to the input image before feeding it to the classical methods.
-In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at blurring out noise while preserving edges, thanks to its combined distance and intensity-dependent weighting.
+In this way, more noise could be reduced while preserving engravings, as this filter is known to be effective at blurring out noise while preserving edges, thanks to its combined distance and intensity-dependent weighting \parencite{TomasiManduchi1998}.
 Discretely \parencite[see][]{Pan2025InnovativeBilateral}, its output value $I_{\mathrm{bf}}(p)$ at a given two-dimensional pixel position $p$ (where $q$ is one of its neighbors within the kernel window with size $d$) can be defined as follows:
 $$I_{\mathrm{bf}}(p)=
 \frac{\sum_q I(q)\,W_{\mathrm{space}}(p,q)\,W_{\mathrm{color}}(p,q)}
@@ -74,7 +74,7 @@ Here is how it works:
 First, let pixels of the raw image be divided into $L$ shades of gray $[1,2,...,L]$.
 Then, let each pixel be assigned one of two classes $C_0$ and $C_1$, guided by a threshold $T$,
  where $C_0$ contains the shades $[1,2,...,T]$, and $C_1$ contains the rest $[T+1,T+2,...,L]$.
-Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $T^{*}$ that results in a maximum between-class variance $\sigma^2_B$:
+Otsu's method then works by performing an exhaustive search over all $L$ gray levels to find an optimal threshold $T^{*}$ that results in a maximum between-class variance $\sigma^2_B$ \parencite{Otsu1979}:
 $$ T^{*} = \underset{1 \leq T < L}{\arg \max} ~ \sigma^2_B(T) $$
 The between-class variance $\sigma^2_B$ is then defined by a function of the respective total probabilities of the two classes ($\omega_0$ and $\omega_1$) and the mean gray level value per class ($\mu_0$ and $\mu_1$):
  $$ \sigma^2_B(T) = \omega_0(T) \omega_1(T) [\mu_1(T)-\mu_0(T)]^2$$
@@ -93,7 +93,7 @@ $$ B(x,y) = \begin{cases}
 
 To compute $T(x,y)$, there are a few weighting functions to choose from.
 For this baseline, the Gaussian kernel was used, as it can limit the influence of distant noisy pixels on the computed threshold by assigning weights based on distance from the kernel center.
-With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as \parencite[see][p.~761]{opencv_adaptive_threshold}:
+With a Gaussian kernel  $G_{\sigma}$, the threshold $T(x,y)$ is computed as a Gaussian-weighted sum of local intensities subtracted by a constant $C$. Using kernel convolution ($*$), this can be expressed as \parencite[see][]{opencv_adaptive_threshold}\parencite[p.~761]{DigitalImageProcessing}:
 $$ T(x,y) = (G_{\sigma} * I)(x,y) - C $$
 
 In general, the weight in the Gaussian kernel at an offset $(i,j)$ from the kernel center can be written as follows (where $\alpha$ is a normalization constant ensuring that the whole kernel sums to 1, and $\sigma$ controls the spatial spread of the kernel) \parencite[p.~167]{DigitalImageProcessing}:
@@ -102,7 +102,7 @@ $$ G_{\sigma}(i,j) = \alpha \cdot \exp\left(-\frac{i^2 + j^2}{2\sigma^2}\right) 
 \noindent Thus, without the bilateral pre-filter, this method has two hyperparameters: the kernel size $d$, and the constant $C$.
 
 \subsubsection{Edge-based segmentation (Canny edge detection with region filling)}
-Canny edge detection is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges.
+Canny edge detection \parencite{Canny1986} is a method that by itself only segments the edges of an image, excluding the enclosed regions within those edges. % NEW: Canny1986 -- J. Canny (1986), A Computational Approach to Edge Detection, IEEE TPAMI 8(6)
 First, for the image gradient of each pixel, the magnitude $M_s(x,y)$ and the orientation $\theta_s(x,y)$ are computed \parencite[p.~730]{DigitalImageProcessing}:
 $$M_s(x,y) = \|\ \nabla I_{s}(x,y) \|\ = \sqrt{\left(\frac{\partial I_{s}}{\partial x}\right)^2 + \left(\frac{\partial I_{s}}{\partial y}\right)^2}$$ 
 $$\theta_s(x,y) = \arctan \left( \frac{\partial I_{s}/\partial y}{\partial I_{s}/\partial x} \right)$$
@@ -115,7 +115,7 @@ T_l = \max\bigl(0, (1 - \sigma)\, v\bigr), \quad
 T_h = \min\bigl(255, (1 + \sigma)\, v\bigr)
 $$
 
-\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask.
+\noindent Then, in an attempt to fill the regions enclosed by the detected edges, morphological closing (dilation followed by erosion) was applied to the edge mask \parencite{DigitalImageProcessing}. % TODO: add page ref for the morphological operations chapter
 
 Hence, without the bilateral pre-filter, this method has two hyperparameters: the constant $\sigma$, and the kernel size $d$ used for morphological closing.
 
@@ -139,8 +139,8 @@ The following subsections describe the architecture of the chosen variants, and 
 \subsubsection{SAM architecture}
 \label{subsubsec:SAM_architecture}
 Used by \acs{SAM} and Mobile\acs{SAM}, the first \acs{SAM} model architecture released \parencite{sam} consists of an image encoder, and a comparatively lightweight prompt-guided mask decoder (see \cref{fig:SAM_architecture}).
-This image encoder takes the form of a \acf{ViT}, that similarly to a \acf{CNN} processes an input image in order to extract its features \parencite{imageworth16x16words}.
-Instead of relying on just convolutional layers, however, a \acs{ViT} adapts the transformer architecture originally developed for \acs{NLP} to the image domain.
+This image encoder takes the form of a \acf{ViT}, that similarly to a \acf{CNN} \parencite{LeCun1998} processes an input image in order to extract its features \parencite{imageworth16x16words}. % NEW: LeCun1998 -- LeCun et al. (1998), Gradient-based learning applied to document recognition, Proc. IEEE 86(11)
+Instead of relying on just convolutional layers, however, a \acs{ViT} adapts the transformer architecture originally developed for \acs{NLP} \parencite{vaswani2023attentionneed} to the image domain.
 Rather than words, an image is treated as a sequence of fixed-size patches (regions of the image), each of which is embedded into a vector representation and augmented with a positional encoding, analogous to how tokens are handled in \acs{NLP}.
 Seen in \cref{fig:ViT_architecture}, these embedded patches are then passed through a repeated layered series of normalization, learned feed-forward \acfp{MLP}, and, in between, a learned mechanism known as self-attention that weighs the embeddings according to their relevance to one another.
 \begin{figure}[htp]
@@ -188,7 +188,7 @@ one that generates the final segmentation masks by taking a dot product between 
 and another that outputs a predicted IoU score for each mask.
 
 For the implementation of \acs{SAM} in the evaluation, the ViT-H checkpoint was used, as it is the largest and best-performing of the available variants.
-Mobile\acs{SAM}, by definition, instead relied on the lighter \acs{ViT} variant TinyViT \parencite{TinyViT}, whose 5M parameters are far fewer than those of the \acs{SAM} encoders (ViT-H, ViT-L, and ViT-B, with 632M, 307M, and 86M parameters, respectively).
+Mobile\acs{SAM}, by definition, instead relied on the lighter \acs{ViT} variant TinyViT \parencite{TinyViT}, whose 5M parameters are far fewer than those of the \acs{SAM} encoders (ViT-H, ViT-L, and ViT-B, with 632M, 307M, and 86M parameters, respectively) \parencite{sam}.
 It is this reduction in encoder size that makes Mobile\acs{SAM} computationally faster than the original.
 
 \subsubsection{SAM2}
@@ -211,9 +211,9 @@ But also added were object pointers as lightweight vectors keeping track of the 
 These are also stored in the memory bank together with the spatial memory, and attended to in memory attention.
 
 As for the implementation of \acs{SAM}2 in the evaluation, the checkpoint chosen was \texttt{sam2.1\_hiera\_large}, as it was the best performing one listed in the repository of \acs{SAM}2 \parencite{sam2_repo}.
-\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra.
+\acs{SAM}2 also takes a checkpoint-specific YAML configuration file, which stores the hyperparameters for the model, and allows for easy overrides through Hydra \parencite{HydraFramework}. % NEW: HydraFramework -- Yadan (2019), Hydra: a framework for elegantly configuring complex applications, github.com/facebookresearch/hydra
 Since the tablets were segmented as individual still images, \acs{SAM}2's image predictor was used rather than the video predictor.
-The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in the next section.
+The memory and video-tracking machinery is only relevant to the \acs{FATESAM} adaptation described in \cref{subsubsec:FATESAM}.
 
 \subsubsection{FATESAM} \label{subsubsec:FATESAM}
 Within the domain of 3D medical images, \acs{FATESAM} -- a training-free few-shot adaptation of \acs{SAM}2 \parencite[see][]{fatesam} has been recently demonstrated to surpass even the best fine-tuned versions of \acs{SAM}.
@@ -267,7 +267,7 @@ These maps give rise to foreground point prompts for \acs{SAM}, which generates 
 \end{figure}
 
 The implementation of \acs{GFSAM} in the evaluation was based on the official repository \parencite{GFSAMRepository} with its DINOv2 feature encoder using the ViT-L/14 checkpoint, and \acs{SAM} using the ViT-H checkpoint.
-As an adaptation to the data domain, the one-shot support image was selected in the same way as for \acs{FATESAM}: the support images were ranked by the Manhattan distance of their DINOv2 features to those of the query image, and the most similar one was selected as support.
+As an adaptation to the data domain, the one-shot support image was selected in the same way as for \acs{FATESAM} (see \cref{subsubsec:FATESAM}): the support images were ranked by the Manhattan distance of their DINOv2 features to those of the query image, and the most similar one was selected as support.
 
 \subsubsection{Threshold-inferred automatic point prompts}
 \label{subsubsec:automatic_prompts}
@@ -288,7 +288,7 @@ Green points represent foreground point prompts, while red points represent back
 \end{figure}
 
 
-\subsection{Evaluation protocol for \acs{RQ}1}
+\subsection{Evaluation protocol for \hyperref[rq1]{\acs{RQ}1}}
 \label{subsec:evaluation}
 To determine whether one model performed significantly better than another, a relevant metric (\acs{Dice}) and a statistical test (paired t-test) needed to be defined.
 Additionally, to ensure a fair comparison, all models with hyperparameters were optimized to their best performance on the validation set.
@@ -297,7 +297,7 @@ What follows is a description of this evaluation protocol.
 \subsubsection{Choice of metric (\acs{Dice})}
 \label{subsubsec:metrics}
 When it comes to evaluation of segmentation models, the two most commonly used metrics are the \acf{Dice} and the \acf{IoU}. The \acs{Dice} score is most commonly used in cases where there are heavy class imbalances (e.g. lots of background compared to regions segmented), and when foreground objects are small and thin.
-It is naturally more forgiving than the related segmentation metric \acs{IoU}, which is more strict and specifically used to evaluate segmentation results where small displacements are critical for results.
+It is naturally more forgiving than the related segmentation metric \acs{IoU}, which is more strict and specifically used to evaluate segmentation results where small displacements are critical for results \parencite{Rainio2024}.
 Therefore, segmentation performance was reported using \acs{Dice}. Mathematically, it is defined as twice the size of the intersection of the predicted segmentation mask $\hat{Y}$ and the ground truth mask $Y$, divided by their summed size \parencite{Metrics2025}:
 
 $$ \mathrm{Dice}(\hat{Y}, Y) = \frac{2 \cdot | \hat{Y} \cap Y |}{|\hat{Y}| + |Y|} $$
@@ -319,17 +319,17 @@ This way, it can focus the search on promising regions of the space of possible 
 \subsubsection{Statistical test (paired t-test)}
 To determine whether the observed difference in \acs{Dice} scores between the two strongest models was statistically significant, a paired t-test was conducted.
 Specifically, a one-tailed paired t-test was used, as the alternative hypothesis was that \acs{SAM} would perform significantly better than the best classical baseline, instead of just significantly differently.
-The paired t-test has two main assumptions: 1. independence of tested observations, and 2. normality of the paired differences.
+The paired t-test has two main assumptions: 1. independence of tested observations, and 2. normality of the paired differences \parencite{Rainio2024}.
 The first assumption is already satisfied a priori, since the segmentation performance of one image does not directly influence the performance on another.
 However, the second assumption depends on the results.
-Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test.
+Thus, the paired differences in \acs{Dice} scores between the two models tested needed to be checked for normality using a QQ-plot and the Shapiro-Wilk test \parencite{ShapiroWilk1965}. % NEW: ShapiroWilk1965 -- S. S. Shapiro & M. B. Wilk (1965), An analysis of variance test for normality, Biometrika 52(3-4)
 In case the normality assumption was violated, the non-parametric domain-specific Wilcoxon signed-rank test would be used instead \parencite{Rainio2024}.
 
 
 \section{Tool-side interaction} \label{Interaction efficiency}
 To answer the question of \hyperref[rq2]{\acs{RQ}2}: \textit{To what extent can user interaction be reduced by a \acs{SAM}-based semi-automatic segmentation workflow, while still maintaining high-quality outputs?}, a two-in-one interactive segmentation tool was developed including a method meant to represent \acs{SAM}, and another to represent the classical segmentation methods, to allow for a direct comparison in terms of tool efficiency.
 The following subsections go into details on how this tool was developed, the experimental design for the evaluation of interaction efficiency, and the definition of interaction metrics.
-\subsection{Tool development}
+\subsection{Development}
 The tool was developed in close collaboration with Ester Salgarella, in an attempt to make it fit her workflow and needs as much as possible.
 However, before any user tests were conducted, a \acf{MVP} was developed based on the workflow that she had described throughout the fortnightly supervisor meetings attended during the writing of this Thesis from February 2nd 2026, and the few sporadic meetings and written exchanges since November 2025 that took place during the planning of the project proposal.
 When this \acs{MVP} was ready, three usability tests were conducted with Ester, two of them online, and the last one in-person at \acf{AIAS}.
@@ -340,14 +340,14 @@ These tests took place the 5th, 8th and 12th of May (see \cref{appendix:usabilit
 
 
 
-\subsection{Tool architecture}
+\subsection{Architecture}
 The architecture of the tool (see \cref{fig:tool-architecture}) was developed as a web-application using Svelte as the frontend framework, and FastAPI as the backend framework, hosted via Render \parencite{Render}.
 Because it was made a web application, it could be run remotely on any device through a web browser, without the need for installation, making it more easily accessible and ideal for online user testing with Ester Salgarella.
-To make the development environment more consistent with production, the application was containerized using Docker, which made it easier to deploy and run on any machine without worrying about dependencies and environment setup.
+To make the development environment more consistent with production, the application was containerized using Docker \parencite{DockerDocs}, which made it easier to deploy and run on any machine without worrying about dependencies and environment setup. % NEW (optional): DockerDocs -- Docker official documentation
 
-Svelte was chosen for the frontend mostly due to its reactive state management, making it well-suited for building interactive user interfaces, as this functionality removes the need for re-inserting state variables every time they change.
+Svelte was chosen for the frontend mostly due to its reactive state management, making it well-suited for building interactive user interfaces, as this functionality removes the need for re-inserting state variables every time they change \parencite{SvelteDocs}. % NEW (optional): SvelteDocs -- Svelte official documentation
 FastAPI was chosen as the backend, as it is Python based, and therefore able to serve the Python segmentation models implemented, which was essential for the tool's functionality.
-It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server.
+It is also lightweight and asynchronous, which potentially allowed for many users to use the tool simultaneously, as several requests could be handled at the same time without blocking execution on the server \parencite{FastAPIDocs}. % NEW (optional): FastAPIDocs -- FastAPI official documentation
 
 \input{charts/tool-architecture.tex}
 
@@ -386,7 +386,7 @@ A view of this method and the granularity slider can be seen in \cref{fig:classi
 \subsubsection{Integration of SAM}
 Chosen to represent \acs{SAM} was the vanilla version of \acs{SAM}2.
 This choice introduced an internal-external selection asymmetry, as the classical method was selected based on the preceding empirical evaluation (\cref{subsec:classical_comparison}), whereas vanilla \acs{SAM}2 was selected on external empirical grounds due to its documented \acs{SOTA} performance in general interactive segmentation \parencite{sam2}.
-This was deemed appropriate because the non-interactive evaluation described in the previous section could not determine how \acs{SAM} would perform when used interactively.
+This was deemed appropriate because the non-interactive evaluation described in \cref{Segmentation quality} could not determine how \acs{SAM} would perform when used interactively.
 
 It was decided to make full use of its interactive capabilities, including both box prompts, and foreground and background point prompts, as this seemed to be the best way to represent its potential.
 But there was one problem.
@@ -423,9 +423,9 @@ Included in the prompt placement interface of the tool was a toolbar consisting 
 \end{figure}
 
 
-\subsection{Experimental design for \acs{RQ}2}
+\subsection{Experimental design for \hyperref[rq2]{\acs{RQ}2}}
 \label{subsec:experimental_design_interaction_efficiency}
-To evaluate the interaction efficiency of the \acs{SAM}-based tool, a case study was conducted with Ester Salgarella, where she was asked to perform the segmentation of 3 documents from the test set (one from each difficulty category) with each method of the tool.
+To evaluate the interaction efficiency of the \acs{SAM}-based tool, a case study was conducted with Ester Salgarella, where she was asked to perform the segmentation of 3 documents from the test set (one from each difficulty category, see \cref{sec:dataset}) with each method of the tool.
 In a wish to obtain statistical power, an inclusion of all 27 test images was initially preferred, but due to time constraints, only 3 documents made it to the evaluation.
 That reduced sample size made the evaluation exploratory and case-study-based rather than statistically powered.
 However, it still allowed for a direct comparison of the interaction efficiency of the two tools, using quantitative indicators of both time expenditure (minutes), and the quality of the outputs they generated (\acs{Dice}).
@@ -451,24 +451,24 @@ To do that, however, it was necessary to first understand her workflow in detail
 
 \input{charts/tool-workflow.tex}
 
-When Ester does the annotation of a document from the \acs{GORILA} corpus, she first imports a screenshot of the \acs{GORILA} corpus drawing into Krita, creating a new layer on top of it to do the segmentation drawing.
+When Ester does the annotation of a document from the \acs{GORILA} corpus \parencite{EtudesCretoises21}, she first imports a screenshot of the \acs{GORILA} corpus drawing into Krita \parencite{KritaDocs}, creating a new layer on top of it to do the segmentation drawing.
 She draws this drawing with a digital pen on a displayless pressure-sensitive Wacom drawing pad.
 While doing that, she looks for any possible mistakes in the signs, with the original image, and her mental map of the sign types as guidance, correcting them by erasing and redrawing.
-At last, when she is satisfied with the drawing, she splits each sign into a separate layer, adds metadata, and imports to SigLA as JSON and Krita files.
+At last, when she is satisfied with the drawing, she splits each sign into a separate layer, adds metadata, and imports to SigLA \parencite{SalgarellaCastellanSigLA2020} as JSON and Krita files.
 
 Due to scope limitations, it was only the process before that splitting into layers and adding of metadata that this project aimed to improve.
 \subsection{The adaptation (export to Krita)}
 \label{subsection:export_to_krita}
 When the segmentation of a document within the tool was complete, it was designed to allow for export to JPEG, PNG, or OpenRaster (\texttt{.ora}) format.
-The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively.
+The latter is an open file format that like Krita (\texttt{.kra}) files consists of a ZIP file with an XML document describing the layer structure, together with a PNG or SVG image for each raster or vector layer, respectively \parencite{OpenRasterSpec}. % NEW: OpenRasterSpec -- OpenRaster specification (freedesktop.org / OpenRaster wiki)
 This is simpler in structure and easier to read and write for external programs than the \texttt{.kra} file format, since it was specifically designed as an open exchange format between graphics editors.
-Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only.
+Krita files, on the other hand, are more complex in structure, including proprietary elements, and not designed for external programmatic access, as they are meant to be used within Krita only \parencite{KritaDocs}. % NEW: KritaDocs -- Krita documentation, .kra file format
 
 Additionally, OpenRaster (\texttt{.ora}) format is supported by a few image editing programs, including Krita, which makes it ideal for the exported file to be directly opened there for further manual editing and annotation.
 And as Krita was already part of Ester's workflow, it was only natural to make the exported starting point suggestions from the tools directly compatible with it, to make the transition from tool to manual post-editing as seamless as possible.
 This file format also made it possible for the tool export to include the original image as a layer, and the generated mask as another, so that the former could be used as a guiding reference for post-editing of the latter.
 
-\subsection{Experimental design for \acs{RQ}3} \label{subsec:experimental_design_workflow_efficiency}
+\subsection{Experimental design for \hyperref[rq3]{\acs{RQ}3}} \label{subsec:experimental_design_workflow_efficiency}
 To evaluate the workflow efficiency of the two developed tools (see \cref{Interaction efficiency}), the time it took Ester Salgarella to do the manual annotation workflow in Krita was compared in a case study of 3 documents to the time taken when doing the complete workflow of each of these tools.
 The workflow efficiency metric was defined as the sum of tool time (image import to mask export) and drawing time in Krita -- which for the tools was defined by post-editing time (polishing the tool-suggested mask draft until completion).
 
