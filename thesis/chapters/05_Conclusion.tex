@@ -23,7 +23,7 @@ Because the output masks required too much correction, both tool-assisted workfl
 
 \section{Overall conclusion}
 To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets (see \cref{rq3results}).
-The reason that the tool did not save any time, seemed to be due to the low quality of its output masks (see \cref{subsec:time_saving_dice}).
+The reason that the tool did not save any time seemed to be due to the low quality of its output masks (see \cref{subsec:time_saving_dice}).
 This underperformance was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference (see \cref{subsec:quality_limitation}), which were low both in size and quality, consisting of screenshots of grayscale photographs embedded in the scanned print edition of the corpus.
 But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on the same data (see \cref{rq1results}).
 Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baseline (see \cref{rq2results}).
@@ -35,7 +35,7 @@ As clear negative results regarding the potential of automating the annotation p
 
 \section{Future Work}
 \subsection{A bigger dataset}
-The fact that \acs{SAM}'s lack of fine-tuning can work as an explanation for its underperformance on the dataset of Linear A's raw document images (see \cref{why_sam_fails}), suggests that fine-tuning might be worth pursuing.
+The fact that \acs{SAM}'s lack of fine-tuning can work as an explanation for its underperformance on the dataset of Linear A's raw document images (see \cref{why_sam_fails}) suggests that fine-tuning might be worth pursuing.
 This would require anywhere from a few hundred to millions of annotated images (see \cref{consolidated_discussion}).
 Assembling a dataset of that size for Linear A alone may be unrealistic given its small corpus, so it would likely be necessary to pool inscriptions from the closely related Aegean scripts such as Linear B, and possibly from epigraphic inscriptions more broadly, laying the groundwork for an epigraphically tuned \acs{SAM}.
 As mentioned, however, it is not guaranteed that the possible size of such a dataset would even be sufficient within the domain of Linear A.
