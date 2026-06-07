@@ -4,45 +4,53 @@ The aim of this thesis was to investigate whether the drawing step of the annota
 In short, under the tested conditions, the results indicate that \acs{SAM} was not practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
 This is illustrated by the following summaries of findings per research question.
 
-\section{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
+\section{Findings per \acs{RQ}}
+\subsection{\hyperref[rq1]{\acs{RQ}1}: Segmentation quality}
 The first research question concerned the non-interactive segmentation quality of \acs{SAM} within the domain of Linear A document images compared to classical image processing baselines.
 Measured with \acs{Dice} scores on a test set of 27 images, none of the tested \acs{SAM} variants outperformed the strongest classical baseline, \acs{Gaussian} thresholding.
-On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse}, despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
+On the contrary, the strongest \acs{SAM} variant performed \textit{significantly worse} than this classical baseline, despite the inclusion of \acs{ICL} implementations and strategic \acs{POI} prompt placement.
 
-\section{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
+\subsection{\hyperref[rq2]{\acs{RQ}2}: Interaction efficiency}
 The second research question had to do with the efficiency of using \acs{SAM} as an interactive segmentation tool compared to a classical image processing baseline.
 This was measured in a case study of 3 documents from the test set with Ester Salgarella in terms of the time spent in the tool and segmentation quality of the exports.
 Despite the theoretical benefit of human interaction, the \acs{SAM}2-based tool seemed beaten by the \acs{Gaussian} thresholding one, both in terms of time spent and segmentation quality.
 
-\section{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
+\subsection{\hyperref[rq3]{\acs{RQ}3}: Workflow efficiency}
 The third research question considered the workflow-related efficiency of using the \acs{SAM}-based tool compared to classical image processing and the baseline of manual annotation.
-Measured in a case study of 3 documents with Ester Salgarella, the time spent to complete the drawings manually in Krita was compared to being assisted by the mask exports of the previous case study as suggested starting points.
-None of the tools showed any potential of saving time in the workflow, both when considering the entire workflow duration (including the time spent in tool), and when considering only the post-editing phase.
-In fact, the tools even seemed to increase work time (SAM more so than the classical one), as their output masks required too much correction.
+Measured in a case study of 3 documents with Ester Salgarella, the time spent to complete the drawings manually in Krita was compared to being assisted by the mask exports of the developed tools as suggested starting points.
+None of these tools showed any potential of saving time in the workflow, both when considering the entire workflow duration (including the time spent in tool), and when considering only the post-editing phase.
+In fact, they even seemed to \textit{increase} work time (SAM more so than the classical one), as their output masks required too much correction.
 
 \section{Overall conclusion}
-To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets.
-The reason that the tools did not save any time, seemed to be due to the low quality of their segmentations (\cref{subsec:time_saving_dice}).
+To reiterate, \acs{SAM} was not deemed practically useful for accelerating Salgarella's workflow of annotating Linear A tablets (see \cref{rq3results}).
+The reason that the tool did not save any time, seemed to be due to the low quality of its output masks (see \cref{subsec:time_saving_dice}).
 This was mostly due to the limitations of the raw document images from \acs{GORILA} used for inference (see \cref{subsec:quality_limitation}), which were low both in size and quality, consisting of screenshots of grayscale photographs embedded in the scanned print edition of the corpus.
 But \acs{SAM} also seemed to struggle with the domain of Linear A documents in general, as neither zero-shot nor few-shot implementations outperformed the classical baselines on the same data (see \cref{rq1results}).
-Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baseline (\cref{rq2results}).
-This underperformance can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents (\cref{why_sam_fails}).
-Although these results were clearly negative, they provide valuable evidence of the shortcomings of \acs{SAM} within the domain of \acs{GORILA} raw document images, and suggest directions for future research and development to achieve a more automated workflow.
+Even when guided by human interaction, the performance of \acs{SAM} did not reach the level of the classical baseline (see \cref{rq2results}).
+This underperformance can be attributed to the fact that \acs{SAM} was pre-trained on natural images and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents (see \cref{why_sam_fails}).
+
+Not even the comparatively stronger tool based on the classical baseline seemed to save any time in the workflow, as its exported masks also required too much correction (see \cref{rq3results}).
+Thus, the established manual drawing process in Krita still seems to remain the best option for the drawing step of the annotation workflow.
+As clear negative results regarding the potential of automating the annotation process of Linear A, these findings can be seen as valuable evidence of the shortcomings of segmentation within this domain, and suggest directions for future research and development to achieve a more automated annotation workflow.
 
 \section{Future Work}
 \subsection{A bigger dataset}
-The results suggest that \acs{SAM} might need fine-tuning to perform well within the domain of Linear A documents (\cref{consolidated_discussion}).
-This would likely require a sufficiently sized dataset of annotated images for training.
-For such tuning to be possible, a sufficiently sized one-class-labeled dataset of general inscription segmentations would be required.
-As a proof of concept, domain tuning might not demand more than a few hundred annotated examples, as demonstrated for Mayan hieroglyphs \parencite{MayaSAM}.
-A model usable in practice, however, would likely require a dataset of at least a few thousand annotated images.
-Assembling a dataset of that size for Linear A alone is unrealistic given its small corpus, so it would likely be necessary to pool inscriptions from the closely related Aegean scripts such as Linear B, and possibly from epigraphic inscriptions more broadly, laying the groundwork for an epigraphically tuned \acs{SAM}.
+The fact that \acs{SAM}'s lack of fine-tuning can work as an explanation for its underperformance on the dataset of Linear A's raw document images (see \cref{why_sam_fails}), suggests that fine-tuning might be worth pursuing.
+This would require anywhere from a few hundred to millions of annotated images (see \cref{consolidated_discussion}).
+Assembling a dataset of that size for Linear A alone may be unrealistic given its small corpus, so it would likely be necessary to pool inscriptions from the closely related Aegean scripts such as Linear B, and possibly from epigraphic inscriptions more broadly, laying the groundwork for an epigraphically tuned \acs{SAM}.
+As mentioned, however, it is not guaranteed that the possible size of such a dataset would even be sufficient within the domain of Linear A.
+But it might prove useful for related epigraphic domains, and is still worth exploring in future work.
 
-\subsection{Alternative data sources}
-Since the raw tablet based \acs{ML} system developed did not perform well enough to be deemed helpful for the workflow, another approach seems necessary in order to achieve a more automated workflow.
-The bottleneck of the raw tablet based approach seems to be the quality of the input data, as the raw images are of low quality and contain a lot of noise, which is not only hard for the model to process, but also even for the researcher to differentiate the signs from mere tablet damage.
-The suggestions generated should therefore instead be inferred from the corpus drawings, which are of higher quality, carry more strucured information than the raw tablet images, and are what the researcher already primarily uses as reference in the annotation process.
+\subsection{An alternative data source}
+Because the negative results of this thesis can also be attributed to the quality of the raw document images (see \cref{consolidated_discussion,subsec:quality_limitation}), it seems that alternative data sources should be explored in future work.
+A complementary, higher-quality data source in the form of 3D scans of the INSCRIBE project \parencite{INSCRIBE3D} does exist, and might be worth exploring for this task.
+Even though these 3D scans are not yet available for the entire corpus, it might be that the project resumes.
+The data thus might still be worth exploring as a proof of concept for its potential use within this segmentation task.
 
-A complementary, higher-quality data source would be the 3D scans of the INSCRIBE project \parencite{INSCRIBE3D}, on which a 3D segmentation approach might prove useful.
-This would, however, require the project to resume and to scan the remainder of the corpus, a process that would arguably take longer than the manual production of digital drawings for the entire corpus.
-
+\subsection{An alternative approach}
+Since it has so far not proved useful to approach the drawing step of Ester's annotation workflow as a segmentation task of raw documents, another approach might be necessary in order to achieve a more automated workflow (see \cref{consolidated_discussion}).
+If ignoring \acs{IPR} issues, it may prove more useful to process the already made expert drawings instead, as they are of higher quality, carry more strucured information than the raw tablet images, and are what the researcher already primarily uses as reference in the annotation process.
+These drawings are furthermore widely available, as they exist for all publicized raw documents as part of the printed corpus \acs{GORILA}.
+It would thus be stupid not to consider this approach, as it is not restricted by the ability of any foundation model or quality of the raw document images.
+This approach was not within the scope of this thesis, as the focus was on segmentation from raw document images.
+But along with attempts to automate the rest of the annotation process (i.e., labeling of metadata), it is worth exploring in future work as a more promising alternative for automating the drawing step of Linear A's annotation workflow. 

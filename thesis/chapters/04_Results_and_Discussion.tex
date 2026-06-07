@@ -11,7 +11,7 @@ The following subsections go in-depth with each of these three subresults, and w
 \subsection{Ablation of zero-shot \acs{SAM}}
 \label{subsec:ablation_sam}
 
-The results of the ablation study of the in-total 12 different permutations of \acs{SAM} (see \cref{fig:dice_sam_ablation}, and \cref{tab:sam-variants-summary}) showed that the best performing variant was the original \acs{SAM} with image encoder Vit-H, without any filter, guided by classical threshold-derived automatic point prompts.
+The results of the small ablation study of the in-total 12 different permutations of \acs{SAM} (see \cref{fig:dice_sam_ablation}, and \cref{tab:sam-variants-summary}) showed that the best performing variant was the original \acs{SAM} with image encoder Vit-H, without any filter, guided by classical threshold-derived automatic point prompts.
 This was closely followed by its bilateral pre-filtered variant, and its Mobile\acs{SAM} variant (which performed worse due to its smaller image encoder Tiny\acs{ViT}).
 
 \begin{figure}[htp]
@@ -59,12 +59,13 @@ This indicates that the one-shot strategy of \acs{GFSAM} is generally not effect
 It is very likely that no point ever passed its gating processes, always returning the mask with the highest predicted \acs{IoU} score instead, which was the whole tablet, as it is always the most salient and clearly separated object in the image.
 Specifically, \acs{GFSAM}'s overshooting gating process seems to have been the culprit, as it is designed to filter out points that are near the boundary of a mask, which for a thin engraving is always the case.
 
-\subsubsection{Why \acs{FATESAM}2D (sort of) works}
+\subsubsection{Why \acs{FATESAM}2D (almost) works}
 \acs{FATESAM}2D's comparatively better performance can be attributed to the support images actually providing useful information to the model.
 The variant with blank support images (\acs{FATESAM}2D-blank) performing worst of all (see \cref{fig:dice_icl_comparison}), is a proof of this, as the inference hence does not work without any meaningful support images.
 The manipulation of \acs{SAM}2's memory encoder and memory attention mechanism thus worked reasonably well for few-shot inference given just 3 of the raw document images and their ground truth masks as reference with 6 to choose from.
 
-But still, this additional few-shot context was clearly not enough to outperform the threshold-derived \acs{POI}-based zero-shot \acs{SAM}.
+But still, this additional few-shot domain context was clearly not enough to outperform the threshold-derived \acs{POI}-based zero-shot \acs{SAM}.
+The domain of contigous natural images is clealy too ingrained in the \acs{SAM}2's weights for its inference to be adapted via \acs{ICL} alone.
 As a general error, \acs{FATESAM}2D suffered from undersegmentation rather than oversegmentation (as seen in \cref{fig:comparison_icl_sam}).
 This might have been due to the big class imbalance between foreground and background in the support images, with background dominating compared to the thin and small engravings.
 
@@ -205,9 +206,9 @@ Thus, as $\pgfmathprintnumber[sci,precision=3]{0.0004618332770736502} < \alpha =
 In other words, the best tested variant of \acs{SAM} clearly performed \textit{significantly worse} in comparison to the best tested classical segmentation method for non-interactive segmentation of Linear A tablets.
 
 \subsubsection{Why \acs{SAM} fails} \label{why_sam_fails}
-The significant underperformance of \acs{SAM} compared to \acs{Gaussian} can be attributed to the fact that \acs{SAM} was pre-trained on natural images via \acs{SA-1B} \parencite{sam} and therefore lacks the domain-specific knowledge to perform well on the task of segmenting Linear A documents.
+The significant underperformance of \acs{SAM} compared to \acs{Gaussian} can be attributed to the fact that \acs{SAM} was pre-trained on natural images via \acs{SA-1B} \parencite{sam} and therefore lacks the domain-specific knowledge to perform well on the task of segmenting grayscaled Linear A documents.
 Even with the help of \acs{ICL} strategies, \acs{SAM} was not able to leverage the additional context to outperform the strongest classical baseline.
-The Linear A domain of thin obstructed engravings (\cref{sec:dataset}) is thus too different from the "rounded" natural segmentation masks that \acs{SAM} is used to segment, for \acs{ICL} to be effective.
+The Linear A domain of thin obstructed engravings (\cref{sec:dataset}) is thus too different from the contigous natural segmentation masks that \acs{SAM} is used to segment, for \acs{ICL} or \acs{POI} strategies to be effective.
 To outperform classical methods, \acs{SAM} would likely need to be fine-tuned on a sufficiently large dataset of annotated Linear A images, which was unfortunately not available during the time of this study.
 
 \clearpage
@@ -305,7 +306,7 @@ Still, none of the data obtained showed potential for time-saving.
 And none showed potential for \acs{SAM} outperforming the best classical baseline.
 
 When taking the domain and data quality into account (see \cref{subsec:quality_limitation}), this underperformance is not too surprising.
-Being screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}, the raw document images used for inference lack crucial information for distinguishing between damage and engraving that the primary evidence has.
+Being screenshots of grayscale photographs embedded in scanned print editions of \acs{GORILA}, the raw document images used for inference lack crucial information for distinguishing between damage and engraving.
 During the second case study, Dr. Salgarella gave the impression that even she herself could not clearly distinguish tablet damage from inscriptions based on the raw images alone.
 If even an expert cannot do that, it is not surprising that a segmentation model cannot do it either.
 
@@ -313,11 +314,10 @@ But what these results suggest, is not only that the available data is poor.
 As \acs{SAM} performed significantly worse than the strongest classical baseline on the same data (\cref{rq1results}), it also tells us that \acs{SAM}'s generalization capabilities are not sufficient enough within this domain.
 For \acs{SAM} to be useful, not only is there a need for a more suitable data source.
 To be able to adapt it to the domain at all, there is seemingly also a need for a sufficiently sized dataset.
-Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \cite{MayaSAM}).
-To be able to create a model that can be used in practice, a dataset of at least a few thousand annotated images would likely be necessary.
-Creating a hypothetical dataset of such size might require collecting inscriptions other than just Linear A -- such as the other closely related Aegean scripts like Linear B, and maybe even epigraphical inscriptions in general -- laying the groundwork for the creation of an epigraphically tuned \acs{SAM}. 
+Although tuning as a proof of concept might not require more than a few hundred datapoints (as seen in the study of \acs{SAM} on Mayan hieroglyphs, \cite{MayaSAM}), to be able to create a model that can be used in practice, a dataset containing anywhere from a few hundred to millions of annotated images could be necessary \parencite[p.2]{ontuningdataset}.
+Creating a hypothetical dataset of a sufficient size might therefore require collecting inscriptions other than just Linear A -- such as the other closely related Aegean scripts like Linear B, and maybe even just epigraphical inscriptions in general.
 
-Until such a model is developed, however, the results seem to suggest that classical deterministic methods are better suited for the task.
+Until a model tuned to such a dataset is developed, however, the results seem to suggest that classical deterministic methods are better suited for the task.
 But most importantly, they suggest that manual annotation in Krita so far remains the best option for producing digitized drawings of Linear A documents.
 Nevertheless, that is not to say that there is no potential for automation in the workflow.
 Rather, it means that the tested approaches are not sufficient enough to be helpful for it, and that alternative approaches should be explored in future work.
